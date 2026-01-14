@@ -124,7 +124,7 @@ export function bodyParser(
           ctx.body = text;
         }
       }
-    } catch (error) {
+    } catch {
       ctx.response = new Response("Bad Request", { status: 400 });
       return;
     }
