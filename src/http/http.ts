@@ -279,18 +279,17 @@ export class Http {
     const ctx = this.createContext(request);
 
     try {
-      // 先尝试路由匹配
-      const routerHandled = await this.handleRouter(ctx);
+      // 先尝试路由匹配（API 路由和 SSR 页面）
+      await this.handleRouter(ctx);
 
-      // 如果路由未处理，执行中间件链
-      if (!routerHandled) {
-        try {
-          await this.middlewareChain.execute(ctx);
-        } catch (error) {
-          // 中间件链的错误会被 MiddlewareChain 内部的错误处理中间件捕获
-          // 如果还有未处理的错误，继续抛出
-          throw error;
-        }
+      // 执行中间件链（插件事件、自定义中间件等）
+      // 中间件可以在 ctx.response 已设置的情况下进行后处理
+      try {
+        await this.middlewareChain.execute(ctx);
+      } catch (error) {
+        // 中间件链的错误会被 MiddlewareChain 内部的错误处理中间件捕获
+        // 如果还有未处理的错误，继续抛出
+        throw error;
       }
 
       // 获取响应
