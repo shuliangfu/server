@@ -65,7 +65,7 @@ export class Server {
   /**
    * 启动服务器
    */
-  async start(): Promise<void> {
+  start(): void {
     // 启动 HTTP 服务器
     this.serverHandle = this.httpApp.listen({
       port: this._port,
