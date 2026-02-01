@@ -3,7 +3,8 @@
 > 一个兼容 Deno 和 Bun 的统一 HTTP 服务器库，提供开发和生产环境的完整服务器功能
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
+[![Tests](https://img.shields.io/badge/tests-325%20passed-brightgreen)](./TEST_REPORT.md)
 
 ---
 

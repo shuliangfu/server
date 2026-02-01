@@ -18,7 +18,11 @@ import { serve as runtimeServe } from "@dreamer/runtime-adapter";
 
 import type { HttpContext, HttpError } from "../context.ts";
 import { CookieManager } from "../cookie.ts";
-import { RouterAdapter } from "../router-adapter.ts";
+import {
+  RouterAdapter,
+  type RouterAdapterOptions,
+  type SSRRenderCallback,
+} from "../router-adapter.ts";
 
 /**
  * HTTP 服务器配置选项
@@ -95,9 +99,22 @@ export class Http {
    * 集成路由系统
    *
    * @param router 路由实例
+   * @param options 路由适配器选项（可选）
    */
-  useRouter(router: Router): void {
-    this.routerAdapter = new RouterAdapter(router);
+  useRouter(router: Router, options?: RouterAdapterOptions): void {
+    this.routerAdapter = new RouterAdapter(router, options);
+  }
+
+  /**
+   * 设置 SSR 渲染回调
+   * 用于处理页面路由的服务端渲染
+   *
+   * @param callback SSR 渲染回调函数
+   */
+  setSSRRender(callback: SSRRenderCallback): void {
+    if (this.routerAdapter) {
+      this.routerAdapter.setSSRRender(callback);
+    }
   }
 
   /**

@@ -135,9 +135,22 @@ export class Server {
    * 集成路由系统（便捷方法，代理到 httpApp）
    *
    * @param router 路由实例
+   * @param options 路由适配器选项（可选）
    */
-  useRouter(router: Parameters<Http["useRouter"]>[0]): void {
-    this.httpApp.useRouter(router);
+  useRouter(
+    router: Parameters<Http["useRouter"]>[0],
+    options?: Parameters<Http["useRouter"]>[1],
+  ): void {
+    this.httpApp.useRouter(router, options);
+  }
+
+  /**
+   * 设置 SSR 渲染回调（便捷方法，代理到 httpApp）
+   *
+   * @param callback SSR 渲染回调函数
+   */
+  setSSRRender(callback: Parameters<Http["setSSRRender"]>[0]): void {
+    this.httpApp.setSSRRender(callback);
   }
 
   /**

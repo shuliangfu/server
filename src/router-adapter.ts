@@ -4,8 +4,25 @@
  * 集成 @dreamer/router 进行路由匹配和处理
  */
 
-import type { Router, RouteMatch } from "@dreamer/router";
+import type { RouteMatch, Router } from "@dreamer/router";
 import type { HttpContext } from "./context.ts";
+
+/**
+ * SSR 渲染回调函数类型
+ * 用于处理页面路由的服务端渲染
+ */
+export type SSRRenderCallback = (
+  ctx: HttpContext,
+  match: RouteMatch,
+) => Promise<Response | null>;
+
+/**
+ * 路由适配器配置选项
+ */
+export interface RouterAdapterOptions {
+  /** SSR 渲染回调函数（用于处理页面路由的服务端渲染） */
+  ssrRender?: SSRRenderCallback;
+}
 
 /**
  * 路由适配器类
@@ -13,14 +30,26 @@ import type { HttpContext } from "./context.ts";
  */
 export class RouterAdapter {
   private router: Router;
+  private ssrRender?: SSRRenderCallback;
 
   /**
    * 创建路由适配器
    *
    * @param router 路由实例
+   * @param options 适配器选项
    */
-  constructor(router: Router) {
+  constructor(router: Router, options?: RouterAdapterOptions) {
     this.router = router;
+    this.ssrRender = options?.ssrRender;
+  }
+
+  /**
+   * 设置 SSR 渲染回调
+   *
+   * @param callback SSR 渲染回调函数
+   */
+  setSSRRender(callback: SSRRenderCallback): void {
+    this.ssrRender = callback;
   }
 
   /**
@@ -62,10 +91,21 @@ export class RouterAdapter {
         }
       }
 
-      // 页面路由（SSR）由路由系统处理，这里只标记已匹配
-      // 实际的 SSR 渲染需要配合 SSR 框架使用
-      return true;
-    } catch (error) {
+      // 页面路由：如果设置了 SSR 渲染回调，调用它进行渲染
+      if (this.ssrRender) {
+        const response = await this.ssrRender(ctx, match);
+        if (response) {
+          ctx.response = response;
+          return true;
+        }
+      }
+
+      // 将路由匹配信息存储在上下文中，供后续中间件使用
+      (ctx as any).routeMatch = match;
+
+      // 页面路由未设置 SSR 回调，标记已匹配但让后续中间件处理
+      return false;
+    } catch {
       // 路由处理错误，返回 false 让其他中间件处理
       return false;
     }
