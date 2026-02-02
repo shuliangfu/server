@@ -29,10 +29,28 @@ export async function generateHMRClientScript(
   }
 
   try {
-    // 获取客户端脚本文件路径（相对于当前文件）
-    const currentFileUrl = new URL(import.meta.url);
-    const currentDir = dirname(currentFileUrl.pathname);
+    // 尝试获取客户端脚本文件路径
+    // 注意：在 JSR 包中，import.meta.url 返回 JSR URL，无法作为文件系统路径
+    const currentFileUrl = import.meta.url;
+
+    console.log("currentFileUrl", currentFileUrl);
+
+    // 检查是否是本地文件路径（file:// 协议）
+    if (!currentFileUrl.startsWith("file://")) {
+      // 非本地文件（如 JSR 包），直接使用回退脚本
+      console.log("[HMR] 使用轻量级 HMR 客户端");
+      const fallbackScript = generateFallbackScript(hmrPath, port, host);
+      compiledScriptCache = fallbackScript;
+      return fallbackScript;
+    }
+
+    console.log("currentFileUrl", currentFileUrl);
+
+    // 本地开发环境，尝试编译完整的 HMR 客户端
+    const currentDir = dirname(new URL(currentFileUrl).pathname);
     const scriptPath = join(currentDir, "hmr-browser.ts");
+
+    console.log({ currentDir, scriptPath });
 
     // 使用 esbuild 编译 TypeScript 文件
     const result = await esbuild.build({

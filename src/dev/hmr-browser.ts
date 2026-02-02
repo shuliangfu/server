@@ -12,8 +12,8 @@
  */
 
 // 类型定义（仅用于类型检查，不会被打包）
-type RenderCSRType = typeof import("@dreamer/render").renderCSR;
-type CSROptions = import("@dreamer/render").CSROptions;
+type RenderCSRType = typeof import("@dreamer/render/client").renderCSR;
+type CSROptions = import("@dreamer/render/client").CSROptions;
 
 interface HMRMessage {
   type:
