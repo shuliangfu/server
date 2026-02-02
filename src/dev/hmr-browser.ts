@@ -663,6 +663,36 @@ class HMRClient {
   }
 
   /**
+   * 无感更新：设置时间戳、派发事件，由应用层清除模块缓存并重渲染当前路由
+   * 若应用未注册 __DWEB_HMR_REFRESH__ 则回退为整页刷新
+   */
+  private doSeamlessUpdate(message: HMRMessage): void {
+    const ts = Date.now();
+    (globalThis as unknown as { __HMR_TIMESTAMP__?: number })
+      .__HMR_TIMESTAMP__ = ts;
+    globalThis.dispatchEvent(
+      new CustomEvent("hmr:update", {
+        detail: {
+          path: message.path,
+          componentPath: message.componentPath,
+          layoutPath: message.layoutPath,
+          route: message.route,
+        },
+      }),
+    );
+    const refresh =
+      (globalThis as unknown as { __DWEB_HMR_REFRESH__?: () => void })
+        .__DWEB_HMR_REFRESH__;
+    if (typeof refresh === "function") {
+      refresh();
+      this.statusUI.recordUpdate(true);
+      this.statusUI.hideProgress();
+    } else {
+      globalThis.location.reload();
+    }
+  }
+
+  /**
    * 处理合并后的更新消息
    *
    * @param message 合并后的消息
@@ -680,18 +710,21 @@ class HMRClient {
         break;
 
       case "component-update":
-        console.log("[HMR] 组件更新:", message.componentPath);
-        this.handleComponentUpdate(message);
+        console.log("[HMR] 组件更新（无感）:", message.componentPath);
+        this.statusUI.showProgress(message.componentPath || message.path || "");
+        this.doSeamlessUpdate(message);
         break;
 
       case "layout-update":
-        console.log("[HMR] 布局更新:", message.layoutPath);
-        this.handleLayoutUpdate(message);
+        console.log("[HMR] 布局更新（无感）:", message.layoutPath);
+        this.statusUI.showProgress(message.layoutPath || message.path || "");
+        this.doSeamlessUpdate(message);
         break;
 
       case "module-update":
-        console.log("[HMR] 模块更新:", message.path);
-        this.handleModuleUpdate(message);
+        console.log("[HMR] 模块更新（无感）:", message.path);
+        this.statusUI.showProgress(message.path || "");
+        this.doSeamlessUpdate(message);
         break;
 
       default:
