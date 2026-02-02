@@ -1,17 +1,27 @@
 /**
  * HMR 客户端脚本生成
  *
- * 读取 TypeScript 客户端脚本，编译后返回给浏览器
+ * 通过当前模块 URL 推导 hmr-browser.ts 的 URL，fetch 获取源码后用 esbuild 编译返回给浏览器
  */
 
-import { dirname, join } from "@dreamer/runtime-adapter";
 import * as esbuild from "esbuild";
 
 // 缓存编译后的脚本
 let compiledScriptCache: string | null = null;
 
 /**
+ * 根据当前模块 URL 与相对路径得到 hmr-browser.ts 的 URL
+ *
+ * @returns hmr-browser.ts 的完整 URL（支持 file:// 与 JSR 等）
+ */
+function getHmrBrowserScriptUrl(): string {
+  return new URL("./hmr-browser.ts", import.meta.url).href;
+}
+
+/**
  * 生成 HMR 客户端脚本
+ *
+ * 通过 fetch 获取 hmr-browser.ts 源码，使用 esbuild stdin 编译（不依赖入口文件路径）
  *
  * @param hmrPath WebSocket 路径
  * @param port 服务器端口
@@ -29,32 +39,31 @@ export async function generateHMRClientScript(
   }
 
   try {
-    // 尝试获取客户端脚本文件路径
-    // 注意：在 JSR 包中，import.meta.url 返回 JSR URL，无法作为文件系统路径
-    const currentFileUrl = import.meta.url;
+    // 通过相对路径得到 hmr-browser.ts 的 URL（支持 file:// 与 JSR 等）
+    const browserScriptUrl = getHmrBrowserScriptUrl();
 
-    console.log("currentFileUrl", currentFileUrl);
-
-    // 检查是否是本地文件路径（file:// 协议）
-    if (!currentFileUrl.startsWith("file://")) {
-      // 非本地文件（如 JSR 包），直接使用回退脚本
-      console.log("[HMR] 使用轻量级 HMR 客户端");
-      const fallbackScript = generateFallbackScript(hmrPath, port, host);
-      compiledScriptCache = fallbackScript;
-      return fallbackScript;
+    // 通过 fetch 获取 hmr-browser.ts 源码（使用 RequestInit 明确请求方式与 Accept）
+    const requestInit: RequestInit = {
+      method: "GET",
+      headers: {
+        Accept: "text/plain, application/typescript, */*",
+      },
+    };
+    const response: Response = await fetch(browserScriptUrl, requestInit);
+    if (!response.ok) {
+      throw new Error(
+        `获取 HMR 客户端脚本失败: ${response.status} ${response.statusText} (${browserScriptUrl})`,
+      );
     }
+    const sourceContent = await response.text();
 
-    console.log("currentFileUrl", currentFileUrl);
-
-    // 本地开发环境，尝试编译完整的 HMR 客户端
-    const currentDir = dirname(new URL(currentFileUrl).pathname);
-    const scriptPath = join(currentDir, "hmr-browser.ts");
-
-    console.log({ currentDir, scriptPath });
-
-    // 使用 esbuild 编译 TypeScript 文件
+    // 使用 esbuild stdin 编译（直接传内容，不依赖入口文件路径）
     const result = await esbuild.build({
-      entryPoints: [scriptPath],
+      stdin: {
+        contents: sourceContent,
+        sourcefile: "hmr-browser.ts",
+        loader: "ts",
+      },
       bundle: true,
       write: false,
       format: "iife", // 立即执行函数表达式，适合注入到 HTML
@@ -62,7 +71,6 @@ export async function generateHMRClientScript(
       minify: false, // 开发环境不压缩，方便调试
       platform: "browser",
       // 将 React/Preact/Vue3 等库标记为外部依赖，避免打包
-      // 这些库应该在页面中已经通过 <script> 标签加载
       external: [
         "react",
         "react-dom",
@@ -70,6 +78,7 @@ export async function generateHMRClientScript(
         "preact",
         "vue",
         "@dreamer/render",
+        "@dreamer/render/client",
       ],
       define: {
         "globalThis.document": "document",
