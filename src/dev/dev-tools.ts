@@ -235,11 +235,25 @@ export class DevTools {
       recursive: watchConfig.options?.recursive ?? true,
     });
 
+    // 判断路径是否被 ignore 规则命中（规则为子串匹配，路径统一用 /）
+    const isIgnored = (filePath: string): boolean => {
+      if (!watchConfig.ignore || watchConfig.ignore.length === 0) {
+        return false;
+      }
+      const normalized = filePath.replace(/\\/g, "/");
+      return watchConfig.ignore.some(
+        (pattern) => normalized.includes(pattern.replace(/\\/g, "/")),
+      );
+    };
+
     // 使用异步迭代器监听文件变化
     (async () => {
       for await (const event of this.fileWatcher!) {
         if (event.kind === "modify" || event.kind === "create") {
           const path = event.paths?.[0] || "";
+          if (isIgnored(path)) {
+            continue;
+          }
 
           // 确定更新类型
           const updateType = this.determineUpdateType(path);
