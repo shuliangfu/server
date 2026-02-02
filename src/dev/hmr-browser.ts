@@ -663,33 +663,13 @@ class HMRClient {
   }
 
   /**
-   * 无感更新：设置时间戳、派发事件，由应用层清除模块缓存并重渲染当前路由
-   * 若应用未注册 __DWEB_HMR_REFRESH__ 则回退为整页刷新
+   * 组件/布局/模块更新：开发模式下客户端为单 bundle，import 拿到的是旧模块，
+   * 无法真正无感替换。直接整页重载以加载服务端已重建的 client.js，确保页面显示最新内容。
    */
-  private doSeamlessUpdate(message: HMRMessage): void {
-    const ts = Date.now();
-    (globalThis as unknown as { __HMR_TIMESTAMP__?: number })
-      .__HMR_TIMESTAMP__ = ts;
-    globalThis.dispatchEvent(
-      new CustomEvent("hmr:update", {
-        detail: {
-          path: message.path,
-          componentPath: message.componentPath,
-          layoutPath: message.layoutPath,
-          route: message.route,
-        },
-      }),
-    );
-    const refresh =
-      (globalThis as unknown as { __DWEB_HMR_REFRESH__?: () => void })
-        .__DWEB_HMR_REFRESH__;
-    if (typeof refresh === "function") {
-      refresh();
-      this.statusUI.recordUpdate(true);
-      this.statusUI.hideProgress();
-    } else {
-      globalThis.location.reload();
-    }
+  private doSeamlessUpdate(): void {
+    this.statusUI.recordUpdate(true);
+    this.statusUI.hideProgress();
+    globalThis.location.reload();
   }
 
   /**
@@ -710,21 +690,21 @@ class HMRClient {
         break;
 
       case "component-update":
-        console.log("[HMR] 组件更新（无感）:", message.componentPath);
+        console.log("[HMR] 组件更新，整页重载:", message.componentPath);
         this.statusUI.showProgress(message.componentPath || message.path || "");
-        this.doSeamlessUpdate(message);
+        this.doSeamlessUpdate();
         break;
 
       case "layout-update":
-        console.log("[HMR] 布局更新（无感）:", message.layoutPath);
+        console.log("[HMR] 布局更新，整页重载:", message.layoutPath);
         this.statusUI.showProgress(message.layoutPath || message.path || "");
-        this.doSeamlessUpdate(message);
+        this.doSeamlessUpdate();
         break;
 
       case "module-update":
-        console.log("[HMR] 模块更新（无感）:", message.path);
+        console.log("[HMR] 模块更新，整页重载:", message.path);
         this.statusUI.showProgress(message.path || "");
-        this.doSeamlessUpdate(message);
+        this.doSeamlessUpdate();
         break;
 
       default:
