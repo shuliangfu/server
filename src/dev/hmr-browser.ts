@@ -23,8 +23,12 @@ interface HMRMessage {
     | "css-update"
     | "component-update"
     | "layout-update"
-    | "module-update";
+    | "module-update"
+    | "connected"
+    | "ping"
+    | "pong";
   path?: string; // 文件路径
+  timestamp?: number;
   files?: Array<{ path: string; contents?: Uint8Array }>;
   message?: string;
   moduleId?: string; // 更新的模块 ID
@@ -398,10 +402,11 @@ class HMRClient {
   private ws: WebSocket | null = null;
   private reconnectTimer: number | null = null;
   private reconnectAttempts = 0;
-  private readonly maxReconnectAttempts = 10;
-  private reconnectDelay = 1000; // 初始延迟
-  private readonly maxReconnectDelay = 30000; // 最大延迟 30 秒
-  private readonly reconnectDelayMultiplier = 1.5; // 指数退避倍数
+  private readonly maxReconnectAttempts = 5; // 最多重连 5 次，失败则放弃；标签页重新可见时会再尝试一轮
+  private reconnectDelay = 1000; // 初始延迟（毫秒）
+  private readonly maxReconnectDelay = 30000; // 单次最大延迟 30 秒
+  private readonly reconnectDelayMultiplier = 2; // 每次重连延迟倍数（1s -> 2s -> 4s -> 8s -> 16s）
+  private visibilityListenerAttached = false;
 
   // 更新队列和批处理
   private updateQueue: UpdateQueueItem[] = [];
@@ -452,6 +457,17 @@ class HMRClient {
       this.ws.onmessage = (event: MessageEvent) => {
         try {
           const message: HMRMessage = JSON.parse(event.data);
+          if (message.type === "ping") {
+            if (this.ws?.readyState === WebSocket.OPEN) {
+              this.ws.send(
+                JSON.stringify({ type: "pong", timestamp: Date.now() }),
+              );
+            }
+            return;
+          }
+          if (message.type === "connected" || message.type === "pong") {
+            return;
+          }
           this.handleMessage(message);
         } catch (error) {
           console.error("[HMR] 解析消息失败:", error);
@@ -478,46 +494,82 @@ class HMRClient {
   }
 
   /**
-   * 安排重新连接（使用指数退避策略）
+   * 安排重新连接（延迟随次数递增，最多 maxReconnectAttempts 次）
    */
   private scheduleReconnect(): void {
     if (this.reconnectTimer !== null) {
       clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
     }
 
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-
-      // 计算延迟时间（指数退避）
-      const delay = Math.min(
-        this.reconnectDelay *
-          Math.pow(this.reconnectDelayMultiplier, this.reconnectAttempts - 1),
-        this.maxReconnectDelay,
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error(
+        `[HMR] 已达最大重连次数 (${this.maxReconnectAttempts})，放弃重连。切回本标签页时会再尝试一次。`,
       );
-
-      // 更新 UI 状态
-      this.statusUI.updateConnectionStatus("reconnecting");
-
-      this.reconnectTimer = setTimeout(() => {
-        console.log(
-          `[HMR] 尝试重新连接... (${this.reconnectAttempts}/${this.maxReconnectAttempts})，延迟 ${
-            Math.round(delay)
-          }ms`,
-        );
-        this.connect();
-      }, delay);
-    } else {
-      console.error("[HMR] 达到最大重连次数，停止重连");
-      // 重置延迟，以便下次连接时重新开始
-      this.reconnectDelay = 1000;
-      this.reconnectAttempts = 0;
+      this.statusUI.updateConnectionStatus("disconnected");
+      return;
     }
+
+    this.reconnectAttempts++;
+    const delay = Math.min(
+      this.reconnectDelay *
+        Math.pow(this.reconnectDelayMultiplier, this.reconnectAttempts - 1),
+      this.maxReconnectDelay,
+    );
+
+    this.statusUI.updateConnectionStatus("reconnecting");
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      console.log(
+        `[HMR] 尝试重新连接 (${this.reconnectAttempts}/${this.maxReconnectAttempts})，${
+          Math.round(delay)
+        }ms 后...`,
+      );
+      this.connect();
+    }, delay);
+  }
+
+  /**
+   * 标签页重新可见时检查连接，若已断开则重置重连计数并再尝试连接（最多再试 maxReconnectAttempts 次）
+   */
+  private tryReconnectOnVisible(): void {
+    if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      return;
+    }
+    this.reconnectAttempts = 0;
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    console.log("[HMR] 标签页已可见，重新尝试连接...");
+    this.connect();
+  }
+
+  /**
+   * 注册「标签页可见时再尝试连接」的监听（仅浏览器、仅注册一次）
+   */
+  setupVisibilityReconnect(): void {
+    if (this.visibilityListenerAttached) return;
+    const doc = (globalThis as any).document;
+    if (!doc || typeof doc.addEventListener !== "function") return;
+    doc.addEventListener("visibilitychange", () => {
+      if (doc.visibilityState === "visible") {
+        this.tryReconnectOnVisible();
+      }
+    });
+    this.visibilityListenerAttached = true;
   }
 
   /**
    * 处理消息
    */
   private handleMessage(message: HMRMessage): void {
+    if (
+      message.type === "ping" || message.type === "pong" ||
+      message.type === "connected"
+    ) {
+      return;
+    }
     // 立即处理的消息类型（不需要批处理）
     if (message.type === "reload" || message.type === "error") {
       switch (message.type) {
@@ -1638,8 +1690,8 @@ const wsUrl = ""; // 占位符，会被替换为实际的 WebSocket URL
   }
 
   const client = new HMRClient(wsUrl);
+  client.setupVisibilityReconnect();
 
-  // 页面加载完成后连接
   if ((globalThis as any).document.readyState === "loading") {
     (globalThis as any).document.addEventListener(
       "DOMContentLoaded",

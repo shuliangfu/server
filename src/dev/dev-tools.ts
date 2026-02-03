@@ -4,29 +4,33 @@
  * 提供 HMR、文件监听等开发工具功能
  */
 
-import type { FileWatcher } from "@dreamer/runtime-adapter";
+import type { FileWatcher } from "@dreamer/runtime-adapter"
 import {
   IS_BUN,
   IS_DENO,
   upgradeWebSocket,
   watchFs,
-} from "@dreamer/runtime-adapter";
+} from "@dreamer/runtime-adapter"
 
-import type { Http } from "../http/http.ts";
-import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts";
-import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts";
-import { ModuleGraphManager } from "./module-graph.ts";
+import type { Http } from "../http/http.ts"
+import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts"
+import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts"
+import { ModuleGraphManager } from "./module-graph.ts"
 import {
   createPerformanceMonitor,
   type HMRPerformanceMonitor,
-} from "./performance-monitor.ts";
-import { createRouteInferrer, type RouteInferrer } from "./route-inference.ts";
+} from "./performance-monitor.ts"
+import { createRouteInferrer, type RouteInferrer } from "./route-inference.ts"
+
+/** 心跳间隔（毫秒），用于保持连接活跃、避免代理断开 */
+const HMR_HEARTBEAT_INTERVAL_MS = 30000;
 
 /**
  * WebSocket 连接管理
  */
 class WebSocketManager {
   private connections: Set<WebSocket> = new Set();
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * 添加连接
@@ -36,6 +40,18 @@ class WebSocketManager {
     ws.onclose = () => {
       this.connections.delete(ws);
     };
+    this.startHeartbeatIfNeeded();
+  }
+
+  /**
+   * 若尚未启动则启动心跳定时器
+   */
+  private startHeartbeatIfNeeded(): void {
+    if (this.heartbeatTimer !== null) return;
+    this.heartbeatTimer = setInterval(() => {
+      if (this.connections.size === 0) return;
+      this.broadcast({ type: "ping", timestamp: Date.now() });
+    }, HMR_HEARTBEAT_INTERVAL_MS);
   }
 
   /**
@@ -45,7 +61,11 @@ class WebSocketManager {
     const data = JSON.stringify(message);
     for (const ws of this.connections) {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(data);
+        try {
+          ws.send(data);
+        } catch {
+          // 发送失败则忽略（连接可能已异常）
+        }
       }
     }
   }
@@ -54,6 +74,10 @@ class WebSocketManager {
    * 关闭所有连接
    */
   close(): void {
+    if (this.heartbeatTimer !== null) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
     for (const ws of this.connections) {
       ws.close();
     }
