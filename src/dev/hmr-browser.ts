@@ -756,19 +756,16 @@ class HMRClient {
         break;
 
       case "component-update":
-        console.log("[HMR] 组件更新（无感）:", message.componentPath);
         this.statusUI.showProgress(message.componentPath || message.path || "");
         this.doSeamlessUpdate(message);
         break;
 
       case "layout-update":
-        console.log("[HMR] 布局更新（无感）:", message.layoutPath);
         this.statusUI.showProgress(message.layoutPath || message.path || "");
         this.doSeamlessUpdate(message);
         break;
 
       case "module-update":
-        console.log("[HMR] 模块更新（无感）:", message.path);
         this.statusUI.showProgress(message.path || "");
         this.doSeamlessUpdate(message);
         break;
