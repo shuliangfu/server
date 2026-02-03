@@ -4,7 +4,7 @@
  * 通过当前模块 URL 推导 hmr-browser.ts 的 URL，fetch 获取源码后用 esbuild 编译返回给浏览器
  */
 
-import * as esbuild from "esbuild";
+import { esbuild } from "@dreamer/esbuild";
 
 // 缓存编译后的脚本
 let compiledScriptCache: string | null = null;

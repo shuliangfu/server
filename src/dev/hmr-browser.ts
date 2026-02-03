@@ -663,13 +663,27 @@ class HMRClient {
   }
 
   /**
-   * 组件/布局/模块更新：开发模式下客户端为单 bundle，import 拿到的是旧模块，
-   * 无法真正无感替换。直接整页重载以加载服务端已重建的 client.js，确保页面显示最新内容。
+   * 组件/布局/模块更新：优先调用应用注册的 __DWEB_HMR_REFRESH__ 做无感重渲染（不整页刷新），
+   * 未注册时才整页重载。注意：开发单 bundle 时重渲染可能仍拿到旧模块，若界面未更新可手动刷新。
    */
   private doSeamlessUpdate(): void {
-    this.statusUI.recordUpdate(true);
-    this.statusUI.hideProgress();
-    globalThis.location.reload();
+    const refresh =
+      (globalThis as unknown as { __DWEB_HMR_REFRESH__?: () => void })
+        .__DWEB_HMR_REFRESH__;
+    if (typeof refresh === "function") {
+      try {
+        refresh();
+        this.statusUI.recordUpdate(true);
+      } catch (e) {
+        console.warn("[HMR] 无感更新失败，回退整页重载:", e);
+        globalThis.location.reload();
+      }
+      this.statusUI.hideProgress();
+    } else {
+      this.statusUI.recordUpdate(true);
+      this.statusUI.hideProgress();
+      globalThis.location.reload();
+    }
   }
 
   /**
@@ -690,19 +704,19 @@ class HMRClient {
         break;
 
       case "component-update":
-        console.log("[HMR] 组件更新，整页重载:", message.componentPath);
+        console.log("[HMR] 组件更新（无感）:", message.componentPath);
         this.statusUI.showProgress(message.componentPath || message.path || "");
         this.doSeamlessUpdate();
         break;
 
       case "layout-update":
-        console.log("[HMR] 布局更新，整页重载:", message.layoutPath);
+        console.log("[HMR] 布局更新（无感）:", message.layoutPath);
         this.statusUI.showProgress(message.layoutPath || message.path || "");
         this.doSeamlessUpdate();
         break;
 
       case "module-update":
-        console.log("[HMR] 模块更新，整页重载:", message.path);
+        console.log("[HMR] 模块更新（无感）:", message.path);
         this.statusUI.showProgress(message.path || "");
         this.doSeamlessUpdate();
         break;
