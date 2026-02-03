@@ -313,7 +313,8 @@ export class Http {
 
       return response;
     } catch (error) {
-      this.logger.error("请求处理错误:", error);
+      // 错误对象作为第三个参数传入，logger 会输出 message/stack，避免 JSON.stringify(Error) 得到 {}
+      this.logger.error("请求处理错误:", undefined, error);
 
       // 使用自定义错误处理函数
       if (this.onError) {
