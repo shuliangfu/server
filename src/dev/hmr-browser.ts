@@ -699,19 +699,16 @@ class HMRClient {
     }
 
     // 构建合并后的消息
+    // chunkUrl 取最后一条有值的：多次快速构建时服务端缓存是最后一次构建，客户端必须请求最后一次的 chunk 否则会 404
+    const lastChunkUrl = [...messages].reverse().find((m) => m.chunkUrl)
+      ?.chunkUrl;
     const merged: HMRMessage = {
       ...primaryMessage,
       path: Array.from(allPaths)[0] || primaryMessage.path,
       files: allFiles.length > 0 ? allFiles : primaryMessage.files,
       route: Array.from(allRoutes)[0] || primaryMessage.route,
+      chunkUrl: lastChunkUrl ?? primaryMessage.chunkUrl,
     };
-
-    // 如果有多条消息，记录日志
-    if (messages.length > 1) {
-      console.log(
-        `[HMR] 合并 ${messages.length} 个更新消息，主要类型: ${primaryMessage.type}`,
-      );
-    }
 
     return merged;
   }
@@ -727,13 +724,6 @@ class HMRClient {
     const refresh = g.__DWEB_HMR_REFRESH__;
     if (typeof refresh === "function") {
       try {
-        if (message.chunkUrl) {
-          console.log("[HMR] 执行无感刷新，chunkUrl:", message.chunkUrl);
-        } else {
-          console.warn(
-            "[HMR] 无感刷新未收到 chunkUrl，将用缓存/旧模块渲染，可能无视觉更新",
-          );
-        }
         refresh({ chunkUrl: message.chunkUrl });
         this.statusUI.recordUpdate(true);
       } catch (e) {

@@ -90,6 +90,9 @@ class WebSocketManager {
  *
  * 提供 HMR、文件监听等功能
  */
+/** 同一路径的防抖延迟（毫秒），避免一次保存触发多次构建 */
+const FILE_CHANGE_DEBOUNCE_MS = 300;
+
 export class DevTools {
   private httpApp: Http;
   private config: DevConfig;
@@ -100,6 +103,8 @@ export class DevTools {
   private moduleGraph: ModuleGraphManager;
   private routeInferrer: RouteInferrer;
   private performanceMonitor: HMRPerformanceMonitor;
+  /** 按路径防抖：path -> setTimeout 句柄，保证一次保存只触发一次构建 */
+  private rebuildTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
   constructor(
     options: {
@@ -141,14 +146,17 @@ export class DevTools {
    * 停止开发工具
    */
   stop(): void {
+    // 清除所有待执行的防抖定时器
+    for (const timer of this.rebuildTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.rebuildTimers.clear();
     // 关闭文件监听
     if (this.fileWatcher) {
       this.fileWatcher.close();
     }
-
     // 关闭 WebSocket 连接
     this.wsManager.close();
-
     // 清空模块依赖图
     this.moduleGraph.clear();
   }
@@ -280,7 +288,60 @@ export class DevTools {
       );
     };
 
-    // 使用异步迭代器监听文件变化
+    // 执行一次构建并广播（供防抖后调用）
+    const runRebuildForPath = (path: string, updateType: string): void => {
+      this.rebuildTimers.delete(path);
+      if (!this.config.builder) {
+        const route = this.inferRouteFromPath(path);
+        this.wsManager.broadcast({
+          type: updateType === "css-update" ? "css-update" : "reload",
+          path,
+          route,
+        });
+        return;
+      }
+      this.performanceMonitor.startUpdate([path], updateType);
+      this.config.builder
+        .rebuild({ changedPath: path })
+        .then((result) => {
+          const route = this.inferRouteFromPath(path);
+          const affectedModules = this.moduleGraph.getAffectedModules(path);
+          const moduleId = this.moduleGraph.getModuleId(path);
+          const updateMessage: Record<string, unknown> = {
+            type: updateType,
+            path,
+            files: result.outputFiles,
+            route,
+            moduleId,
+            affectedModules,
+            chunkUrl: result.chunkUrl,
+          };
+          if (updateType === "config-update") {
+            updateMessage.type = "reload";
+          } else if (updateType === "component-update") {
+            updateMessage.componentPath = path;
+          } else if (updateType === "layout-update") {
+            updateMessage.layoutPath = path;
+          } else if (updateType === "module-update") {
+            updateMessage.moduleId = path;
+          }
+          this.wsManager.broadcast(updateMessage);
+          this.performanceMonitor.endUpdate(true);
+        })
+        .catch((error) => {
+          console.error("构建失败:", error);
+          this.wsManager.broadcast({
+            type: "error",
+            message: error instanceof Error ? error.message : String(error),
+          });
+          this.performanceMonitor.endUpdate(
+            false,
+            error instanceof Error ? error.message : String(error),
+          );
+        });
+    };
+
+    // 使用异步迭代器监听文件变化，按路径防抖后只触发一次构建
     (async () => {
       for await (const event of this.fileWatcher!) {
         if (event.kind === "modify" || event.kind === "create") {
@@ -288,90 +349,16 @@ export class DevTools {
           if (isIgnored(path)) {
             continue;
           }
-
-          // 确定更新类型
           const updateType = this.determineUpdateType(path);
 
-          // 文件变化时触发重新构建
-          if (this.config.builder) {
-            // 开始性能监控
-            this.performanceMonitor.startUpdate([path], updateType);
-
-            try {
-              const result = await this.config.builder.rebuild({
-                changedPath: path,
-              });
-              // 从文件路径推断路由（简单实现，可以根据实际需求改进）
-              const route = this.inferRouteFromPath(path);
-
-              // 计算受影响的模块（使用模块依赖图）
-              const affectedModules = this.moduleGraph.getAffectedModules(path);
-              const moduleId = this.moduleGraph.getModuleId(path);
-
-              // 构建更新消息（chunkUrl 供 HMR 无感刷新加载新模块）
-              const updateMessage: Record<string, unknown> = {
-                type: updateType,
-                path,
-                files: result.outputFiles,
-                route, // 添加路由信息
-                moduleId, // 添加模块 ID
-                affectedModules, // 添加受影响的模块列表
-                chunkUrl: result.chunkUrl, // 本次变更对应的 chunk URL
-              };
-              if (
-                updateType === "component-update" ||
-                updateType === "layout-update"
-              ) {
-                if (result.chunkUrl) {
-                  console.log("[HMR] 广播无感更新 chunkUrl:", result.chunkUrl);
-                } else {
-                  console.warn(
-                    "[HMR] 广播无感更新但 chunkUrl 为空，客户端将无法拉取新 chunk",
-                  );
-                }
-              }
-
-              // 根据文件类型添加特定字段
-              if (updateType === "config-update") {
-                // 配置文件更新需要全量刷新
-                updateMessage.type = "reload";
-              } else if (updateType === "component-update") {
-                updateMessage.componentPath = path;
-              } else if (updateType === "layout-update") {
-                updateMessage.layoutPath = path;
-              } else if (updateType === "module-update") {
-                updateMessage.moduleId = path;
-              }
-
-              // 通知客户端更新
-              this.wsManager.broadcast(updateMessage);
-
-              // 结束性能监控（成功）
-              this.performanceMonitor.endUpdate(true);
-            } catch (error) {
-              console.error("构建失败:", error);
-              // 通知客户端构建失败
-              this.wsManager.broadcast({
-                type: "error",
-                message: error instanceof Error ? error.message : String(error),
-              });
-
-              // 结束性能监控（失败）
-              this.performanceMonitor.endUpdate(
-                false,
-                error instanceof Error ? error.message : String(error),
-              );
-            }
-          } else {
-            // 没有构建器，直接通知客户端刷新
-            // 从文件路径推断路由
-            const route = this.inferRouteFromPath(path);
-            this.wsManager.broadcast({
-              type: updateType === "css-update" ? "css-update" : "reload",
-              path,
-              route, // 添加路由信息
-            });
+          const existing = this.rebuildTimers.get(path);
+          if (existing !== undefined) {
+            clearTimeout(existing);
           }
+          const timer = setTimeout(() => {
+            runRebuildForPath(path, updateType);
+          }, FILE_CHANGE_DEBOUNCE_MS);
+          this.rebuildTimers.set(path, timer);
         }
       }
     })().catch((error) => {
