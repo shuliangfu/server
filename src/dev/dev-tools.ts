@@ -4,23 +4,23 @@
  * 提供 HMR、文件监听等开发工具功能
  */
 
-import type { FileWatcher } from "@dreamer/runtime-adapter"
+import type { FileWatcher } from "@dreamer/runtime-adapter";
 import {
   IS_BUN,
   IS_DENO,
   upgradeWebSocket,
   watchFs,
-} from "@dreamer/runtime-adapter"
+} from "@dreamer/runtime-adapter";
 
-import type { Http } from "../http/http.ts"
-import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts"
-import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts"
-import { ModuleGraphManager } from "./module-graph.ts"
+import type { Http } from "../http/http.ts";
+import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts";
+import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts";
+import { ModuleGraphManager } from "./module-graph.ts";
 import {
   createPerformanceMonitor,
   type HMRPerformanceMonitor,
-} from "./performance-monitor.ts"
-import { createRouteInferrer, type RouteInferrer } from "./route-inference.ts"
+} from "./performance-monitor.ts";
+import { createRouteInferrer, type RouteInferrer } from "./route-inference.ts";
 
 /** 心跳间隔（毫秒），用于保持连接活跃、避免代理断开 */
 const HMR_HEARTBEAT_INTERVAL_MS = 30000;
@@ -318,6 +318,18 @@ export class DevTools {
                 affectedModules, // 添加受影响的模块列表
                 chunkUrl: result.chunkUrl, // 本次变更对应的 chunk URL
               };
+              if (
+                updateType === "component-update" ||
+                updateType === "layout-update"
+              ) {
+                if (result.chunkUrl) {
+                  console.log("[HMR] 广播无感更新 chunkUrl:", result.chunkUrl);
+                } else {
+                  console.warn(
+                    "[HMR] 广播无感更新但 chunkUrl 为空，客户端将无法拉取新 chunk",
+                  );
+                }
+              }
 
               // 根据文件类型添加特定字段
               if (updateType === "config-update") {

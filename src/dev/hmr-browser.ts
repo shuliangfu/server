@@ -727,6 +727,13 @@ class HMRClient {
     const refresh = g.__DWEB_HMR_REFRESH__;
     if (typeof refresh === "function") {
       try {
+        if (message.chunkUrl) {
+          console.log("[HMR] 执行无感刷新，chunkUrl:", message.chunkUrl);
+        } else {
+          console.warn(
+            "[HMR] 无感刷新未收到 chunkUrl，将用缓存/旧模块渲染，可能无视觉更新",
+          );
+        }
         refresh({ chunkUrl: message.chunkUrl });
         this.statusUI.recordUpdate(true);
       } catch (e) {
