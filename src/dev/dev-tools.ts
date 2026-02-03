@@ -170,11 +170,21 @@ export class DevTools {
       try {
         if (IS_DENO || IS_BUN) {
           const { socket, response } = upgradeWebSocket(req);
-          // WebSocketAdapter 实现了类似 WebSocket 的接口，可以安全地类型断言
-          // 在 Deno 环境下，socket 是 WebSocket
-          // 在 Bun 环境下，socket 是 WebSocketAdapter，但实现了兼容接口
-          this.wsManager.add(socket as WebSocket);
-          // 在 Bun 环境下，response 可能是 undefined，需要返回默认响应
+          const ws = socket as WebSocket;
+          this.wsManager.add(ws);
+          // 连接建立后立即发送 connected，便于 DevTools 中看到连接已活跃（否则会一直显示「待处理」）
+          ws.addEventListener("open", () => {
+            try {
+              ws.send(
+                JSON.stringify({
+                  type: "connected",
+                  message: "HMR WebSocket 已连接",
+                }),
+              );
+            } catch {
+              // 忽略发送失败（如已关闭）
+            }
+          });
           return response ?? new Response(null, { status: 101 });
         }
         // 其他运行时不支持 WebSocket
