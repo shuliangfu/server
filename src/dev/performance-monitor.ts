@@ -110,7 +110,9 @@ export class HMRPerformanceMonitor {
    * @returns 性能统计信息
    */
   getStats(): PerformanceStats {
-    const successfulMetrics = this.metrics.filter((m) => m.success && m.duration);
+    const successfulMetrics = this.metrics.filter((m) =>
+      m.success && m.duration
+    );
     const durations = successfulMetrics.map((m) => m.duration!);
 
     return {
@@ -150,16 +152,6 @@ export class HMRPerformanceMonitor {
    * @param metrics 性能指标
    */
   private logPerformance(metrics: PerformanceMetrics): void {
-    const duration = metrics.duration ? `${Math.round(metrics.duration)}ms` : "N/A";
-    const status = metrics.success ? "✅" : "❌";
-    const files = metrics.filePaths.length > 1
-      ? `${metrics.filePaths.length} 个文件`
-      : metrics.filePaths[0] || "未知";
-
-    console.log(
-      `[HMR 性能] ${status} ${metrics.updateType} - ${files} - ${duration}`,
-    );
-
     if (!metrics.success && metrics.error) {
       console.error(`[HMR 性能] 错误: ${metrics.error}`);
     }

@@ -91,7 +91,7 @@ class WebSocketManager {
  * 提供 HMR、文件监听等功能
  */
 /** 同一路径的防抖延迟（毫秒），避免一次保存触发多次构建 */
-const FILE_CHANGE_DEBOUNCE_MS = 300;
+const FILE_CHANGE_DEBOUNCE_MS = 200;
 
 export class DevTools {
   private httpApp: Http;
