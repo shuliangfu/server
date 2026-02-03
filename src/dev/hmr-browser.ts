@@ -31,6 +31,8 @@ interface HMRMessage {
   componentPath?: string; // 更新的组件路径
   layoutPath?: string; // 更新的布局路径
   route?: string; // 更新的路由路径（用于判断是否需要更新当前页面）
+  /** 本次变更对应的 chunk URL（开发代码分割时由服务端返回，用于无感加载新模块） */
+  chunkUrl?: string;
 }
 
 /**
@@ -664,15 +666,16 @@ class HMRClient {
 
   /**
    * 组件/布局/模块更新：优先调用应用注册的 __DWEB_HMR_REFRESH__ 做无感重渲染（不整页刷新），
-   * 未注册时才整页重载。注意：开发单 bundle 时重渲染可能仍拿到旧模块，若界面未更新可手动刷新。
+   * 传入 chunkUrl 时客户端可加载新 chunk 实现真正的内容更新；未注册时才整页重载。
    */
-  private doSeamlessUpdate(): void {
-    const refresh =
-      (globalThis as unknown as { __DWEB_HMR_REFRESH__?: () => void })
-        .__DWEB_HMR_REFRESH__;
+  private doSeamlessUpdate(message: HMRMessage): void {
+    const g = globalThis as unknown as {
+      __DWEB_HMR_REFRESH__?: (options?: { chunkUrl?: string }) => void;
+    };
+    const refresh = g.__DWEB_HMR_REFRESH__;
     if (typeof refresh === "function") {
       try {
-        refresh();
+        refresh({ chunkUrl: message.chunkUrl });
         this.statusUI.recordUpdate(true);
       } catch (e) {
         console.warn("[HMR] 无感更新失败，回退整页重载:", e);
@@ -706,19 +709,19 @@ class HMRClient {
       case "component-update":
         console.log("[HMR] 组件更新（无感）:", message.componentPath);
         this.statusUI.showProgress(message.componentPath || message.path || "");
-        this.doSeamlessUpdate();
+        this.doSeamlessUpdate(message);
         break;
 
       case "layout-update":
         console.log("[HMR] 布局更新（无感）:", message.layoutPath);
         this.statusUI.showProgress(message.layoutPath || message.path || "");
-        this.doSeamlessUpdate();
+        this.doSeamlessUpdate(message);
         break;
 
       case "module-update":
         console.log("[HMR] 模块更新（无感）:", message.path);
         this.statusUI.showProgress(message.path || "");
-        this.doSeamlessUpdate();
+        this.doSeamlessUpdate(message);
         break;
 
       default:

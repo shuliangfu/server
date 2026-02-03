@@ -43,11 +43,15 @@ export interface DevConfig {
   hmr?: HMRConfig | boolean;
   /** 文件监听配置 */
   watch?: WatchConfig | string[];
-  /** 构建器接口（用于增量构建） */
+  /** 构建器接口（用于增量构建，支持 HMR 无感刷新返回 chunkUrl） */
   builder?: {
-    /** 重新构建 */
-    rebuild(): Promise<
-      { outputFiles?: Array<{ path: string; contents: Uint8Array }> }
+    /** 重新构建，可选传入变更路径以返回对应 chunk 的 URL */
+    rebuild(options?: { changedPath?: string }): Promise<
+      {
+        outputFiles?: Array<{ path: string; contents: Uint8Array }>;
+        /** 本次变更对应路由的 chunk URL，供 HMR 无感刷新使用 */
+        chunkUrl?: string;
+      }
     >;
   };
 }

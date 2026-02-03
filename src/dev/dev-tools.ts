@@ -264,7 +264,9 @@ export class DevTools {
             this.performanceMonitor.startUpdate([path], updateType);
 
             try {
-              const result = await this.config.builder.rebuild();
+              const result = await this.config.builder.rebuild({
+                changedPath: path,
+              });
               // 从文件路径推断路由（简单实现，可以根据实际需求改进）
               const route = this.inferRouteFromPath(path);
 
@@ -272,7 +274,7 @@ export class DevTools {
               const affectedModules = this.moduleGraph.getAffectedModules(path);
               const moduleId = this.moduleGraph.getModuleId(path);
 
-              // 构建更新消息
+              // 构建更新消息（chunkUrl 供 HMR 无感刷新加载新模块）
               const updateMessage: Record<string, unknown> = {
                 type: updateType,
                 path,
@@ -280,6 +282,7 @@ export class DevTools {
                 route, // 添加路由信息
                 moduleId, // 添加模块 ID
                 affectedModules, // 添加受影响的模块列表
+                chunkUrl: result.chunkUrl, // 本次变更对应的 chunk URL
               };
 
               // 根据文件类型添加特定字段
