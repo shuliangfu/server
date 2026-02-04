@@ -23,26 +23,26 @@ export interface RouteMapping {
 const DEFAULT_ROUTE_PATTERNS: RouteMapping["patterns"] = [
   // Pages 目录结构（Next.js 风格）
   {
-    filePattern: /pages\/(.*)\.(tsx?|jsx?|vue)$/i,
+    filePattern: /pages\/(.*)\.(tsx?|jsx?)$/i,
     routeTemplate: "/$1",
   },
   // Routes 目录结构（Remix 风格）
   {
-    filePattern: /routes\/(.*)\.(tsx?|jsx?|vue)$/i,
+    filePattern: /routes\/(.*)\.(tsx?|jsx?)$/i,
     routeTemplate: "/$1",
   },
   // App 目录结构（Next.js 13+ App Router 风格）
   {
-    filePattern: /app\/(.*)\/page\.(tsx?|jsx?|vue)$/i,
+    filePattern: /app\/(.*)\/page\.(tsx?|jsx?)$/i,
     routeTemplate: "/$1",
   },
   {
-    filePattern: /app\/(.*)\/layout\.(tsx?|jsx?|vue)$/i,
+    filePattern: /app\/(.*)\/layout\.(tsx?|jsx?)$/i,
     routeTemplate: "/$1",
   },
   // 通用组件目录（作为备用）
   {
-    filePattern: /(?:components?|pages?|routes?)\/(.*)\.(tsx?|jsx?|vue)$/i,
+    filePattern: /(?:components?|pages?|routes?)\/(.*)\.(tsx?|jsx?)$/i,
     routeTemplate: "/$1",
   },
 ];
@@ -181,9 +181,9 @@ export class RouteInferrer {
   isLayoutFile(filePath: string): boolean {
     const normalizedPath = this.normalizePath(filePath);
     return (
-      /layout\.(tsx?|jsx?|vue)$/i.test(normalizedPath) ||
-      /_layout\.(tsx?|jsx?|vue)$/i.test(normalizedPath) ||
-      /app\/.*\/layout\.(tsx?|jsx?|vue)$/i.test(normalizedPath)
+      /layout\.(tsx?|jsx?)$/i.test(normalizedPath) ||
+      /_layout\.(tsx?|jsx?)$/i.test(normalizedPath) ||
+      /app\/.*\/layout\.(tsx?|jsx?)$/i.test(normalizedPath)
     );
   }
 
@@ -196,8 +196,8 @@ export class RouteInferrer {
   isPageFile(filePath: string): boolean {
     const normalizedPath = this.normalizePath(filePath);
     return (
-      /page\.(tsx?|jsx?|vue)$/i.test(normalizedPath) ||
-      /(?:pages?|routes?)\/.*\.(tsx?|jsx?|vue)$/i.test(normalizedPath) &&
+      /page\.(tsx?|jsx?)$/i.test(normalizedPath) ||
+      /(?:pages?|routes?)\/.*\.(tsx?|jsx?)$/i.test(normalizedPath) &&
         !this.isLayoutFile(filePath)
     );
   }
@@ -211,7 +211,7 @@ export class RouteInferrer {
   isComponentFile(filePath: string): boolean {
     const normalizedPath = this.normalizePath(filePath);
     return (
-      /components?\/.*\.(tsx?|jsx?|vue)$/i.test(normalizedPath) &&
+      /components?\/.*\.(tsx?|jsx?)$/i.test(normalizedPath) &&
       !this.isLayoutFile(filePath) &&
       !this.isPageFile(filePath)
     );

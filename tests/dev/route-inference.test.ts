@@ -115,10 +115,6 @@ describe("路由推断", () => {
         expect(inferrer.isLayoutFile("pages/layout.ts")).toBe(true);
       });
 
-      it("应该识别 layout.vue 文件", () => {
-        expect(inferrer.isLayoutFile("pages/layout.vue")).toBe(true);
-      });
-
       it("不应该识别普通页面文件", () => {
         expect(inferrer.isLayoutFile("pages/index.tsx")).toBe(false);
       });

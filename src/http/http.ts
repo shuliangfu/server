@@ -4,25 +4,25 @@
  * 提供完整的 HTTP 应用功能（中间件、路由、错误处理等）
  */
 
-import type { Logger } from "@dreamer/logger";
-import { createLogger } from "@dreamer/logger";
+import type { Logger } from "@dreamer/logger"
+import { createLogger } from "@dreamer/logger"
 import {
   type ErrorMiddleware,
   type Middleware,
   type MiddlewareChain,
   MiddlewareChain as MiddlewareChainImpl,
-} from "@dreamer/middleware";
-import type { Router } from "@dreamer/router";
-import type { ServeHandle, ServeOptions } from "@dreamer/runtime-adapter";
-import { serve as runtimeServe } from "@dreamer/runtime-adapter";
+} from "@dreamer/middleware"
+import type { Router } from "@dreamer/router"
+import type { ServeHandle, ServeOptions } from "@dreamer/runtime-adapter"
+import { serve as runtimeServe } from "@dreamer/runtime-adapter"
 
-import type { HttpContext, HttpError } from "../context.ts";
-import { CookieManager } from "../cookie.ts";
+import type { HttpContext, HttpError } from "../context.ts"
+import { CookieManager } from "../cookie.ts"
 import {
   RouterAdapter,
   type RouterAdapterOptions,
   type SSRRenderCallback,
-} from "../router-adapter.ts";
+} from "../router-adapter.ts"
 
 /**
  * HTTP 服务器配置选项
@@ -279,17 +279,18 @@ export class Http {
     const ctx = this.createContext(request);
 
     try {
-      // 先尝试路由匹配（API 路由和 SSR 页面）
-      await this.handleRouter(ctx);
-
-      // 执行中间件链（插件事件、自定义中间件等）
-      // 中间件可以在 ctx.response 已设置的情况下进行后处理
+      // 先执行中间件链（Socket.IO 等路径前缀中间件须在路由前处理，否则 /socket.io/ 可能被路由或 SSR 接管导致连接失败）
       try {
         await this.middlewareChain.execute(ctx);
       } catch (error) {
         // 中间件链的错误会被 MiddlewareChain 内部的错误处理中间件捕获
         // 如果还有未处理的错误，继续抛出
         throw error;
+      }
+
+      // 若中间件未设置响应，再尝试路由匹配（API 路由和 SSR 页面）
+      if (!ctx.response) {
+        await this.handleRouter(ctx);
       }
 
       // 获取响应

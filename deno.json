@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/server",
-  "version": "1.0.0-beta.18",
+  "version": "1.0.0-beta.19",
   "license": "MIT",
   "exports": {
     ".": "./src/mod.ts"
@@ -20,14 +20,14 @@
     ]
   },
   "imports": {
-    "@dreamer/console": "jsr:@dreamer/console@^1.0.2",
-    "@dreamer/render": "jsr:@dreamer/render@^1.0.0-beta.8",
+    "@dreamer/console": "jsr:@dreamer/console@^1.0.3-beta.8",
+    "@dreamer/render": "jsr:@dreamer/render@1.0.0-beta.17",
     "@dreamer/middleware": "jsr:@dreamer/middleware@^1.0.0-beta.2",
-    "@dreamer/router": "jsr:@dreamer/router@^1.0.0-beta.3",
+    "@dreamer/router": "jsr:@dreamer/router@^1.0.0-beta.8",
     "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.0.0-beta.22",
     "@dreamer/logger": "jsr:@dreamer/logger@^1.0.0-beta.7",
     "@dreamer/test": "jsr:@dreamer/test@^1.0.0-beta.40",
-    "@dreamer/esbuild": "jsr:@dreamer/esbuild@^1.0.0-beta.42"
+    "@dreamer/esbuild": "jsr:@dreamer/esbuild@1.0.0-beta.54"
   },
   "lint": {
     "include": [

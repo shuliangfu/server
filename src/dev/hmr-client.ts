@@ -70,13 +70,12 @@ export async function generateHMRClientScript(
       target: "es2020",
       minify: false, // 开发环境不压缩，方便调试
       platform: "browser",
-      // 将 React/Preact/Vue3 等库标记为外部依赖，避免打包
+      // 将 React/Preact 等库标记为外部依赖，避免打包
       external: [
         "react",
         "react-dom",
         "react-dom/client",
         "preact",
-        "vue",
         "@dreamer/render",
         "@dreamer/render/client",
       ],

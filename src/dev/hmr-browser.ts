@@ -1443,7 +1443,7 @@ class HMRClient {
         }
       }
 
-      // 3. 组件实例状态由框架自己处理（React Fast Refresh、Vue HMR 等）
+      // 3. 组件实例状态由框架自己处理（React Fast Refresh 等）
       // 这里只处理 DOM 级别的状态
     });
   }
@@ -1490,7 +1490,7 @@ class HMRClient {
     try {
       // 尝试从模块缓存中获取当前模块
       // 注意：浏览器环境可能无法直接访问模块缓存，这里使用简化实现
-      // 实际实现可能需要框架特定的 API（如 React Fast Refresh、Vue HMR）
+      // 实际实现可能需要框架特定的 API（如 React Fast Refresh）
       const moduleCache = (globalThis as any).__MODULE_CACHE__;
       if (moduleCache && moduleCache[moduleId]) {
         this.moduleBackups.set(moduleId, moduleCache[moduleId]);
