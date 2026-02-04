@@ -9,7 +9,7 @@ import { createLogger } from "@dreamer/logger";
 import type { ServeHandle } from "@dreamer/runtime-adapter";
 
 import { DevTools } from "./dev/dev-tools.ts";
-import type { HttpServerOptions } from "./http/http.ts";
+import type { HttpServerOptions, PathHandler } from "./http/http.ts";
 import { Http } from "./http/http.ts";
 import type { ServerMode, ServerOptions } from "./types.ts";
 
@@ -151,6 +151,15 @@ export class Server {
    */
   setSSRRender(callback: Parameters<Http["setSSRRender"]>[0]): void {
     this.httpApp.setSSRRender(callback);
+  }
+
+  /**
+   * 设置路径前置处理器（在中间件链之前执行，用于 Socket.IO 等挂载，保证请求被正确接管）
+   *
+   * @param getter 返回路径处理器数组的函数
+   */
+  setPathHandlers(getter: () => PathHandler[]): void {
+    this.httpApp.setPathHandlers(getter);
   }
 
   /**

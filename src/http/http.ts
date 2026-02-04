@@ -24,6 +24,12 @@ import {
   type SSRRenderCallback,
 } from "../router-adapter.ts";
 
+/** 路径前置处理器：在中间件链之前按路径前缀直接处理请求（用于 Socket.IO 等） */
+export type PathHandler = {
+  pathPrefix: string;
+  handler: (request: Request) => Response | Promise<Response>;
+};
+
 /**
  * HTTP 服务器配置选项
  */
@@ -38,6 +44,8 @@ export interface HttpServerOptions {
   onError?: (error: Error) => Response | Promise<Response>;
   /** Logger 实例（可选，如果提供则使用，否则创建默认 logger） */
   logger?: Logger;
+  /** 路径前置处理器列表的 getter（在 processRequest 中、中间件链之前执行，用于保证 /socket.io/ 等被正确接管） */
+  pathHandlers?: () => PathHandler[];
 }
 
 /**
@@ -61,6 +69,8 @@ export class Http {
   private onError?: (error: Error) => Response | Promise<Response>;
   /** WebSocket 升级处理器（路径 -> 处理器） */
   private wsHandlers: Map<string, (req: Request) => Response>;
+  /** 路径前置处理器 getter（在中间件链之前执行） */
+  private pathHandlersGetter?: () => PathHandler[];
   /** 进行中的请求（用于优雅关闭） */
   private activeRequests: Set<Promise<Response>>;
   /** 是否正在关闭 */
@@ -76,8 +86,17 @@ export class Http {
     this.logger = options.logger || createLogger();
     this.onError = options.onError;
     this.wsHandlers = new Map();
+    this.pathHandlersGetter = options.pathHandlers;
     this.activeRequests = new Set();
     this.isShuttingDown = false;
+  }
+
+  /**
+   * 设置路径前置处理器（在中间件链之前、按路径前缀直接处理请求）
+   * 用于框架层挂载 Socket.IO 等，保证请求不被路由或其它中间件接管
+   */
+  setPathHandlers(getter: () => PathHandler[]): void {
+    this.pathHandlersGetter = getter;
   }
 
   /**
@@ -284,6 +303,15 @@ export class Http {
       const handler = this.wsHandlers.get(url.pathname);
       if (handler) {
         return handler(request);
+      }
+    }
+
+    // 路径前置处理器：在中间件链之前执行，保证 /socket.io/ 等由框架挂载的处理器直接接管，避免被路由或其它中间件影响
+    const pathname = new URL(request.url).pathname;
+    const pathHandlers = this.pathHandlersGetter?.() ?? [];
+    for (const ph of pathHandlers) {
+      if (pathname.startsWith(ph.pathPrefix)) {
+        return await Promise.resolve(ph.handler(request));
       }
     }
 
