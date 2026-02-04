@@ -310,7 +310,11 @@ export class Http {
     const pathname = new URL(request.url).pathname;
     const pathHandlers = this.pathHandlersGetter?.() ?? [];
     for (const ph of pathHandlers) {
-      if (pathname.startsWith(ph.pathPrefix)) {
+      const prefixNoTrailing = ph.pathPrefix.replace(/\/$/, "");
+      const matches =
+        pathname.startsWith(ph.pathPrefix) ||
+        pathname === prefixNoTrailing;
+      if (matches) {
         return await Promise.resolve(ph.handler(request));
       }
     }
