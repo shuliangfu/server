@@ -407,6 +407,8 @@ class HMRClient {
   private readonly maxReconnectDelay = 30000; // 单次最大延迟 30 秒
   private readonly reconnectDelayMultiplier = 2; // 每次重连延迟倍数（1s -> 2s -> 4s -> 8s -> 16s）
   private visibilityListenerAttached = false;
+  /** 是否已主动断开，断开后不再重连 */
+  private disconnected = false;
 
   // 更新队列和批处理
   private updateQueue: UpdateQueueItem[] = [];
@@ -417,7 +419,8 @@ class HMRClient {
   private componentStateCache: Map<string, unknown> = new Map();
   private renderInstance: any = null; // 当前渲染实例（用于状态保持）
 
-  // 模块备份和回滚
+  // 模块备份和回滚（限制 500 条防止内存泄漏）
+  private readonly maxModuleBackups = 500;
   private moduleBackups: Map<string, unknown> = new Map(); // 模块 ID -> 备份的模块
   private updateHistory: Array<{
     moduleId: string;
@@ -494,9 +497,40 @@ class HMRClient {
   }
 
   /**
+   * 断开连接并清理所有定时器，防止内存泄漏
+   *
+   * 用于程序化断开 HMR 连接（如测试、SPA 切换场景）。
+   * 页面关闭时无需调用，整个页面会被 GC 回收。
+   */
+  disconnect(): void {
+    this.disconnected = true;
+    // 清除重连定时器
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    // 清除队列批处理定时器
+    if (this.queueTimer !== null) {
+      clearTimeout(this.queueTimer);
+      this.queueTimer = null;
+    }
+    // 关闭 WebSocket
+    if (this.ws !== null) {
+      this.ws.close();
+      this.ws = null;
+    }
+    // 清空缓存释放内存
+    this.updateQueue = [];
+    this.moduleBackups.clear();
+    this.componentStateCache.clear();
+  }
+
+  /**
    * 安排重新连接（延迟随次数递增，最多 maxReconnectAttempts 次）
    */
   private scheduleReconnect(): void {
+    if (this.disconnected) return;
+
     if (this.reconnectTimer !== null) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
@@ -520,6 +554,7 @@ class HMRClient {
     this.statusUI.updateConnectionStatus("reconnecting");
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
+      if (this.disconnected) return;
       console.log(
         `[HMR] 尝试重新连接 (${this.reconnectAttempts}/${this.maxReconnectAttempts})，${
           Math.round(delay)
@@ -533,6 +568,7 @@ class HMRClient {
    * 标签页重新可见时检查连接，若已断开则重置重连计数并再尝试连接（最多再试 maxReconnectAttempts 次）
    */
   private tryReconnectOnVisible(): void {
+    if (this.disconnected) return;
     if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
       return;
     }
@@ -1494,6 +1530,11 @@ class HMRClient {
       const moduleCache = (globalThis as any).__MODULE_CACHE__;
       if (moduleCache && moduleCache[moduleId]) {
         this.moduleBackups.set(moduleId, moduleCache[moduleId]);
+        // 超过上限时移除最旧条目，防止内存泄漏
+        if (this.moduleBackups.size > this.maxModuleBackups) {
+          const firstKey = this.moduleBackups.keys().next().value;
+          if (firstKey !== undefined) this.moduleBackups.delete(firstKey);
+        }
       }
     } catch (_error) {
       // 备份失败不影响更新流程

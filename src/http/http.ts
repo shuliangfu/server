@@ -258,13 +258,17 @@ export class Http {
     const checkInterval = 100; // 每 100ms 检查一次
 
     return new Promise((resolve) => {
+      let checkTimerId: ReturnType<typeof setTimeout> | null = null;
+
       const check = () => {
         if (this.activeRequests.size === 0) {
+          if (checkTimerId !== null) clearTimeout(checkTimerId);
           resolve(true);
           return;
         }
 
         if (Date.now() - startTime >= timeout) {
+          if (checkTimerId !== null) clearTimeout(checkTimerId);
           this.logger.warn(
             `优雅关闭超时，仍有 ${this.activeRequests.size} 个请求未完成`,
           );
@@ -272,7 +276,7 @@ export class Http {
           return;
         }
 
-        setTimeout(check, checkInterval);
+        checkTimerId = setTimeout(check, checkInterval);
       };
 
       check();
@@ -336,10 +340,12 @@ export class Http {
     this.debugLog(`检查 ${pathHandlers.length} 个路径前置处理器`);
     for (const ph of pathHandlers) {
       const prefixNoTrailing = ph.pathPrefix.replace(/\/$/, "");
-      const matches =
-        pathname.startsWith(ph.pathPrefix) || pathname === prefixNoTrailing;
+      const matches = pathname.startsWith(ph.pathPrefix) ||
+        pathname === prefixNoTrailing;
       this.debugLog(
-        `  路径处理器 prefix=${ph.pathPrefix} pathname=${pathname} → ${matches ? "匹配" : "不匹配"}`,
+        `  路径处理器 prefix=${ph.pathPrefix} pathname=${pathname} → ${
+          matches ? "匹配" : "不匹配"
+        }`,
       );
       if (matches) {
         this.debugLog(`由路径前置处理器接管: ${ph.pathPrefix}`);
@@ -363,7 +369,9 @@ export class Http {
       // 获取响应
       let response = ctx.response || new Response("Not Found", { status: 404 });
       this.debugLog(
-        `中间件链完成 响应状态: ${response.status}${ctx.response ? "" : " (路由未匹配 404)"}`,
+        `中间件链完成 响应状态: ${response.status}${
+          ctx.response ? "" : " (路由未匹配 404)"
+        }`,
       );
 
       // 应用 Cookie 到响应头
@@ -385,7 +393,9 @@ export class Http {
       return response;
     } catch (error) {
       this.debugLog(
-        `请求处理异常: ${error instanceof Error ? error.message : String(error)}`,
+        `请求处理异常: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
       // 错误对象作为第三个参数传入，logger 会输出 message/stack，避免 JSON.stringify(Error) 得到 {}
       this.logger.error("请求处理错误:", undefined, error);

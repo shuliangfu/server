@@ -356,6 +356,8 @@ export class DevTools {
             clearTimeout(existing);
           }
           const timer = setTimeout(() => {
+            // 定时器触发后立即从 map 移除，防止 rebuildTimers 无界增长导致内存泄漏
+            this.rebuildTimers.delete(path);
             runRebuildForPath(path, updateType);
           }, FILE_CHANGE_DEBOUNCE_MS);
           this.rebuildTimers.set(path, timer);
