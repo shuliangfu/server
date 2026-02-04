@@ -104,6 +104,20 @@ server.http.use(async (ctx, next) => {
 await server.start();
 ```
 
+**调试与日志**：若需排查请求处理顺序、路径前置处理器、中间件链等，可传入 `debug: true` 和自定义 `logger`（需将 logger 级别设为 `"debug"`），所有调试信息通过 `logger.debug` 输出：
+
+```typescript
+import { createLogger } from "@dreamer/logger";
+
+const server = new Server({
+  mode: "dev",
+  port: 3000,
+  debug: true,
+  logger: createLogger({ level: "debug", format: "text" }),
+  // ...
+});
+```
+
 ### 生产服务器
 
 ```typescript
@@ -154,7 +168,8 @@ new Server(options?: ServerOptions)
 - `options.host?: string` - 主机名（默认：`"localhost"`）
 - `options.onListen?: (params: { host: string; port: number }) => void` - 监听回调
 - `options.onError?: (error: Error) => Response | Promise<Response>` - 错误处理函数
-- `options.logger?: Logger` - Logger 实例
+- `options.logger?: Logger` - Logger 实例（未传时使用默认 logger，info/debug 等均通过 logger 输出）
+- `options.debug?: boolean` - 是否启用调试日志（默认：`false`），开启后通过 `logger.debug` 输出请求路径、路径前置处理器、中间件链、响应状态等详细调试信息
 - `options.dev?: DevConfig` - 开发工具配置（仅开发模式）
 
 #### 方法

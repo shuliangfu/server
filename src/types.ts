@@ -72,6 +72,8 @@ export interface ServerOptions {
   onError?: (error: Error) => Response | Promise<Response>;
   /** Logger 实例（可选） */
   logger?: Logger;
+  /** 是否启用调试日志（默认：false），开启后会在控制台输出请求路径、路径前置处理器、中间件链、响应状态等详细调试信息 */
+  debug?: boolean;
   /** 开发工具配置（仅开发模式） */
   dev?: DevConfig;
   /** 优雅关闭超时时间（毫秒，默认：10000） */

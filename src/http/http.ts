@@ -44,6 +44,8 @@ export interface HttpServerOptions {
   onError?: (error: Error) => Response | Promise<Response>;
   /** Logger 实例（可选，如果提供则使用，否则创建默认 logger） */
   logger?: Logger;
+  /** 是否启用调试日志（默认：false），开启后通过 logger.debug 输出请求路径、路径前置处理器、中间件链、响应状态等详细调试信息 */
+  debug?: boolean;
   /** 路径前置处理器列表的 getter（在 processRequest 中、中间件链之前执行，用于保证 /socket.io/ 等被正确接管） */
   pathHandlers?: () => PathHandler[];
 }
@@ -75,6 +77,8 @@ export class Http {
   private activeRequests: Set<Promise<Response>>;
   /** 是否正在关闭 */
   private isShuttingDown: boolean;
+  /** 是否启用调试日志（仅通过 logger.debug 输出，与 socket-io 一致） */
+  private readonly debug: boolean;
 
   /**
    * 创建 HTTP 应用实例
@@ -89,6 +93,16 @@ export class Http {
     this.pathHandlersGetter = options.pathHandlers;
     this.activeRequests = new Set();
     this.isShuttingDown = false;
+    this.debug = options.debug === true;
+  }
+
+  /**
+   * 调试日志：仅当 debug=true 时输出，使用 logger.debug（与 socket-io 一致）
+   */
+  private debugLog(message: string): void {
+    if (this.debug) {
+      this.logger.debug(`[Server Debug] ${message}`);
+    }
   }
 
   /**
@@ -274,6 +288,7 @@ export class Http {
   private async handleRequest(request: Request): Promise<Response> {
     // 如果正在关闭，拒绝新请求
     if (this.isShuttingDown) {
+      this.debugLog("服务器关闭中，拒绝新请求");
       return new Response("Server is shutting down", { status: 503 });
     }
 
@@ -297,31 +312,47 @@ export class Http {
    * @returns 响应对象
    */
   private async processRequest(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+    const method = request.method;
+
+    this.debugLog(
+      `收到请求: ${method} ${pathname}${url.search ? `?${url.search}` : ""}`,
+    );
+
     // 检查 WebSocket 升级请求
     if (request.headers.get("upgrade") === "websocket") {
-      const url = new URL(request.url);
-      const handler = this.wsHandlers.get(url.pathname);
+      this.debugLog(`WebSocket 升级请求 pathname=${pathname}`);
+      const handler = this.wsHandlers.get(pathname);
       if (handler) {
+        this.debugLog(`WebSocket 处理器已匹配: ${pathname}`);
         return handler(request);
       }
+      this.debugLog(`WebSocket 无匹配处理器: ${pathname}`);
     }
 
     // 路径前置处理器：在中间件链之前执行，保证 /socket.io/ 等由框架挂载的处理器直接接管，避免被路由或其它中间件影响
-    const pathname = new URL(request.url).pathname;
     const pathHandlers = this.pathHandlersGetter?.() ?? [];
+    this.debugLog(`检查 ${pathHandlers.length} 个路径前置处理器`);
     for (const ph of pathHandlers) {
       const prefixNoTrailing = ph.pathPrefix.replace(/\/$/, "");
       const matches =
-        pathname.startsWith(ph.pathPrefix) ||
-        pathname === prefixNoTrailing;
+        pathname.startsWith(ph.pathPrefix) || pathname === prefixNoTrailing;
+      this.debugLog(
+        `  路径处理器 prefix=${ph.pathPrefix} pathname=${pathname} → ${matches ? "匹配" : "不匹配"}`,
+      );
       if (matches) {
-        return await Promise.resolve(ph.handler(request));
+        this.debugLog(`由路径前置处理器接管: ${ph.pathPrefix}`);
+        const res = await Promise.resolve(ph.handler(request));
+        this.debugLog(`路径前置处理器返回: ${res.status}`);
+        return res;
       }
     }
 
     const ctx = this.createContext(request);
 
     try {
+      this.debugLog(`进入中间件链 path=${pathname}`);
       // 中间件链只执行一次：路径前缀（Socket.IO、静态）→ 插件（onRequest/next/onResponse）→ 路由；路由在链尾设置 ctx.response，插件的 onResponse 在 next() 返回后注入 CSS 等
       try {
         await this.middlewareChain.execute(ctx);
@@ -331,6 +362,9 @@ export class Http {
 
       // 获取响应
       let response = ctx.response || new Response("Not Found", { status: 404 });
+      this.debugLog(
+        `中间件链完成 响应状态: ${response.status}${ctx.response ? "" : " (路由未匹配 404)"}`,
+      );
 
       // 应用 Cookie 到响应头
       const cookieManager = (ctx.cookies as any).__manager as CookieManager;
@@ -350,6 +384,9 @@ export class Http {
 
       return response;
     } catch (error) {
+      this.debugLog(
+        `请求处理异常: ${error instanceof Error ? error.message : String(error)}`,
+      );
       // 错误对象作为第三个参数传入，logger 会输出 message/stack，避免 JSON.stringify(Error) 得到 {}
       this.logger.error("请求处理错误:", undefined, error);
 

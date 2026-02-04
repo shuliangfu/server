@@ -47,6 +47,7 @@ export class Server {
       onListen: options.onListen,
       onError: options.onError,
       logger: this.logger,
+      debug: options.debug,
     };
 
     this.httpApp = new Http(httpOptions);
