@@ -4,25 +4,25 @@
  * 提供完整的 HTTP 应用功能（中间件、路由、错误处理等）
  */
 
-import type { Logger } from "@dreamer/logger"
-import { createLogger } from "@dreamer/logger"
+import type { Logger } from "@dreamer/logger";
+import { createLogger } from "@dreamer/logger";
 import {
   type ErrorMiddleware,
   type Middleware,
   type MiddlewareChain,
   MiddlewareChain as MiddlewareChainImpl,
-} from "@dreamer/middleware"
-import type { Router } from "@dreamer/router"
-import type { ServeHandle, ServeOptions } from "@dreamer/runtime-adapter"
-import { serve as runtimeServe } from "@dreamer/runtime-adapter"
+} from "@dreamer/middleware";
+import type { Router } from "@dreamer/router";
+import type { ServeHandle, ServeOptions } from "@dreamer/runtime-adapter";
+import { serve as runtimeServe } from "@dreamer/runtime-adapter";
 
-import type { HttpContext, HttpError } from "../context.ts"
-import { CookieManager } from "../cookie.ts"
+import type { HttpContext, HttpError } from "../context.ts";
+import { CookieManager } from "../cookie.ts";
 import {
   RouterAdapter,
   type RouterAdapterOptions,
   type SSRRenderCallback,
-} from "../router-adapter.ts"
+} from "../router-adapter.ts";
 
 /**
  * HTTP 服务器配置选项
@@ -98,11 +98,22 @@ export class Http {
   /**
    * 集成路由系统
    *
+   * 将路由作为链尾中间件注册，保证顺序为：前置中间件（Socket.IO、静态等）→ 插件中间件（onRequest/onResponse）→ 路由。
+   * 这样只执行一次中间件链：路由在 next() 前设置 ctx.response，插件在 next() 返回后通过 onResponse 做后处理（如注入 CSS）。
+   *
    * @param router 路由实例
    * @param options 路由适配器选项（可选）
    */
   useRouter(router: Router, options?: RouterAdapterOptions): void {
     this.routerAdapter = new RouterAdapter(router, options);
+    this.middlewareChain.use(
+      async (ctx, next) => {
+        await this.handleRouter(ctx);
+        await next();
+      },
+      undefined,
+      "router",
+    );
   }
 
   /**
@@ -279,18 +290,11 @@ export class Http {
     const ctx = this.createContext(request);
 
     try {
-      // 先执行中间件链（Socket.IO 等路径前缀中间件须在路由前处理，否则 /socket.io/ 可能被路由或 SSR 接管导致连接失败）
+      // 中间件链只执行一次：路径前缀（Socket.IO、静态）→ 插件（onRequest/next/onResponse）→ 路由；路由在链尾设置 ctx.response，插件的 onResponse 在 next() 返回后注入 CSS 等
       try {
         await this.middlewareChain.execute(ctx);
       } catch (error) {
-        // 中间件链的错误会被 MiddlewareChain 内部的错误处理中间件捕获
-        // 如果还有未处理的错误，继续抛出
         throw error;
-      }
-
-      // 若中间件未设置响应，再尝试路由匹配（API 路由和 SSR 页面）
-      if (!ctx.response) {
-        await this.handleRouter(ctx);
       }
 
       // 获取响应
