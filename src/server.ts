@@ -27,6 +27,8 @@ export class Server {
   private readonly _host: string;
   private readonly logger: Logger;
   private readonly shutdownTimeout: number;
+  /** 用户自定义的监听回调（若提供则优先使用，否则使用默认日志） */
+  private readonly onListen?: (params: { host: string; port: number }) => void;
 
   /**
    * 创建服务器实例
@@ -51,6 +53,7 @@ export class Server {
     };
 
     this.httpApp = new Http(httpOptions);
+    this.onListen = options.onListen;
 
     // 开发模式：添加开发工具
     if (this.mode === "dev" && options.dev) {
@@ -72,11 +75,9 @@ export class Server {
       port: this._port,
       host: this._host,
       onListen: ({ host, port }) => {
-        this.logger.info(
-          `${
-            this.mode === "dev" ? "开发" : "生产"
-          }服务器运行在 http://${host}:${port}`,
-        );
+        if (this.onListen) {
+          this.onListen({ host, port });
+        }
       },
     });
 
