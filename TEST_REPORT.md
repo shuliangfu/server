@@ -1,107 +1,107 @@
-# @dreamer/server 测试报告
+# @dreamer/server Test Report
 
-## 📊 测试概览
+## 📊 Test Overview
 
-- **测试库版本**: @dreamer/test@^1.0.0-beta.40
-- **测试框架**: @dreamer/test（兼容 Deno 和 Bun）
-- **测试时间**: 2026-02-03
-- **测试环境**:
+- **Test Library Version**: @dreamer/test@^1.0.0-beta.40
+- **Test Framework**: @dreamer/test (compatible with Deno and Bun)
+- **Test Date**: 2026-02-03
+- **Test Environment**:
   - Deno 2.6+
   - Bun 1.3.5
 
-## 📈 测试结果
+## 📈 Test Results
 
-### 总体统计
+### Overall Statistics
 
-- **总测试数**: 126
-- **通过**: 126 ✅
-- **失败**: 0
-- **通过率**: 100% ✅
-- **测试文件数**: 9
+- **Total Tests**: 126
+- **Passed**: 126 ✅
+- **Failed**: 0
+- **Pass Rate**: 100% ✅
+- **Test Files**: 9
 
-### 测试文件统计
+### Test File Statistics
 
-| 模块 | 测试文件 | 测试数 | 状态 |
-|------|---------|--------|------|
-| **核心模块** | | | |
-| | `context.test.ts` | 6 | ✅ 全部通过 |
-| | `cookie.test.ts` | 19 | ✅ 全部通过 |
-| | `http.test.ts` | 17 | ✅ 全部通过 |
-| | `mod.test.ts` | 15 | ✅ 全部通过 |
-| | `router-adapter.test.ts` | 4 | ✅ 全部通过 |
-| **开发工具** | | | |
-| | `dev/hmr-client.test.ts` | 8 | ✅ 全部通过 |
-| | `dev/module-graph.test.ts` | 13 | ✅ 全部通过 |
-| | `dev/performance-monitor.test.ts` | 13 | ✅ 全部通过 |
-| | `dev/route-inference.test.ts` | 31 | ✅ 全部通过 |
+| Module | Test File | Tests | Status |
+|--------|-----------|-------|--------|
+| **Core** | | | |
+| | `context.test.ts` | 6 | ✅ All passed |
+| | `cookie.test.ts` | 19 | ✅ All passed |
+| | `http.test.ts` | 17 | ✅ All passed |
+| | `mod.test.ts` | 15 | ✅ All passed |
+| | `router-adapter.test.ts` | 4 | ✅ All passed |
+| **Dev Tools** | | | |
+| | `dev/hmr-client.test.ts` | 8 | ✅ All passed |
+| | `dev/module-graph.test.ts` | 13 | ✅ All passed |
+| | `dev/performance-monitor.test.ts` | 13 | ✅ All passed |
+| | `dev/route-inference.test.ts` | 31 | ✅ All passed |
 
-### 说明
+### Note
 
-- **中间件测试**：已迁移至 [@dreamer/middlewares](https://jsr.io/@dreamer/middlewares) 仓库，本库通过 re-export 提供中间件 API 以保持向后兼容。
+- **Middleware tests**: Migrated to [@dreamer/middlewares](https://jsr.io/@dreamer/middlewares). This library re-exports middleware API for backward compatibility.
 
-## 🔍 功能测试详情
+## 🔍 Functional Test Details
 
-### 1. 核心模块
+### 1. Core Modules
 
-#### 1.1 HTTP 上下文 (context.test.ts) - 6 个测试
+#### 1.1 HTTP Context (context.test.ts) - 6 tests
 
-- ✅ HTTP 上下文创建和属性访问
-- ✅ Cookie 管理器集成、状态管理、查询参数解析
-- ✅ 路径、方法、URL 访问
+- ✅ HTTP context creation and property access
+- ✅ Cookie manager integration, state management, query param parsing
+- ✅ Path, method, URL access
 
-#### 1.2 Cookie 管理 (cookie.test.ts) - 19 个测试
+#### 1.2 Cookie Management (cookie.test.ts) - 19 tests
 
-- ✅ parseCookie / serializeCookie / CookieManager 全流程
+- ✅ parseCookie / serializeCookie / CookieManager full flow
 
-#### 1.3 HTTP 应用类 (http.test.ts) - 17 个测试
+#### 1.3 HTTP Application (http.test.ts) - 17 tests
 
-- ✅ Http 构造、中间件注册、路由集成、错误处理、请求/响应处理、优雅关闭
+- ✅ Http construction, middleware registration, routing integration, error handling, request/response handling, graceful shutdown
 
-#### 1.4 主模块 (mod.test.ts) - 15 个测试
+#### 1.4 Main Module (mod.test.ts) - 15 tests
 
-- ✅ Server 类、类型导出、中间件/路由/错误处理注册
+- ✅ Server class, type exports, middleware/routing/error handler registration
 
-#### 1.5 路由适配器 (router-adapter.test.ts) - 4 个测试
+#### 1.5 Router Adapter (router-adapter.test.ts) - 4 tests
 
-- ✅ RouterAdapter 实例、路由匹配、动态参数
+- ✅ RouterAdapter instance, route matching, dynamic params
 
-### 2. 开发工具模块
+### 2. Dev Tools
 
-#### 2.1 HMR 客户端 (dev/hmr-client.test.ts) - 8 个测试
+#### 2.1 HMR Client (dev/hmr-client.test.ts) - 8 tests
 
-- ✅ injectHMRClient、generateHMRClientScript
+- ✅ injectHMRClient, generateHMRClientScript
 
-#### 2.2 路由推断 (dev/route-inference.test.ts) - 31 个测试
+#### 2.2 Route Inference (dev/route-inference.test.ts) - 31 tests
 
-- ✅ 路由推断、Layout/页面/组件文件识别、自定义模式
+- ✅ Route inference, Layout/page/component file detection, custom patterns
 
-#### 2.3 模块依赖图 (dev/module-graph.test.ts) - 13 个测试
+#### 2.3 Module Dependency Graph (dev/module-graph.test.ts) - 13 tests
 
-- ✅ 模块管理、依赖追踪、移除与查询
+- ✅ Module management, dependency tracking, removal and queries
 
-#### 2.4 性能监控 (dev/performance-monitor.test.ts) - 13 个测试
+#### 2.4 Performance Monitor (dev/performance-monitor.test.ts) - 13 tests
 
-- ✅ 更新记录、统计信息、性能指标、数据清理
+- ✅ Update records, statistics, performance metrics, data cleanup
 
-## 📊 测试质量
+## 📊 Test Quality
 
-- ✅ **功能覆盖**：核心与开发工具均有测试
-- ✅ **边界与错误**：覆盖边界与错误处理
-- ✅ **资源清理**：测试正确清理资源
-- ✅ **跨运行时**：Deno 与 Bun 均通过
+- ✅ **Feature coverage**: Core and dev tools both tested
+- ✅ **Edge cases and errors**: Boundary and error handling covered
+- ✅ **Resource cleanup**: Tests clean up resources correctly
+- ✅ **Cross-runtime**: Passes on Deno and Bun
 
-## 🔧 已知问题
+## 🔧 Known Issues
 
-无。当前测试全部通过。
+None. All tests pass.
 
-## 📝 结论
+## 📝 Conclusion
 
-✅ **126 个测试全部通过，通过率 100%**
+✅ **All 126 tests passed, 100% pass rate**
 
-✅ **中间件**：实现与测试已迁移至 @dreamer/middlewares，本库仅 re-export 以保持兼容
+✅ **Middleware**: Implementation and tests migrated to @dreamer/middlewares; this library re-exports for compatibility
 
-**@dreamer/server 可用于生产环境。**
+**@dreamer/server is production-ready.**
 
 ---
 
-*最后更新：2026-02-03*
+*Last updated: 2026-02-03*
