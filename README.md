@@ -1,6 +1,8 @@
 # @dreamer/server
 
-> 一个兼容 Deno 和 Bun 的统一 HTTP 服务器库，提供开发和生产环境的完整服务器功能
+> Unified HTTP server library compatible with Deno and Bun. Full server support for both development and production.
+
+English | [中文 (Chinese)](./README-zh.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
@@ -8,45 +10,45 @@
 
 ---
 
-## 🎯 功能
+## 🎯 Features
 
-统一的 HTTP 服务器库，整合了 HTTP 服务器核心、开发工具（HMR、文件监听）和生产服务器功能。
+Unified HTTP server library combining HTTP core, dev tools (HMR, file watching), and production server features.
 
-## ✨ 特性
+## ✨ Capabilities
 
-### HTTP 服务器核心
+### HTTP Server Core
 
-- ✅ **完整的 HTTP 应用功能**：
-  - HTTP 服务器（基于 @dreamer/runtime-adapter）
-  - 中间件系统集成（@dreamer/middleware）
-  - 路由系统集成（@dreamer/router）
-  - Cookie 管理（解析和设置）
-  - 错误处理和日志记录（@dreamer/logger）
-  - WebSocket 支持（用于 HMR 等）
+- ✅ **Full HTTP application**:
+  - HTTP server (via @dreamer/runtime-adapter)
+  - Middleware integration (@dreamer/middleware)
+  - Routing integration (@dreamer/router)
+  - Cookie management (parse and set)
+  - Error handling and logging (@dreamer/logger)
+  - WebSocket support (for HMR, etc.)
 
-### 开发服务器功能
+### Dev Server
 
-- ✅ **HMR 热更新**：
-  - WebSocket 服务器（用于与浏览器通信）
-  - 文件监听（监听源代码变化）
-  - 增量构建集成（与构建工具集成）
-  - 客户端代码注入（HMR 客户端代码）
+- ✅ **HMR hot reload**:
+  - WebSocket server (browser communication)
+  - File watching (source changes)
+  - Incremental build integration
+  - Client script injection (HMR client)
 
-- ✅ **开发工具**：
-  - 文件监听（自动监听源代码变化）
-  - 构建集成（与 @dreamer/esbuild 集成）
-  - 快速刷新
+- ✅ **Dev tools**:
+  - File watching (auto watch source)
+  - Build integration (@dreamer/esbuild)
+  - Fast refresh
 
-### 生产服务器功能
+### Production Server
 
-- ✅ **生产环境优化**：
-  - 静态文件服务（生产构建产物）
-  - 性能优化配置
-  - 错误处理优化
+- ✅ **Production optimizations**:
+  - Static file serving (build output)
+  - Performance tuning
+  - Error handling optimizations
 
 ---
 
-## 📦 安装
+## 📦 Installation
 
 ```bash
 deno add jsr:@dreamer/server
@@ -54,44 +56,39 @@ deno add jsr:@dreamer/server
 
 ---
 
-## 🌍 环境兼容性
+## 🌍 Environment Compatibility
 
-- **运行时要求**：Deno 2.6+ 或 Bun 1.3.5
-- **服务端**：✅ 支持（兼容 Deno 和 Bun 运行时）
+- **Runtime**: Deno 2.6+ or Bun 1.3.5
+- **Server**: ✅ Supported (Deno and Bun)
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 开发服务器
+### Dev server
 
 ```typescript
 import { Server } from "@dreamer/server";
 import { cors, bodyParser, compression } from "@dreamer/server";
 
-// 创建开发服务器
 const server = new Server({
   mode: "dev",
   port: 3000,
   dev: {
-    hmr: true, // 启用 HMR
-    watch: ["./src"], // 监听文件变化
+    hmr: true,
+    watch: ["./src"],
     builder: {
-      // 构建器接口（用于增量构建）
       async rebuild() {
-        // 执行增量构建
         return { outputFiles: [] };
       },
     },
   },
 });
 
-// 添加中间件
 server.http.use(cors({ origin: "*" }));
 server.http.use(bodyParser());
-server.http.use(compression({ enableBrotli: true })); // 启用响应压缩
+server.http.use(compression({ enableBrotli: true }));
 
-// 添加路由
 server.http.use(async (ctx, next) => {
   if (ctx.path === "/") {
     ctx.response = new Response("Hello, World!");
@@ -100,11 +97,10 @@ server.http.use(async (ctx, next) => {
   await next();
 });
 
-// 启动服务器
 await server.start();
 ```
 
-**调试与日志**：若需排查请求处理顺序、路径前置处理器、中间件链等，可传入 `debug: true` 和自定义 `logger`（需将 logger 级别设为 `"debug"`），所有调试信息通过 `logger.debug` 输出：
+**Debug and logging**: For request order, path pre-handlers, middleware chain, etc., pass `debug: true` and a custom `logger` (with level `"debug"`). Debug output goes to `logger.debug`:
 
 ```typescript
 import { createLogger } from "@dreamer/logger";
@@ -118,25 +114,22 @@ const server = new Server({
 });
 ```
 
-### 生产服务器
+### Production server
 
 ```typescript
 import { Server } from "@dreamer/server";
 import { cors, bodyParser, compression, staticFiles } from "@dreamer/server";
 
-// 创建生产服务器
 const server = new Server({
   mode: "prod",
   port: 8000,
 });
 
-// 添加中间件
 server.http.use(cors({ origin: "*" }));
 server.http.use(bodyParser());
-server.http.use(compression({ enableBrotli: true })); // 启用响应压缩
+server.http.use(compression({ enableBrotli: true }));
 server.http.use(staticFiles({ root: "./dist", prefix: "/static" }));
 
-// 添加路由
 server.http.use(async (ctx, next) => {
   if (ctx.path === "/") {
     ctx.response = new Response("Hello, World!");
@@ -145,55 +138,49 @@ server.http.use(async (ctx, next) => {
   await next();
 });
 
-// 启动服务器
 await server.start();
 ```
 
 ---
 
-## 📖 API 文档
+## 📖 API Reference
 
-### Server 类
+### Server class
 
-#### 构造函数
+#### Constructor
 
 ```typescript
 new Server(options?: ServerOptions)
 ```
 
-**参数**：
+**Parameters**:
 
-- `options.mode?: "dev" | "prod"` - 服务器模式（默认：`"prod"`）
-- `options.port?: number` - 端口号（默认：开发模式 3000，生产模式 8000）
-- `options.host?: string` - 主机名（默认：`"localhost"`）
-- `options.onListen?: (params: { host: string; port: number }) => void` - 监听回调
-- `options.onError?: (error: Error) => Response | Promise<Response>` - 错误处理函数
-- `options.logger?: Logger` - Logger 实例（未传时使用默认 logger，info/debug 等均通过 logger 输出）
-- `options.debug?: boolean` - 是否启用调试日志（默认：`false`），开启后通过 `logger.debug` 输出请求路径、路径前置处理器、中间件链、响应状态等详细调试信息
-- `options.dev?: DevConfig` - 开发工具配置（仅开发模式）
+- `options.mode?: "dev" | "prod"` - Server mode (default: `"prod"`)
+- `options.port?: number` - Port (default: 3000 dev, 8000 prod)
+- `options.host?: string` - Host (default: `"localhost"`)
+- `options.onListen?: (params: { host: string; port: number }) => void` - Listen callback
+- `options.onError?: (error: Error) => Response | Promise<Response>` - Error handler
+- `options.logger?: Logger` - Logger instance (default logger if not provided)
+- `options.debug?: boolean` - Enable debug logs (default: `false`), outputs path, pre-handlers, middleware chain, response status via `logger.debug`
+- `options.dev?: DevConfig` - Dev config (dev mode only)
 
-#### 方法
+#### Methods
 
-- `start(): Promise<void>` - 启动服务器
-- `stop(): Promise<void>` - 停止服务器
+- `start(): Promise<void>` - Start server
+- `stop(): Promise<void>` - Stop server
 
-#### 属性
+#### Properties
 
-- `http: Http` - HTTP 应用实例（用于添加中间件、路由等）
-- `port: number` - 端口号（只读）
-- `host: string` - 主机名（只读）
+- `http: Http` - HTTP app instance (middleware, routes, etc.)
+- `port: number` - Port (read-only)
+- `host: string` - Host (read-only)
 
 ### DevConfig
 
-开发工具配置选项：
-
 ```typescript
 interface DevConfig {
-  /** HMR 配置 */
   hmr?: HMRConfig | boolean;
-  /** 文件监听配置 */
   watch?: WatchConfig | string[];
-  /** 构建器接口（用于增量构建） */
   builder?: {
     rebuild(): Promise<{ outputFiles?: Array<{ path: string; contents: Uint8Array }> }>;
   };
@@ -202,32 +189,21 @@ interface DevConfig {
 
 ### HMRConfig
 
-HMR 配置选项：
-
 ```typescript
 interface HMRConfig {
-  /** 是否启用 HMR */
   enabled?: boolean;
-  /** WebSocket 路径 */
   path?: string;
-  /** 客户端脚本路径 */
   clientScript?: string;
 }
 ```
 
 ### WatchConfig
 
-文件监听配置选项：
-
 ```typescript
 interface WatchConfig {
-  /** 监听的文件/目录路径 */
   paths?: string[];
-  /** 忽略的文件/目录模式 */
   ignore?: string[];
-  /** 监听选项 */
   options?: {
-    /** 是否递归监听子目录 */
     recursive?: boolean;
   };
 }
@@ -235,7 +211,7 @@ interface WatchConfig {
 
 ---
 
-## 🔌 路由集成
+## 🔌 Router Integration
 
 ```typescript
 import { Server } from "@dreamer/server";
@@ -246,14 +222,12 @@ const server = new Server({
   port: 3000,
 });
 
-// 创建路由
 const router = createRouter({
   routesDir: "./src/routes",
   apiMode: "restful",
 });
 await router.scan();
 
-// 集成路由
 server.http.useRouter(router);
 
 await server.start();
@@ -261,20 +235,19 @@ await server.start();
 
 ---
 
-## 🔄 HMR 使用
+## 🔄 HMR Usage
 
-### 基本配置
+### Basic config
 
 ```typescript
 const server = new Server({
   mode: "dev",
   port: 3000,
   dev: {
-    hmr: true, // 启用 HMR
-    watch: ["./src"], // 监听文件变化
+    hmr: true,
+    watch: ["./src"],
     builder: {
       async rebuild() {
-        // 执行增量构建
         return { outputFiles: [] };
       },
     },
@@ -282,7 +255,7 @@ const server = new Server({
 });
 ```
 
-### 自定义 HMR 路径
+### Custom HMR path
 
 ```typescript
 const server = new Server({
@@ -291,7 +264,7 @@ const server = new Server({
   dev: {
     hmr: {
       enabled: true,
-      path: "/__hmr", // 自定义 WebSocket 路径
+      path: "/__hmr",
     },
     watch: ["./src"],
   },
@@ -300,9 +273,9 @@ const server = new Server({
 
 ---
 
-## 📝 完整示例
+## 📝 Full Examples
 
-### 开发服务器示例
+### Dev server example
 
 ```typescript
 import {
@@ -317,7 +290,6 @@ import {
 } from "@dreamer/server";
 import { createRouter } from "@dreamer/router";
 
-// 创建开发服务器
 const server = new Server({
   mode: "dev",
   port: 3000,
@@ -326,26 +298,23 @@ const server = new Server({
     watch: ["./src"],
     builder: {
       async rebuild() {
-        // 执行增量构建
         return { outputFiles: [] };
       },
     },
   },
 });
 
-// 添加中间件
 server.http.use(cors({ origin: "*" }));
-server.http.use(requestId()); // Request ID 追踪
+server.http.use(requestId());
 server.http.use(bodyParser());
 server.http.use(compression({ enableBrotli: true }));
 server.http.use(requestLogger());
-server.http.use(performanceAnalyzer()); // 性能分析（仅开发模式）
+server.http.use(performanceAnalyzer());
 server.http.useError(errorHandler({
   isDev: true,
   provideSuggestions: true,
 }));
 
-// 集成路由
 const router = createRouter({
   routesDir: "./src/routes",
   apiMode: "restful",
@@ -353,11 +322,10 @@ const router = createRouter({
 await router.scan();
 server.http.useRouter(router);
 
-// 启动服务器
 await server.start();
 ```
 
-### 生产服务器示例
+### Production server example
 
 ```typescript
 import {
@@ -374,29 +342,26 @@ import {
   errorHandler,
 } from "@dreamer/server";
 
-// 创建生产服务器
 const server = new Server({
   mode: "prod",
   port: 8000,
 });
 
-// 添加中间件（按顺序）
 server.http.use(cors({ origin: "https://example.com" }));
-server.http.use(requestId()); // Request ID 追踪
-server.http.use(securityHeaders()); // 安全头
-server.http.use(csrf()); // CSRF 保护
+server.http.use(requestId());
+server.http.use(securityHeaders());
+server.http.use(csrf());
 server.http.use(bodyParser());
 server.http.use(compression({ enableBrotli: true }));
-server.http.use(metrics()); // Metrics 监控
-server.http.use(responseCache()); // 响应缓存
+server.http.use(metrics());
+server.http.use(responseCache());
 server.http.use(staticFiles({
   root: "./dist",
   prefix: "/static",
-  enableCache: true, // 启用静态文件缓存
+  enableCache: true,
 }));
 server.http.useError(errorHandler());
 
-// 添加路由
 server.http.use(async (ctx, next) => {
   if (ctx.path === "/") {
     ctx.response = new Response("Hello, World!");
@@ -405,28 +370,27 @@ server.http.use(async (ctx, next) => {
   await next();
 });
 
-// 启动服务器
 await server.start();
 ```
 
-## 📊 测试覆盖
+## 📊 Test Coverage
 
-- **总测试数**: 126 个测试用例
-- **测试文件**: 9 个测试文件
-- **通过率**: 100% ✅
-- **测试报告**: 详见 [TEST_REPORT.md](./TEST_REPORT.md)
-
----
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
+- **Total tests**: 126
+- **Test files**: 9
+- **Pass rate**: 100% ✅
+- **Details**: [TEST_REPORT.md](./TEST_REPORT.md)
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-MIT License - 详见 [LICENSE.md](./LICENSE.md)
+Issues and Pull Requests are welcome.
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE.md](./LICENSE.md)
 
 ---
 
