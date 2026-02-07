@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.1] - 2026-02-07
+
+### Added
+
+- **HMR panel i18n**: zh/en based on `document.documentElement.lang` or `navigator.language`
+- **MutationObserver**: Watch `lang` attribute changes, auto-refresh HMR UI when language switches (no i18n library required)
+
+### Fixed
+
+- **disconnect() memory leak**: Remove `visibilitychange` and `DOMContentLoaded` listeners, call `statusUI.destroy()` (including MutationObserver disconnect) when programmatically disconnecting HMR
+
+---
+
 ## [1.0.0] - 2026-02-06
 
 ### Added

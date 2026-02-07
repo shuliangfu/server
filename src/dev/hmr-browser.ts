@@ -53,6 +53,53 @@ interface UpdateQueueItem {
 type ConnectionStatus = "connected" | "disconnected" | "reconnecting" | "error";
 
 /**
+ * HMR 面板文案（根据 document.documentElement.lang 或 navigator.language 选择）
+ */
+const HMR_L10N: Record<string, Record<string, string>> = {
+  zh: {
+    statsTitle: "HMR 统计",
+    connected: "HMR 已连接",
+    disconnected: "HMR 已断开",
+    reconnecting: "HMR 重连中...",
+    error: "HMR 错误",
+    totalUpdates: "总更新次数",
+    success: "成功",
+    failed: "失败",
+    successRate: "成功率",
+    lastUpdate: "最后更新",
+    none: "无",
+  },
+  en: {
+    statsTitle: "HMR Statistics",
+    connected: "HMR Connected",
+    disconnected: "HMR Disconnected",
+    reconnecting: "HMR Reconnecting...",
+    error: "HMR Error",
+    totalUpdates: "Total updates",
+    success: "Success",
+    failed: "Failed",
+    successRate: "Success rate",
+    lastUpdate: "Last updated",
+    none: "None",
+  },
+};
+
+function getHmrLocale(): "zh" | "en" {
+  const doc = (globalThis as any).document;
+  if (!doc) return "en";
+  const lang = (doc.documentElement?.getAttribute?.("lang") ||
+    (globalThis as any).navigator?.language ||
+    "en") as string;
+  return lang.startsWith("zh") ? "zh" : "en";
+}
+
+function t(key: string): string {
+  const locale = getHmrLocale();
+  const dict = HMR_L10N[locale] ?? HMR_L10N.en;
+  return dict[key] ?? HMR_L10N.en[key] ?? key;
+}
+
+/**
  * HMR 状态可视化 UI 类
  *
  * 提供连接状态指示器、更新进度提示和统计面板
@@ -71,6 +118,12 @@ class HMRStatusUI {
   private failureCount = 0;
   private lastUpdateTime: number | null = null;
 
+  /** 当前连接状态（用于 lang 切换时刷新文案） */
+  private lastConnectionStatus: ConnectionStatus = "connected";
+
+  /** MutationObserver 监听 lang 属性变化，用于语言切换时刷新 UI */
+  private langObserver: MutationObserver | null = null;
+
   /**
    * 初始化 UI
    */
@@ -83,6 +136,43 @@ class HMRStatusUI {
     this.createStatusIndicator();
     this.createProgressBar();
     this.createStatsPanel();
+    this.setupLangObserver();
+  }
+
+  /**
+   * 监听 document.documentElement 的 lang 属性变化，语言切换时自动刷新 HMR UI 文案
+   */
+  private setupLangObserver(): void {
+    const doc = (globalThis as any).document;
+    if (!doc?.documentElement) return;
+
+    this.langObserver = new MutationObserver(() => {
+      this.refreshUI();
+    });
+
+    this.langObserver.observe(doc.documentElement, {
+      attributes: true,
+      attributeFilter: ["lang"],
+    });
+  }
+
+  /**
+   * 语言切换后刷新 UI 文案（连接状态、统计面板标题和内容）
+   */
+  private refreshUI(): void {
+    // 刷新连接状态指示器文案
+    this.updateConnectionStatus(this.lastConnectionStatus);
+
+    // 刷新统计面板标题
+    if (this.statsPanel) {
+      const title = this.statsPanel.querySelector("div:first-child") as HTMLElement;
+      if (title) title.textContent = t("statsTitle");
+    }
+
+    // 若面板已打开，刷新统计内容
+    if (this.isStatsPanelOpen) {
+      this.updateStatsContent();
+    }
   }
 
   /**
@@ -144,7 +234,7 @@ class HMRStatusUI {
     `;
 
     const text = doc.createElement("span");
-    text.textContent = "HMR 已连接";
+    text.textContent = t("connected");
 
     this.statusIndicator.appendChild(dot);
     this.statusIndicator.appendChild(text);
@@ -219,7 +309,7 @@ class HMRStatusUI {
     `;
 
     const title = doc.createElement("div");
-    title.textContent = "HMR 统计";
+    title.textContent = t("statsTitle");
     title.style.cssText = `
       font-weight: 600;
       margin-bottom: 12px;
@@ -242,6 +332,7 @@ class HMRStatusUI {
    * 更新连接状态
    */
   updateConnectionStatus(status: ConnectionStatus): void {
+    this.lastConnectionStatus = status;
     if (!this.statusIndicator) return;
 
     const dot = this.statusIndicator.querySelector("span") as HTMLElement;
@@ -254,19 +345,19 @@ class HMRStatusUI {
     switch (status) {
       case "connected":
         dot.style.background = "#4caf50";
-        text.textContent = "HMR 已连接";
+        text.textContent = t("connected");
         break;
       case "disconnected":
         dot.style.background = "#9e9e9e";
-        text.textContent = "HMR 已断开";
+        text.textContent = t("disconnected");
         break;
       case "reconnecting":
         dot.style.background = "#ff9800";
-        text.textContent = "HMR 重连中...";
+        text.textContent = t("reconnecting");
         break;
       case "error":
         dot.style.background = "#f44336";
-        text.textContent = "HMR 错误";
+        text.textContent = t("error");
         break;
     }
   }
@@ -340,27 +431,27 @@ class HMRStatusUI {
 
     const lastUpdateText = this.lastUpdateTime
       ? new Date(this.lastUpdateTime).toLocaleTimeString()
-      : "无";
+      : t("none");
 
     statsContent.innerHTML = `
       <div style="margin-bottom: 8px;">
-        <span style="opacity: 0.7;">总更新次数:</span>
+        <span style="opacity: 0.7;">${t("totalUpdates")}:</span>
         <span style="margin-left: 8px; font-weight: 600;">${this.updateCount}</span>
       </div>
       <div style="margin-bottom: 8px;">
-        <span style="opacity: 0.7;">成功:</span>
+        <span style="opacity: 0.7;">${t("success")}:</span>
         <span style="margin-left: 8px; color: #4caf50; font-weight: 600;">${this.successCount}</span>
       </div>
       <div style="margin-bottom: 8px;">
-        <span style="opacity: 0.7;">失败:</span>
+        <span style="opacity: 0.7;">${t("failed")}:</span>
         <span style="margin-left: 8px; color: #f44336; font-weight: 600;">${this.failureCount}</span>
       </div>
       <div style="margin-bottom: 8px;">
-        <span style="opacity: 0.7;">成功率:</span>
+        <span style="opacity: 0.7;">${t("successRate")}:</span>
         <span style="margin-left: 8px; font-weight: 600;">${successRate}%</span>
       </div>
       <div>
-        <span style="opacity: 0.7;">最后更新:</span>
+        <span style="opacity: 0.7;">${t("lastUpdate")}:</span>
         <span style="margin-left: 8px;">${lastUpdateText}</span>
       </div>
     `;
@@ -384,6 +475,10 @@ class HMRStatusUI {
    * 销毁 UI
    */
   destroy(): void {
+    if (this.langObserver) {
+      this.langObserver.disconnect();
+      this.langObserver = null;
+    }
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
     }
@@ -407,6 +502,10 @@ class HMRClient {
   private readonly maxReconnectDelay = 30000; // 单次最大延迟 30 秒
   private readonly reconnectDelayMultiplier = 2; // 每次重连延迟倍数（1s -> 2s -> 4s -> 8s -> 16s）
   private visibilityListenerAttached = false;
+  /** visibilitychange 监听器引用，用于 disconnect 时移除，防止内存泄漏 */
+  private visibilityChangeHandler: (() => void) | null = null;
+  /** DOMContentLoaded 监听器引用（仅当 readyState 为 loading 时添加），用于 disconnect 时移除 */
+  private domContentLoadedHandler: (() => void) | null = null;
   /** 是否已主动断开，断开后不再重连 */
   private disconnected = false;
 
@@ -497,7 +596,7 @@ class HMRClient {
   }
 
   /**
-   * 断开连接并清理所有定时器，防止内存泄漏
+   * 断开连接并清理所有定时器、监听器、UI，防止内存泄漏
    *
    * 用于程序化断开 HMR 连接（如测试、SPA 切换场景）。
    * 页面关闭时无需调用，整个页面会被 GC 回收。
@@ -519,6 +618,21 @@ class HMRClient {
       this.ws.close();
       this.ws = null;
     }
+    // 移除 document 监听器，防止内存泄漏
+    const doc = (globalThis as any).document;
+    if (doc) {
+      if (this.visibilityChangeHandler) {
+        doc.removeEventListener("visibilitychange", this.visibilityChangeHandler);
+        this.visibilityChangeHandler = null;
+      }
+      if (this.domContentLoadedHandler) {
+        doc.removeEventListener("DOMContentLoaded", this.domContentLoadedHandler);
+        this.domContentLoadedHandler = null;
+      }
+    }
+    this.visibilityListenerAttached = false;
+    // 销毁 UI（含 MutationObserver、DOM 节点）
+    this.statusUI.destroy();
     // 清空缓存释放内存
     this.updateQueue = [];
     this.moduleBackups.clear();
@@ -588,12 +702,31 @@ class HMRClient {
     if (this.visibilityListenerAttached) return;
     const doc = (globalThis as any).document;
     if (!doc || typeof doc.addEventListener !== "function") return;
-    doc.addEventListener("visibilitychange", () => {
+    this.visibilityChangeHandler = () => {
       if (doc.visibilityState === "visible") {
         this.tryReconnectOnVisible();
       }
-    });
+    };
+    doc.addEventListener("visibilitychange", this.visibilityChangeHandler);
     this.visibilityListenerAttached = true;
+  }
+
+  /**
+   * 启动连接（若 document 仍在 loading 则等待 DOMContentLoaded，否则立即连接）
+   * 用于 disconnect 时能移除 DOMContentLoaded 监听器
+   */
+  start(): void {
+    const doc = (globalThis as any).document;
+    if (!doc) {
+      this.connect();
+      return;
+    }
+    if (doc.readyState === "loading") {
+      this.domContentLoadedHandler = () => this.connect();
+      doc.addEventListener("DOMContentLoaded", this.domContentLoadedHandler);
+    } else {
+      this.connect();
+    }
   }
 
   /**
@@ -1726,13 +1859,5 @@ const wsUrl = ""; // 占位符，会被替换为实际的 WebSocket URL
 
   const client = new HMRClient(wsUrl);
   client.setupVisibilityReconnect();
-
-  if ((globalThis as any).document.readyState === "loading") {
-    (globalThis as any).document.addEventListener(
-      "DOMContentLoaded",
-      () => client.connect(),
-    );
-  } else {
-    client.connect();
-  }
+  client.start();
 })();
