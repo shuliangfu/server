@@ -11,6 +11,7 @@ import type { ServeHandle } from "@dreamer/runtime-adapter";
 import { DevTools } from "./dev/dev-tools.ts";
 import type { HttpServerOptions, PathHandler } from "./http/http.ts";
 import { Http } from "./http/http.ts";
+import { findAvailablePort } from "./port-utils.ts";
 import type { ServerMode, ServerOptions } from "./types.ts";
 
 /**
@@ -25,6 +26,8 @@ export class Server {
   private readonly mode: ServerMode;
   private readonly _port: number;
   private readonly _host: string;
+  /** 实际监听的端口（若因端口占用而 +1 则与 _port 可能不同） */
+  private _actualPort?: number;
   private readonly logger: Logger;
   private readonly shutdownTimeout: number;
   /** 用户自定义的监听回调（若提供则优先使用，否则使用默认日志） */
@@ -68,11 +71,22 @@ export class Server {
 
   /**
    * 启动服务器
+   *
+   * 会先检测配置的端口是否被占用；若被占用则从当前端口起顺次 +1 查找可用端口并监听。
    */
-  start(): void {
+  async start(): Promise<void> {
+    const actualPort = await findAvailablePort(this._host, this._port);
+    this._actualPort = actualPort;
+
+    if (actualPort !== this._port) {
+      this.logger.info(
+        `端口 ${this._port} 已被占用，使用端口 ${actualPort}`,
+      );
+    }
+
     // 启动 HTTP 服务器
     this.serverHandle = this.httpApp.listen({
-      port: this._port,
+      port: actualPort,
       host: this._host,
       onListen: ({ host, port }) => {
         if (this.onListen) {
@@ -81,9 +95,9 @@ export class Server {
       },
     });
 
-    // 开发模式：启动开发工具
+    // 开发模式：启动开发工具（传入实际监听端口，供 HMR 客户端脚本等使用）
     if (this.devTools) {
-      this.devTools.start();
+      this.devTools.start(actualPort);
     }
   }
 
@@ -179,9 +193,11 @@ export class Server {
 
   /**
    * 获取端口号（只读属性）
+   *
+   * 若已调用 start() 且因端口占用使用了其他端口，则返回实际监听的端口；否则返回配置的端口
    */
   get port(): number {
-    return this._port;
+    return this._actualPort ?? this._port;
   }
 
   /**

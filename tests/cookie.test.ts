@@ -3,11 +3,7 @@
  */
 
 import { describe, expect, it } from "@dreamer/test";
-import {
-  CookieManager,
-  parseCookie,
-  serializeCookie,
-} from "../src/cookie.ts";
+import { CookieManager, parseCookie, serializeCookie } from "../src/cookie.ts";
 import type { CookieOptions } from "../src/context.ts";
 
 describe("Cookie 管理", () => {
@@ -146,8 +142,10 @@ describe("Cookie 管理", () => {
       const newResponse = manager.applyToResponse(response);
       const setCookieHeaders = newResponse.headers.getSetCookie();
       expect(setCookieHeaders.length).toBeGreaterThan(0);
-      expect(setCookieHeaders.some((h: string) => h.includes("name1=value1"))).toBe(true);
-      expect(setCookieHeaders.some((h: string) => h.includes("name2=value2"))).toBe(true);
+      expect(setCookieHeaders.some((h: string) => h.includes("name1=value1")))
+        .toBe(true);
+      expect(setCookieHeaders.some((h: string) => h.includes("name2=value2")))
+        .toBe(true);
     });
 
     it("应该能够从请求头解析 cookie", () => {

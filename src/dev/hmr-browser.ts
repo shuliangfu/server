@@ -165,7 +165,9 @@ class HMRStatusUI {
 
     // 刷新统计面板标题
     if (this.statsPanel) {
-      const title = this.statsPanel.querySelector("div:first-child") as HTMLElement;
+      const title = this.statsPanel.querySelector(
+        "div:first-child",
+      ) as HTMLElement;
       if (title) title.textContent = t("statsTitle");
     }
 
@@ -622,11 +624,17 @@ class HMRClient {
     const doc = (globalThis as any).document;
     if (doc) {
       if (this.visibilityChangeHandler) {
-        doc.removeEventListener("visibilitychange", this.visibilityChangeHandler);
+        doc.removeEventListener(
+          "visibilitychange",
+          this.visibilityChangeHandler,
+        );
         this.visibilityChangeHandler = null;
       }
       if (this.domContentLoadedHandler) {
-        doc.removeEventListener("DOMContentLoaded", this.domContentLoadedHandler);
+        doc.removeEventListener(
+          "DOMContentLoaded",
+          this.domContentLoadedHandler,
+        );
         this.domContentLoadedHandler = null;
       }
     }

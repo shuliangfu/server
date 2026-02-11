@@ -99,6 +99,8 @@ export class DevTools {
   private wsManager: WebSocketManager;
   private fileWatcher?: FileWatcher;
   private readonly port: number;
+  /** 实际监听端口（若 start(actualPort) 传入则用于 HMR 客户端脚本等） */
+  private _listeningPort?: number;
   private readonly host: string;
   private moduleGraph: ModuleGraphManager;
   private routeInferrer: RouteInferrer;
@@ -129,8 +131,13 @@ export class DevTools {
 
   /**
    * 启动开发工具
+   *
+   * @param actualPort 实际监听的端口（若因端口占用使用了 port+1 等，传入此处供 HMR 客户端脚本连接正确地址）
    */
-  start(): void {
+  start(actualPort?: number): void {
+    if (actualPort !== undefined) {
+      this._listeningPort = actualPort;
+    }
     // 设置 HMR WebSocket
     if (this.config.hmr !== false) {
       this.setupHMR();
@@ -244,10 +251,11 @@ export class DevTools {
       // 读取响应体
       const html = await ctx.response.text();
 
-      // 生成并注入 HMR 客户端脚本（异步编译）
+      // 生成并注入 HMR 客户端脚本（使用实际监听端口，若已通过 start(actualPort) 传入）
+      const port = this._listeningPort ?? this.port;
       const clientScript = await generateHMRClientScript(
         hmrPath,
-        this.port,
+        port,
         this.host,
       );
       const injectedHtml = injectHMRClient(html, clientScript);
