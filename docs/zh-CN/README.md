@@ -1,18 +1,19 @@
 # @dreamer/server
 
-> 一个兼容 Deno 和 Bun 的统一 HTTP 服务器库，提供开发和生产环境的完整服务器功能
+> 一个兼容 Deno 和 Bun 的统一 HTTP 服务器包，提供开发和生产环境的完整服务器功能
 
-[English](./README.md) | 中文 (Chinese)
+[English](../../README.md) | 中文 (Chinese)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Tests](https://img.shields.io/badge/tests-126%20passed-brightgreen)](./TEST_REPORT.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE.md)
+[![Tests](https://img.shields.io/badge/tests-143%20passed-brightgreen)](./TEST_REPORT.md)
 
 ---
 
 ## 🎯 功能
 
-统一的 HTTP 服务器库，整合了 HTTP 服务器核心、开发工具（HMR、文件监听）和生产服务器功能。
+统一的 HTTP 服务器包，整合了 HTTP
+服务器核心、开发工具（HMR、文件监听）和生产服务器功能。
 
 ## ✨ 特性
 
@@ -69,7 +70,7 @@ deno add jsr:@dreamer/server
 
 ```typescript
 import { Server } from "@dreamer/server";
-import { cors, bodyParser, compression } from "@dreamer/server";
+import { bodyParser, compression, cors } from "@dreamer/server";
 
 // 创建开发服务器
 const server = new Server({
@@ -106,7 +107,9 @@ server.http.use(async (ctx, next) => {
 await server.start();
 ```
 
-**调试与日志**：若需排查请求处理顺序、路径前置处理器、中间件链等，可传入 `debug: true` 和自定义 `logger`（需将 logger 级别设为 `"debug"`），所有调试信息通过 `logger.debug` 输出：
+**调试与日志**：若需排查请求处理顺序、路径前置处理器、中间件链等，可传入
+`debug: true` 和自定义 `logger`（需将 logger 级别设为
+`"debug"`），所有调试信息通过 `logger.debug` 输出：
 
 ```typescript
 import { createLogger } from "@dreamer/logger";
@@ -124,7 +127,7 @@ const server = new Server({
 
 ```typescript
 import { Server } from "@dreamer/server";
-import { cors, bodyParser, compression, staticFiles } from "@dreamer/server";
+import { bodyParser, compression, cors, staticFiles } from "@dreamer/server";
 
 // 创建生产服务器
 const server = new Server({
@@ -168,10 +171,14 @@ new Server(options?: ServerOptions)
 - `options.mode?: "dev" | "prod"` - 服务器模式（默认：`"prod"`）
 - `options.port?: number` - 端口号（默认：开发模式 3000，生产模式 8000）
 - `options.host?: string` - 主机名（默认：`"localhost"`）
-- `options.onListen?: (params: { host: string; port: number }) => void` - 监听回调
-- `options.onError?: (error: Error) => Response | Promise<Response>` - 错误处理函数
-- `options.logger?: Logger` - Logger 实例（未传时使用默认 logger，info/debug 等均通过 logger 输出）
-- `options.debug?: boolean` - 是否启用调试日志（默认：`false`），开启后通过 `logger.debug` 输出请求路径、路径前置处理器、中间件链、响应状态等详细调试信息
+- `options.onListen?: (params: { host: string; port: number }) => void` -
+  监听回调
+- `options.onError?: (error: Error) => Response | Promise<Response>` -
+  错误处理函数
+- `options.logger?: Logger` - Logger 实例（未传时使用默认 logger，info/debug
+  等均通过 logger 输出）
+- `options.debug?: boolean` - 是否启用调试日志（默认：`false`），开启后通过
+  `logger.debug` 输出请求路径、路径前置处理器、中间件链、响应状态等详细调试信息
 - `options.dev?: DevConfig` - 开发工具配置（仅开发模式）
 
 #### 方法
@@ -197,7 +204,9 @@ interface DevConfig {
   watch?: WatchConfig | string[];
   /** 构建器接口（用于增量构建） */
   builder?: {
-    rebuild(): Promise<{ outputFiles?: Array<{ path: string; contents: Uint8Array }> }>;
+    rebuild(): Promise<
+      { outputFiles?: Array<{ path: string; contents: Uint8Array }> }
+    >;
   };
 }
 ```
@@ -308,14 +317,14 @@ const server = new Server({
 
 ```typescript
 import {
-  Server,
-  cors,
   bodyParser,
   compression,
-  requestLogger,
-  requestId,
+  cors,
   errorHandler,
   performanceAnalyzer,
+  requestId,
+  requestLogger,
+  Server,
 } from "@dreamer/server";
 import { createRouter } from "@dreamer/router";
 
@@ -363,17 +372,17 @@ await server.start();
 
 ```typescript
 import {
-  Server,
-  cors,
   bodyParser,
   compression,
-  staticFiles,
-  requestId,
-  metrics,
-  responseCache,
+  cors,
   csrf,
-  securityHeaders,
   errorHandler,
+  metrics,
+  requestId,
+  responseCache,
+  securityHeaders,
+  Server,
+  staticFiles,
 } from "@dreamer/server";
 
 // 创建生产服务器
@@ -413,10 +422,18 @@ await server.start();
 
 ## 📊 测试覆盖
 
-- **总测试数**: 126 个测试用例
-- **测试文件**: 9 个测试文件
+- **总测试数**: 143 个测试用例
+- **测试文件**: 10 个测试文件
 - **通过率**: 100% ✅
 - **测试报告**: 详见 [TEST_REPORT.md](./TEST_REPORT.md)
+- **变更日志**: 详见 [CHANGELOG.md](./CHANGELOG.md)
+
+### 变更日志（最新）
+
+**v1.0.2**
+(2026-02-11)：新增端口检测（`isPortInUse`、`findAvailablePort`）；配置端口被占用时
+Server 自动使用下一可用端口。文档整理至 `docs/en-US/` 与
+`docs/zh-CN/`。[完整变更](./CHANGELOG.md)
 
 ---
 
@@ -428,7 +445,7 @@ await server.start();
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE.md](./LICENSE.md)
+MIT License - 详见 [LICENSE.md](../../LICENSE.md)
 
 ---
 

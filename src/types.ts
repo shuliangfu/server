@@ -84,7 +84,7 @@ export interface ServerOptions {
  * 服务器实例接口
  */
 export interface ServerInterface {
-  /** 启动服务器 */
+  /** 启动服务器（会检测端口占用，若占用则自动使用 port+1 等可用端口） */
   start(): Promise<void>;
   /** 停止服务器 */
   stop(): Promise<void>;

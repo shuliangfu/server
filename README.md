@@ -1,18 +1,20 @@
 # @dreamer/server
 
-> Unified HTTP server library compatible with Deno and Bun. Full server support for both development and production.
+> Unified HTTP server library compatible with Deno and Bun. Full server support
+> for both development and production.
 
-English | [中文 (Chinese)](./README-zh.md)
+English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Tests](https://img.shields.io/badge/tests-126%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-143%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 ---
 
 ## 🎯 Features
 
-Unified HTTP server library combining HTTP core, dev tools (HMR, file watching), and production server features.
+Unified HTTP server library combining HTTP core, dev tools (HMR, file watching),
+and production server features.
 
 ## ✨ Capabilities
 
@@ -69,7 +71,7 @@ deno add jsr:@dreamer/server
 
 ```typescript
 import { Server } from "@dreamer/server";
-import { cors, bodyParser, compression } from "@dreamer/server";
+import { bodyParser, compression, cors } from "@dreamer/server";
 
 const server = new Server({
   mode: "dev",
@@ -100,7 +102,9 @@ server.http.use(async (ctx, next) => {
 await server.start();
 ```
 
-**Debug and logging**: For request order, path pre-handlers, middleware chain, etc., pass `debug: true` and a custom `logger` (with level `"debug"`). Debug output goes to `logger.debug`:
+**Debug and logging**: For request order, path pre-handlers, middleware chain,
+etc., pass `debug: true` and a custom `logger` (with level `"debug"`). Debug
+output goes to `logger.debug`:
 
 ```typescript
 import { createLogger } from "@dreamer/logger";
@@ -118,7 +122,7 @@ const server = new Server({
 
 ```typescript
 import { Server } from "@dreamer/server";
-import { cors, bodyParser, compression, staticFiles } from "@dreamer/server";
+import { bodyParser, compression, cors, staticFiles } from "@dreamer/server";
 
 const server = new Server({
   mode: "prod",
@@ -158,10 +162,13 @@ new Server(options?: ServerOptions)
 - `options.mode?: "dev" | "prod"` - Server mode (default: `"prod"`)
 - `options.port?: number` - Port (default: 3000 dev, 8000 prod)
 - `options.host?: string` - Host (default: `"localhost"`)
-- `options.onListen?: (params: { host: string; port: number }) => void` - Listen callback
-- `options.onError?: (error: Error) => Response | Promise<Response>` - Error handler
+- `options.onListen?: (params: { host: string; port: number }) => void` - Listen
+  callback
+- `options.onError?: (error: Error) => Response | Promise<Response>` - Error
+  handler
 - `options.logger?: Logger` - Logger instance (default logger if not provided)
-- `options.debug?: boolean` - Enable debug logs (default: `false`), outputs path, pre-handlers, middleware chain, response status via `logger.debug`
+- `options.debug?: boolean` - Enable debug logs (default: `false`), outputs
+  path, pre-handlers, middleware chain, response status via `logger.debug`
 - `options.dev?: DevConfig` - Dev config (dev mode only)
 
 #### Methods
@@ -182,7 +189,9 @@ interface DevConfig {
   hmr?: HMRConfig | boolean;
   watch?: WatchConfig | string[];
   builder?: {
-    rebuild(): Promise<{ outputFiles?: Array<{ path: string; contents: Uint8Array }> }>;
+    rebuild(): Promise<
+      { outputFiles?: Array<{ path: string; contents: Uint8Array }> }
+    >;
   };
 }
 ```
@@ -279,14 +288,14 @@ const server = new Server({
 
 ```typescript
 import {
-  Server,
-  cors,
   bodyParser,
   compression,
-  requestLogger,
-  requestId,
+  cors,
   errorHandler,
   performanceAnalyzer,
+  requestId,
+  requestLogger,
+  Server,
 } from "@dreamer/server";
 import { createRouter } from "@dreamer/router";
 
@@ -329,17 +338,17 @@ await server.start();
 
 ```typescript
 import {
-  Server,
-  cors,
   bodyParser,
   compression,
-  staticFiles,
-  requestId,
-  metrics,
-  responseCache,
+  cors,
   csrf,
-  securityHeaders,
   errorHandler,
+  metrics,
+  requestId,
+  responseCache,
+  securityHeaders,
+  Server,
+  staticFiles,
 } from "@dreamer/server";
 
 const server = new Server({
@@ -375,10 +384,18 @@ await server.start();
 
 ## 📊 Test Coverage
 
-- **Total tests**: 126
-- **Test files**: 9
+- **Total tests**: 143
+- **Test files**: 10
 - **Pass rate**: 100% ✅
-- **Details**: [TEST_REPORT.md](./TEST_REPORT.md)
+- **Details**: [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md)
+- **Changelog**: [CHANGELOG.md](./docs/en-US/CHANGELOG.md)
+
+### Changelog (latest)
+
+**v1.0.2** (2026-02-11): Added port detection (`isPortInUse`,
+`findAvailablePort`); Server uses next available port when configured port is in
+use. Docs reorganized to `docs/en-US/` and `docs/zh-CN/`.
+[Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 
