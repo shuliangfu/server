@@ -37,6 +37,8 @@ interface HMRMessage {
   route?: string; // 更新的路由路径（用于判断是否需要更新当前页面）
   /** 本次变更对应的 chunk URL（开发代码分割时由服务端返回，用于无感加载新模块） */
   chunkUrl?: string;
+  /** 与 chunkUrl 对应：该 chunk 所属路由的 path（如 "/"、"/signal"），view 细粒度 HMR 用 */
+  routePath?: string;
 }
 
 /**
@@ -876,32 +878,37 @@ class HMRClient {
     }
 
     // 构建合并后的消息
-    // chunkUrl 取最后一条有值的：多次快速构建时服务端缓存是最后一次构建，客户端必须请求最后一次的 chunk 否则会 404
+    // chunkUrl/routePath 取最后一条有值的：多次快速构建时服务端缓存是最后一次构建，客户端必须请求最后一次的 chunk 否则会 404
     const lastChunkUrl = [...messages].reverse().find((m) => m.chunkUrl)
       ?.chunkUrl;
+    const lastRoutePath = [...messages].reverse().find((m) => m.routePath)
+      ?.routePath;
     const merged: HMRMessage = {
       ...primaryMessage,
       path: Array.from(allPaths)[0] || primaryMessage.path,
       files: allFiles.length > 0 ? allFiles : primaryMessage.files,
       route: Array.from(allRoutes)[0] || primaryMessage.route,
       chunkUrl: lastChunkUrl ?? primaryMessage.chunkUrl,
+      routePath: lastRoutePath ?? primaryMessage.routePath,
     };
 
     return merged;
   }
 
   /**
-   * 组件/布局/模块更新：优先调用应用注册的 __DWEB_HMR_REFRESH__ 做无感重渲染（不整页刷新），
-   * 传入 chunkUrl 时客户端可加载新 chunk 实现真正的内容更新；未注册时才整页重载。
+   * 组件/布局/模块更新：优先调用应用注册的 __HMR_REFRESH__ 做无感重渲染（不整页刷新），
+   * 传入 chunkUrl/routePath 时客户端可加载新 chunk 实现细粒度更新；未注册时才整页重载。
    */
   private doSeamlessUpdate(message: HMRMessage): void {
     const g = globalThis as unknown as {
-      __DWEB_HMR_REFRESH__?: (options?: { chunkUrl?: string }) => void;
+      __HMR_REFRESH__?: (
+        options?: { chunkUrl?: string; routePath?: string },
+      ) => void;
     };
-    const refresh = g.__DWEB_HMR_REFRESH__;
+    const refresh = g.__HMR_REFRESH__;
     if (typeof refresh === "function") {
       try {
-        refresh({ chunkUrl: message.chunkUrl });
+        refresh({ chunkUrl: message.chunkUrl, routePath: message.routePath });
         this.statusUI.recordUpdate(true);
       } catch (e) {
         console.warn("[HMR] 无感更新失败，回退整页重载:", e);

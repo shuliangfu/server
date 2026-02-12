@@ -7,6 +7,21 @@
 
 ---
 
+## [1.0.4] - 2026-02-10
+
+### 新增
+
+- **HMR routePath**：DevTools 广播与 HMR 浏览器端现在在更新消息中携带
+  `routePath`（对应更新 chunk 的路由路径），并随 `chunkUrl` 一并传入应用注册的
+  `__HMR_REFRESH__` 回调，支持 view/dweb 的细粒度路由级 HMR。
+
+### 变更
+
+- **HMR 刷新钩子名称**：无感 HMR 更新的全局回调现统一为
+  `__HMR_REFRESH__`（替代原先的 `__DWEB_HMR_REFRESH__`）。
+
+---
+
 ## [1.0.3] - 2026-02-10
 
 ### 修复

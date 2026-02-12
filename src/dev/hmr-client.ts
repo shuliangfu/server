@@ -76,6 +76,7 @@ export async function generateHMRClientScript(
         "react-dom",
         "react-dom/client",
         "preact",
+        "@creamer/view",
         "@dreamer/render",
         "@dreamer/render/client",
       ],

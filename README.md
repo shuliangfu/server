@@ -392,9 +392,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.0.3** (2026-02-10): Fixed HMR not starting when using Server with static
-middleware (register HMR in DevTools constructor; call `devTools.start` before
-`listen`). [Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.0.4** (2026-02-10): Added HMR `routePath` in broadcast and
+`__HMR_REFRESH__` callback for fine-grained route-level HMR; refresh hook
+renamed to `__HMR_REFRESH__`. [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 
