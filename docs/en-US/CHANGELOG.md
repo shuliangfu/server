@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.3] - 2026-02-10
+
+### Fixed
+
+- **HMR not starting when using Server with static middleware**: Register HMR
+  WebSocket and injection middleware in DevTools constructor (instead of in
+  `start()`), so the injection middleware runs before `staticFiles` and can
+  inject the HMR client script into HTML responses. Call
+  `devTools.start(actualPort)` before `listen()` so the client script uses the
+  correct port.
+
+---
+
 ## [1.0.2] - 2026-02-11
 
 ### Added

@@ -430,10 +430,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.2**
-(2026-02-11)：新增端口检测（`isPortInUse`、`findAvailablePort`）；配置端口被占用时
-Server 自动使用下一可用端口。文档整理至 `docs/en-US/` 与
-`docs/zh-CN/`。[完整变更](./CHANGELOG.md)
+**v1.0.3** (2026-02-10)：修复与静态中间件一起使用时 HMR 不启动的问题（在
+DevTools 构造时注册 HMR，listen 前调用
+devTools.start）。[完整变更](./CHANGELOG.md)
 
 ---
 

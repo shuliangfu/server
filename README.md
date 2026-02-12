@@ -392,10 +392,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.0.2** (2026-02-11): Added port detection (`isPortInUse`,
-`findAvailablePort`); Server uses next available port when configured port is in
-use. Docs reorganized to `docs/en-US/` and `docs/zh-CN/`.
-[Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.0.3** (2026-02-10): Fixed HMR not starting when using Server with static
+middleware (register HMR in DevTools constructor; call `devTools.start` before
+`listen`). [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 
