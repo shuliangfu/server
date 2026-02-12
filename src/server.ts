@@ -84,6 +84,11 @@ export class Server {
       );
     }
 
+    // 开发模式：先设置实际端口并启动文件监听，再 listen，保证首包 HTML 里的 HMR 脚本用对端口
+    if (this.devTools) {
+      this.devTools.start(actualPort);
+    }
+
     // 启动 HTTP 服务器
     this.serverHandle = this.httpApp.listen({
       port: actualPort,
@@ -94,11 +99,6 @@ export class Server {
         }
       },
     });
-
-    // 开发模式：启动开发工具（传入实际监听端口，供 HMR 客户端脚本等使用）
-    if (this.devTools) {
-      this.devTools.start(actualPort);
-    }
   }
 
   /**
