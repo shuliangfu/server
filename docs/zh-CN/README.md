@@ -430,9 +430,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.3** (2026-02-10)：修复与静态中间件一起使用时 HMR 不启动的问题（在
-DevTools 构造时注册 HMR，listen 前调用
-devTools.start）。[完整变更](./CHANGELOG.md)
+**v1.0.4** (2026-02-10)：新增 HMR 广播与 `__HMR_REFRESH__` 回调中的
+`routePath`，支持细粒度路由级 HMR；刷新钩子统一为
+`__HMR_REFRESH__`。[完整变更](./CHANGELOG.md)
 
 ---
 

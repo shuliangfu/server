@@ -138,6 +138,7 @@ export class DevTools {
     if (actualPort !== undefined) {
       this._listeningPort = actualPort;
     }
+
     // 设置 HMR WebSocket
     if (this.config.hmr !== false) {
       this.setupHMR();
@@ -323,6 +324,7 @@ export class DevTools {
             moduleId,
             affectedModules,
             chunkUrl: result.chunkUrl,
+            routePath: (result as { routePath?: string }).routePath,
           };
           if (updateType === "config-update") {
             updateMessage.type = "reload";

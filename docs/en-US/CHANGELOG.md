@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.4] - 2026-02-10
+
+### Added
+
+- **HMR routePath**: DevTools broadcast and HMR browser client now include
+  `routePath` (route path for the updated chunk) in update messages and pass it
+  to the app-registered `__HMR_REFRESH__` callback together with `chunkUrl`,
+  enabling fine-grained route-level HMR in view/dweb.
+
+### Changed
+
+- **HMR refresh hook name**: The global callback for seamless HMR updates is now
+  documented and invoked as `__HMR_REFRESH__` (replacing the previous
+  `__DWEB_HMR_REFRESH__` name).
+
+---
+
 ## [1.0.3] - 2026-02-10
 
 ### Fixed
