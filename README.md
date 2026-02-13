@@ -392,9 +392,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.0.4** (2026-02-10): Added HMR `routePath` in broadcast and
-`__HMR_REFRESH__` callback for fine-grained route-level HMR; refresh hook
-renamed to `__HMR_REFRESH__`. [Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.0.5** (2026-02-10): PathHandler.handler may return `null`/`undefined` to
+skip handling and pass the request to the next path handler or middleware.
+[Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 

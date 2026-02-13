@@ -7,6 +7,16 @@
 
 ---
 
+## [1.0.5] - 2026-02-10
+
+### 变更
+
+- **PathHandler**：`PathHandler.handler` 可返回 `null` 或 `undefined`
+  表示不处理当前请求，交由下一个 path handler 或中间件链处理（此前返回类型仅为
+  `Response | Promise<Response>`）。
+
+---
+
 ## [1.0.4] - 2026-02-10
 
 ### 新增
