@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.5] - 2026-02-10
+
+### Changed
+
+- **PathHandler**: `PathHandler.handler` may return `null` or `undefined` to
+  skip handling; the request is then passed to the next path handler or the
+  middleware chain (previously the return type was
+  `Response | Promise<Response>` only).
+
+---
+
 ## [1.0.4] - 2026-02-10
 
 ### Added

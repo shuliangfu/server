@@ -24,10 +24,12 @@ import {
   type SSRRenderCallback,
 } from "../router-adapter.ts";
 
-/** 路径前置处理器：在中间件链之前按路径前缀直接处理请求（用于 Socket.IO 等） */
+/** 路径前置处理器：在中间件链之前按路径前缀直接处理请求（用于 Socket.IO 等）；返回 null/undefined 表示不处理、继续后续 pathHandler 或中间件 */
 export type PathHandler = {
   pathPrefix: string;
-  handler: (request: Request) => Response | Promise<Response>;
+  handler: (
+    request: Request,
+  ) => Response | Promise<Response> | null | undefined;
 };
 
 /**
@@ -348,10 +350,14 @@ export class Http {
         }`,
       );
       if (matches) {
-        this.debugLog(`由路径前置处理器接管: ${ph.pathPrefix}`);
         const res = await Promise.resolve(ph.handler(request));
-        this.debugLog(`路径前置处理器返回: ${res.status}`);
-        return res;
+        if (res != null) {
+          this.debugLog(
+            `由路径前置处理器接管: ${ph.pathPrefix} 状态: ${res.status}`,
+          );
+          return res;
+        }
+        this.debugLog(`路径前置处理器返回 null，继续后续处理`);
       }
     }
 

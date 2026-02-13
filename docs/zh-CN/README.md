@@ -430,9 +430,8 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.4** (2026-02-10)：新增 HMR 广播与 `__HMR_REFRESH__` 回调中的
-`routePath`，支持细粒度路由级 HMR；刷新钩子统一为
-`__HMR_REFRESH__`。[完整变更](./CHANGELOG.md)
+**v1.0.5** (2026-02-10)：PathHandler.handler 可返回 `null`/`undefined`
+表示不处理，请求将交给下一个 path handler 或中间件。[完整变更](./CHANGELOG.md)
 
 ---
 
