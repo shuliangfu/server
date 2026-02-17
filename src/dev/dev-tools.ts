@@ -12,6 +12,7 @@ import {
   watchFs,
 } from "@dreamer/runtime-adapter";
 
+import { $t } from "../i18n.ts";
 import type { Http } from "../http/http.ts";
 import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts";
 import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts";
@@ -120,13 +121,14 @@ export class DevTools {
       hmr: options.hmr,
       watch: options.watch,
       builder: options.builder,
+      lang: options.lang,
     };
     this.wsManager = new WebSocketManager();
     this.port = options.port;
     this.host = options.host;
     this.moduleGraph = new ModuleGraphManager();
     this.routeInferrer = createRouteInferrer();
-    this.performanceMonitor = createPerformanceMonitor();
+    this.performanceMonitor = createPerformanceMonitor({ lang: options.lang });
   }
 
   /**
@@ -218,7 +220,7 @@ export class DevTools {
               ws.send(
                 JSON.stringify({
                   type: "connected",
-                  message: "HMR WebSocket 已连接",
+                  message: $t("hmr.connected", undefined, this.config.lang),
                 }),
               );
             } catch {
@@ -228,10 +230,14 @@ export class DevTools {
           return response ?? new Response(null, { status: 101 });
         }
         // 其他运行时不支持 WebSocket
-        return new Response("WebSocket 不支持", { status: 426 });
+        return new Response(
+          $t("dev.wsNotSupported", undefined, this.config.lang),
+          { status: 426 },
+        );
       } catch (error) {
-        console.error("WebSocket 升级失败:", error);
-        return new Response("WebSocket 升级失败", { status: 426 });
+        const msg = $t("dev.wsUpgradeFailed", undefined, this.config.lang);
+        console.error(msg, error);
+        return new Response(msg, { status: 426 });
       }
     });
 
@@ -258,6 +264,7 @@ export class DevTools {
         hmrPath,
         port,
         this.host,
+        this.config.lang,
       );
       const injectedHtml = injectHMRClient(html, clientScript);
 
@@ -339,7 +346,10 @@ export class DevTools {
           this.performanceMonitor.endUpdate(true);
         })
         .catch((error) => {
-          console.error("构建失败:", error);
+          const message = error instanceof Error
+            ? error.message
+            : String(error);
+          console.error($t("dev.buildFailed", { message }, this.config.lang));
           this.wsManager.broadcast({
             type: "error",
             message: error instanceof Error ? error.message : String(error),
@@ -374,7 +384,8 @@ export class DevTools {
         }
       }
     })().catch((error) => {
-      console.error("文件监听错误:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error($t("dev.fileWatchError", { message }, this.config.lang));
     });
   }
 

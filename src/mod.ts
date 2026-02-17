@@ -39,6 +39,7 @@
 
 // 导出核心类
 export { Server } from "./server.ts";
+export type { Locale } from "./i18n.ts";
 export type {
   DevConfig,
   HMRConfig,

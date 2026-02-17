@@ -5,6 +5,7 @@
  */
 
 import { connect } from "@dreamer/runtime-adapter";
+import { $t, type Locale } from "./i18n.ts";
 
 /**
  * 检测指定 host:port 是否已被占用（是否有进程在监听）
@@ -36,6 +37,7 @@ export async function isPortInUse(
  * @param host 主机名
  * @param startPort 起始端口号
  * @param maxAttempts 最大尝试次数（默认 100，即最多尝试 100 个连续端口）
+ * @param lang 服务端文案语言（可选）；不传则从环境变量自动检测
  * @returns 第一个可用端口号
  * @throws 若在 maxAttempts 次内未找到可用端口则抛出错误
  */
@@ -43,6 +45,7 @@ export async function findAvailablePort(
   host: string,
   startPort: number,
   maxAttempts: number = 100,
+  lang?: Locale,
 ): Promise<number> {
   for (let i = 0; i < maxAttempts; i++) {
     const port = startPort + i;
@@ -52,6 +55,9 @@ export async function findAvailablePort(
     }
   }
   throw new Error(
-    `未找到可用端口：从 ${startPort} 起已尝试 ${maxAttempts} 个端口，均被占用`,
+    $t("error.noAvailablePort", {
+      startPort: String(startPort),
+      maxAttempts: String(maxAttempts),
+    }, lang),
   );
 }

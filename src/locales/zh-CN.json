@@ -1,0 +1,49 @@
+{
+  "error": {
+    "noAvailablePort": "未找到可用端口：从 {startPort} 起已尝试 {maxAttempts} 个端口，均被占用",
+    "fetchHmrClientFailed": "获取 HMR 客户端脚本失败: {status} {statusText} ({url})"
+  },
+  "hmr": {
+    "compileClientScriptFailed": "编译 HMR 客户端脚本失败: {message}",
+    "connected": "HMR 已连接"
+  },
+  "dev": {
+    "wsNotSupported": "WebSocket 不支持",
+    "wsUpgradeFailed": "WebSocket 升级失败",
+    "buildFailed": "构建失败: {message}",
+    "fileWatchError": "文件监听错误: {message}"
+  },
+  "hmrPerformance": {
+    "error": "HMR 性能错误: {message}"
+  },
+  "server": {
+    "portInUse": "端口 {port} 已被占用，使用端口 {actualPort}",
+    "stopping": "正在停止服务器...",
+    "stopped": "服务器已停止"
+  },
+  "http": {
+    "routerError": "路由处理错误:",
+    "gracefulShutdownTimeoutPending": "优雅关闭超时，仍有 {count} 个请求未完成",
+    "serverShuttingDownReject": "服务器关闭中，拒绝新请求",
+    "requestReceived": "收到请求: {method} {pathname}{search}",
+    "wsUpgradeRequest": "WebSocket 升级请求 pathname={pathname}",
+    "wsHandlerMatched": "WebSocket 处理器已匹配: {pathname}",
+    "wsNoHandler": "WebSocket 无匹配处理器: {pathname}",
+    "checkPathHandlers": "检查 {count} 个路径前置处理器",
+    "pathHandlerMatch": "路径处理器 prefix={prefix} pathname={pathname} → 匹配",
+    "pathHandlerNoMatch": "路径处理器 prefix={prefix} pathname={pathname} → 不匹配",
+    "pathHandlerTookOver": "由路径前置处理器接管: {prefix} 状态: {status}",
+    "pathHandlerReturnedNull": "路径前置处理器返回 null，继续后续处理",
+    "enteringMiddlewareChain": "进入中间件链 path={pathname}",
+    "middlewareChainDone": "中间件链完成 响应状态: {status}",
+    "middlewareChainDoneNoRoute": "中间件链完成 响应状态: {status} (路由未匹配 404)",
+    "requestError": "请求处理错误:",
+    "requestException": "请求处理异常: {message}",
+    "gracefulShutdownStart": "开始优雅关闭...",
+    "allRequestsCompleted": "所有请求已完成，服务器已关闭",
+    "gracefulShutdownTimeoutForce": "优雅关闭超时，强制关闭服务器",
+    "notFound": "未找到",
+    "serverShuttingDownBody": "服务器正在关闭",
+    "debugPrefix": "[服务器调试]"
+  }
+}

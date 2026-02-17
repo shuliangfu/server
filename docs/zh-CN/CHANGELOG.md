@@ -7,6 +7,23 @@
 
 ---
 
+## [1.0.6] - 2026-02-17
+
+### 新增
+
+- **服务端 i18n**：`ServerOptions`、`DevConfig`、`HttpServerOptions` 支持可选
+  `lang`（如 `"en-US"`、`"zh-CN"`）。不传时从环境变量 `LANGUAGE` / `LC_ALL` /
+  `LANG` 自动检测。所有服务端文案（日志、错误、404/503
+  响应正文、HMR/构建消息、端口检测等）均已翻译。新增 `src/i18n.ts` 与
+  `src/locales/en-US.json`、`zh-CN.json`。
+
+### 变更
+
+- **文档**：README 与 zh-CN README 在特性与 API 章节中补充 `lang` 选项及服务端
+  i18n 说明。
+
+---
+
 ## [1.0.5] - 2026-02-10
 
 ### 变更

@@ -2,11 +2,13 @@
  * @dreamer/server 类型定义
  */
 
+import type { Logger } from "@dreamer/logger";
+import type { Locale } from "./i18n.ts";
+
 /**
  * 服务器模式
  */
 export type ServerMode = "dev" | "prod";
-import type { Logger } from "@dreamer/logger";
 
 /**
  * HMR 配置选项
@@ -43,6 +45,8 @@ export interface DevConfig {
   hmr?: HMRConfig | boolean;
   /** 文件监听配置 */
   watch?: WatchConfig | string[];
+  /** 服务端文案语言（如 "en-US"、"zh-CN"）；不传则从环境 LANGUAGE/LC_ALL/LANG 检测 */
+  lang?: Locale;
   /** 构建器接口（用于增量构建，支持 HMR 无感刷新返回 chunkUrl） */
   builder?: {
     /** 重新构建，可选传入变更路径以返回对应 chunk 的 URL */
@@ -78,6 +82,8 @@ export interface ServerOptions {
   dev?: DevConfig;
   /** 优雅关闭超时时间（毫秒，默认：10000） */
   shutdownTimeout?: number;
+  /** 服务端文案语言（如 "en-US"、"zh-CN"）；不传则从环境 LANGUAGE/LC_ALL/LANG 检测 */
+  lang?: Locale;
 }
 
 /**

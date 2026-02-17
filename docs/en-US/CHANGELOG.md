@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.6] - 2026-02-17
+
+### Added
+
+- **Server-side i18n**: Optional `lang` in `ServerOptions`, `DevConfig`, and
+  `HttpServerOptions` (e.g. `"en-US"`, `"zh-CN"`). When omitted, locale is
+  auto-detected from env (`LANGUAGE` / `LC_ALL` / `LANG`). All server-side
+  messages (logs, errors, 404/503 response body, HMR/build messages, port
+  detection) are translated. New `src/i18n.ts` and `src/locales/en-US.json`,
+  `zh-CN.json`.
+
+### Changed
+
+- **Docs**: README and zh-CN README document the `lang` option and server-side
+  i18n in features and API sections.
+
+---
+
 ## [1.0.5] - 2026-02-10
 
 ### Changed
