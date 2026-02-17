@@ -11,6 +11,8 @@ import type { ServeHandle } from "@dreamer/runtime-adapter";
 import { DevTools } from "./dev/dev-tools.ts";
 import type { HttpServerOptions, PathHandler } from "./http/http.ts";
 import { Http } from "./http/http.ts";
+import { $t } from "./i18n.ts";
+import type { Locale } from "./i18n.ts";
 import { findAvailablePort } from "./port-utils.ts";
 import type { ServerMode, ServerOptions } from "./types.ts";
 
@@ -30,6 +32,8 @@ export class Server {
   private _actualPort?: number;
   private readonly logger: Logger;
   private readonly shutdownTimeout: number;
+  /** 服务端文案语言（可选，不传则自动检测） */
+  private readonly _lang?: Locale;
   /** 用户自定义的监听回调（若提供则优先使用，否则使用默认日志） */
   private readonly onListen?: (params: { host: string; port: number }) => void;
 
@@ -43,7 +47,8 @@ export class Server {
     this._port = options.port || (this.mode === "dev" ? 3000 : 8000);
     this._host = options.host || "localhost";
     this.logger = options.logger || createLogger();
-    this.shutdownTimeout = options.shutdownTimeout || 10000;
+    this.shutdownTimeout = options.shutdownTimeout ?? 10000;
+    this._lang = options.lang ?? options.dev?.lang;
 
     // 创建 HTTP 应用（核心功能）
     const httpOptions: HttpServerOptions = {
@@ -53,6 +58,7 @@ export class Server {
       onError: options.onError,
       logger: this.logger,
       debug: options.debug,
+      lang: this._lang,
     };
 
     this.httpApp = new Http(httpOptions);
@@ -65,6 +71,7 @@ export class Server {
         ...options.dev,
         port: this._port,
         host: this._host,
+        lang: options.dev.lang ?? options.lang,
       });
     }
   }
@@ -75,12 +82,20 @@ export class Server {
    * 会先检测配置的端口是否被占用；若被占用则从当前端口起顺次 +1 查找可用端口并监听。
    */
   async start(): Promise<void> {
-    const actualPort = await findAvailablePort(this._host, this._port);
+    const actualPort = await findAvailablePort(
+      this._host,
+      this._port,
+      undefined,
+      this._lang,
+    );
     this._actualPort = actualPort;
 
     if (actualPort !== this._port) {
       this.logger.info(
-        `端口 ${this._port} 已被占用，使用端口 ${actualPort}`,
+        $t("server.portInUse", {
+          port: String(this._port),
+          actualPort: String(actualPort),
+        }, this._lang),
       );
     }
 
@@ -107,7 +122,7 @@ export class Server {
    * @param timeout 等待请求完成的超时时间（毫秒，默认使用配置的超时时间）
    */
   async stop(timeout?: number): Promise<void> {
-    this.logger.info("正在停止服务器...");
+    this.logger.info($t("server.stopping", undefined, this._lang));
 
     // 先进行优雅关闭（等待请求完成）
     await this.httpApp.gracefulShutdown(timeout ?? this.shutdownTimeout);
@@ -122,7 +137,7 @@ export class Server {
       await this.serverHandle.shutdown();
     }
 
-    this.logger.info("服务器已停止");
+    this.logger.info($t("server.stopped", undefined, this._lang));
   }
 
   /**

@@ -1,0 +1,49 @@
+{
+  "error": {
+    "noAvailablePort": "No available port: tried {maxAttempts} ports from {startPort}, all in use",
+    "fetchHmrClientFailed": "Failed to fetch HMR client script: {status} {statusText} ({url})"
+  },
+  "hmr": {
+    "compileClientScriptFailed": "Failed to compile HMR client script: {message}",
+    "connected": "HMR connected"
+  },
+  "dev": {
+    "wsNotSupported": "WebSocket not supported",
+    "wsUpgradeFailed": "WebSocket upgrade failed",
+    "buildFailed": "Build failed: {message}",
+    "fileWatchError": "File watch error: {message}"
+  },
+  "hmrPerformance": {
+    "error": "HMR performance error: {message}"
+  },
+  "server": {
+    "portInUse": "Port {port} is in use, using port {actualPort}",
+    "stopping": "Stopping server...",
+    "stopped": "Server stopped"
+  },
+  "http": {
+    "routerError": "Route handler error:",
+    "gracefulShutdownTimeoutPending": "Graceful shutdown timeout, {count} request(s) still pending",
+    "serverShuttingDownReject": "Server is shutting down, rejecting new requests",
+    "requestReceived": "Request received: {method} {pathname}{search}",
+    "wsUpgradeRequest": "WebSocket upgrade request pathname={pathname}",
+    "wsHandlerMatched": "WebSocket handler matched: {pathname}",
+    "wsNoHandler": "WebSocket no handler for: {pathname}",
+    "checkPathHandlers": "Checking {count} path handler(s)",
+    "pathHandlerMatch": "Path handler prefix={prefix} pathname={pathname} → match",
+    "pathHandlerNoMatch": "Path handler prefix={prefix} pathname={pathname} → no match",
+    "pathHandlerTookOver": "Taken over by path handler: {prefix} status: {status}",
+    "pathHandlerReturnedNull": "Path handler returned null, continuing",
+    "enteringMiddlewareChain": "Entering middleware chain path={pathname}",
+    "middlewareChainDone": "Middleware chain done response status: {status}",
+    "middlewareChainDoneNoRoute": "Middleware chain done response status: {status} (no route match 404)",
+    "requestError": "Request handling error:",
+    "requestException": "Request handling exception: {message}",
+    "gracefulShutdownStart": "Starting graceful shutdown...",
+    "allRequestsCompleted": "All requests completed, server closed",
+    "gracefulShutdownTimeoutForce": "Graceful shutdown timeout, forcing server close",
+    "notFound": "Not Found",
+    "serverShuttingDownBody": "Server is shutting down",
+    "debugPrefix": "[Server Debug]"
+  }
+}

@@ -5,6 +5,7 @@
  */
 
 import { esbuild } from "@dreamer/esbuild";
+import { $t, type Locale } from "../i18n.ts";
 
 // 缓存编译后的脚本
 let compiledScriptCache: string | null = null;
@@ -26,12 +27,14 @@ function getHmrBrowserScriptUrl(): string {
  * @param hmrPath WebSocket 路径
  * @param port 服务器端口
  * @param host 服务器主机名
+ * @param lang 服务端文案语言（可选）；不传则从环境变量自动检测
  * @returns HMR 客户端脚本代码（编译后的 JavaScript）
  */
 export async function generateHMRClientScript(
   hmrPath: string = "/__hmr",
   port: number = 3000,
   host: string = "localhost",
+  lang?: Locale,
 ): Promise<string> {
   // 如果已缓存，直接返回
   if (compiledScriptCache) {
@@ -52,7 +55,11 @@ export async function generateHMRClientScript(
     const response: Response = await fetch(browserScriptUrl, requestInit);
     if (!response.ok) {
       throw new Error(
-        `获取 HMR 客户端脚本失败: ${response.status} ${response.statusText} (${browserScriptUrl})`,
+        $t("error.fetchHmrClientFailed", {
+          status: String(response.status),
+          statusText: response.statusText,
+          url: browserScriptUrl,
+        }, lang),
       );
     }
     const sourceContent = await response.text();
@@ -97,9 +104,10 @@ export async function generateHMRClientScript(
     // 注入 WebSocket URL
     return injectWSUrl(compiledCode, hmrPath, port, host);
   } catch (error) {
-    console.error("[HMR] 编译客户端脚本失败:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error($t("hmr.compileClientScriptFailed", { message }, lang));
     // 如果编译失败，返回一个简单的回退脚本
-    return generateFallbackScript(hmrPath, port, host);
+    return generateFallbackScript(hmrPath, port, host, lang);
   }
 }
 
@@ -149,15 +157,18 @@ function injectWSUrl(
  * @param hmrPath WebSocket 路径
  * @param port 服务器端口
  * @param host 服务器主机名
+ * @param lang 服务端文案语言（可选），用于回退脚本中的日志文案
  * @returns 回退脚本代码
  */
 function generateFallbackScript(
   hmrPath: string,
   port: number,
   host: string,
+  lang?: Locale,
 ): string {
   const protocol = "ws:";
   const wsUrl = `${protocol}//${host}:${port}${hmrPath}`;
+  const connectedMsg = $t("hmr.connected", undefined, lang);
 
   return `
 (function() {
@@ -168,7 +179,7 @@ function generateFallbackScript(
   function connect() {
     try {
       ws = new WebSocket(wsUrl);
-      ws.onopen = () => console.log('[HMR] 已连接');
+      ws.onopen = () => console.log(${JSON.stringify(connectedMsg)});
       ws.onmessage = (e) => {
         try {
           const msg = JSON.parse(e.data);

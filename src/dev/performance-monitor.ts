@@ -4,6 +4,8 @@
  * 记录和统计 HMR 更新的性能指标
  */
 
+import { $t, type Locale } from "../i18n.ts";
+
 /**
  * 性能指标
  */
@@ -53,6 +55,11 @@ export class HMRPerformanceMonitor {
   private metrics: PerformanceMetrics[] = [];
   private currentUpdate: PerformanceMetrics | null = null;
   private readonly maxMetrics = 100; // 最多保留 100 条记录
+  private readonly lang?: Locale;
+
+  constructor(options?: { lang?: Locale }) {
+    this.lang = options?.lang;
+  }
 
   /**
    * 开始记录更新
@@ -153,7 +160,9 @@ export class HMRPerformanceMonitor {
    */
   private logPerformance(metrics: PerformanceMetrics): void {
     if (!metrics.success && metrics.error) {
-      console.error(`[HMR 性能] 错误: ${metrics.error}`);
+      console.error(
+        $t("hmrPerformance.error", { message: metrics.error }, this.lang),
+      );
     }
   }
 }
@@ -161,8 +170,11 @@ export class HMRPerformanceMonitor {
 /**
  * 创建性能监控器实例
  *
+ * @param options 可选配置（如 lang 用于日志文案）
  * @returns 性能监控器实例
  */
-export function createPerformanceMonitor(): HMRPerformanceMonitor {
-  return new HMRPerformanceMonitor();
+export function createPerformanceMonitor(
+  options?: { lang?: Locale },
+): HMRPerformanceMonitor {
+  return new HMRPerformanceMonitor(options);
 }

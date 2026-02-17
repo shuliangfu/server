@@ -5,7 +5,7 @@
 [English](../../README.md) | 中文 (Chinese)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE.md)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
 [![Tests](https://img.shields.io/badge/tests-143%20passed-brightgreen)](./TEST_REPORT.md)
 
 ---
@@ -26,6 +26,8 @@
   - Cookie 管理（解析和设置）
   - 错误处理和日志记录（@dreamer/logger）
   - WebSocket 支持（用于 HMR 等）
+  - 服务端 i18n（可选 `lang`：日志、错误、404/503
+    正文等；不传则从环境变量自动检测）
 
 ### 开发服务器功能
 
@@ -179,6 +181,8 @@ new Server(options?: ServerOptions)
   等均通过 logger 输出）
 - `options.debug?: boolean` - 是否启用调试日志（默认：`false`），开启后通过
   `logger.debug` 输出请求路径、路径前置处理器、中间件链、响应状态等详细调试信息
+- `options.lang?: "en-US" | "zh-CN"` - 服务端文案语言（日志、错误、HTTP 404/503
+  正文等）。不传则从环境变量 `LANGUAGE` / `LC_ALL` / `LANG` 自动检测。
 - `options.dev?: DevConfig` - 开发工具配置（仅开发模式）
 
 #### 方法
@@ -202,6 +206,8 @@ interface DevConfig {
   hmr?: HMRConfig | boolean;
   /** 文件监听配置 */
   watch?: WatchConfig | string[];
+  /** 服务端文案语言（如 HMR、构建错误等）。不传则从环境变量自动检测 */
+  lang?: "en-US" | "zh-CN";
   /** 构建器接口（用于增量构建） */
   builder?: {
     rebuild(): Promise<
@@ -430,8 +436,11 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.5** (2026-02-10)：PathHandler.handler 可返回 `null`/`undefined`
-表示不处理，请求将交给下一个 path handler 或中间件。[完整变更](./CHANGELOG.md)
+**v1.0.6** (2026-02-17)：服务端
+i18n：ServerOptions、DevConfig、HttpServerOptions 支持可选
+`lang`；日志、错误、404/503
+正文、HMR/构建消息已翻译；不传则从环境变量自动检测。文档补充 lang 与 i18n
+说明。[完整变更](./CHANGELOG.md)
 
 ---
 
@@ -443,7 +452,7 @@ await server.start();
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE.md](../../LICENSE.md)
+Apache License 2.0 - 详见 [LICENSE](../../LICENSE)
 
 ---
 

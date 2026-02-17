@@ -6,7 +6,7 @@
 English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-143%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 ---
@@ -27,6 +27,8 @@ and production server features.
   - Cookie management (parse and set)
   - Error handling and logging (@dreamer/logger)
   - WebSocket support (for HMR, etc.)
+  - Server-side i18n (optional `lang`: logs, errors, 404/503 body; auto-detect
+    from env when omitted)
 
 ### Dev Server
 
@@ -169,6 +171,9 @@ new Server(options?: ServerOptions)
 - `options.logger?: Logger` - Logger instance (default logger if not provided)
 - `options.debug?: boolean` - Enable debug logs (default: `false`), outputs
   path, pre-handlers, middleware chain, response status via `logger.debug`
+- `options.lang?: "en-US" | "zh-CN"` - Server-side message language (logs,
+  errors, HTTP 404/503 body, etc.). When omitted, locale is auto-detected from
+  env (`LANGUAGE` / `LC_ALL` / `LANG`).
 - `options.dev?: DevConfig` - Dev config (dev mode only)
 
 #### Methods
@@ -188,6 +193,8 @@ new Server(options?: ServerOptions)
 interface DevConfig {
   hmr?: HMRConfig | boolean;
   watch?: WatchConfig | string[];
+  /** Server-side message language (e.g. HMR, build errors). Omit to auto-detect from env. */
+  lang?: "en-US" | "zh-CN";
   builder?: {
     rebuild(): Promise<
       { outputFiles?: Array<{ path: string; contents: Uint8Array }> }
@@ -392,8 +399,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.0.5** (2026-02-10): PathHandler.handler may return `null`/`undefined` to
-skip handling and pass the request to the next path handler or middleware.
+**v1.0.6** (2026-02-17): Server-side i18n: optional `lang` in ServerOptions,
+DevConfig, HttpServerOptions; logs, errors, 404/503 body, HMR/build messages
+translated; auto-detect from env when omitted. Docs: lang option and i18n.
 [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
@@ -406,7 +414,7 @@ Issues and Pull Requests are welcome.
 
 ## 📄 License
 
-MIT License - see [LICENSE.md](./LICENSE.md)
+Apache License 2.0 - see [LICENSE](./LICENSE)
 
 ---
 
