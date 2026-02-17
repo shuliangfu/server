@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - **i18n**: Init at entry only; `initServerI18n()` is called once in `mod.ts`.
   `$t()` no longer calls `ensureServerI18n()` or sets locale internally.
+- **Dependencies**: Updated JSR dependencies (e.g. @dreamer/console,
+  @dreamer/esbuild).
 
 ---
 

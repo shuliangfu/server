@@ -436,8 +436,8 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.7** (2026-02-17)：i18n 仅在入口初始化（mod 中调用
-`initServerI18n()`）；`$t()` 内不再执行 ensure/init。[完整变更](./CHANGELOG.md)
+**v1.0.7** (2026-02-17)：i18n 仅在入口初始化；`$t()` 内不再执行
+ensure/init。更新 JSR 依赖。[完整变更](./CHANGELOG.md)
 
 ---
 

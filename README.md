@@ -399,8 +399,8 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.0.7** (2026-02-17): i18n init at entry only (`initServerI18n()` in mod);
-`$t()` no longer calls ensure/init internally.
+**v1.0.7** (2026-02-17): i18n init at entry only; `$t()` no longer calls
+ensure/init. Updated JSR dependencies.
 [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
