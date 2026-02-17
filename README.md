@@ -399,9 +399,8 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.0.6** (2026-02-17): Server-side i18n: optional `lang` in ServerOptions,
-DevConfig, HttpServerOptions; logs, errors, 404/503 body, HMR/build messages
-translated; auto-detect from env when omitted. Docs: lang option and i18n.
+**v1.0.7** (2026-02-17): i18n init at entry only (`initServerI18n()` in mod);
+`$t()` no longer calls ensure/init internally.
 [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---

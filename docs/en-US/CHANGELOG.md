@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.7] - 2026-02-17
+
+### Changed
+
+- **i18n**: Init at entry only; `initServerI18n()` is called once in `mod.ts`.
+  `$t()` no longer calls `ensureServerI18n()` or sets locale internally.
+
+---
+
 ## [1.0.6] - 2026-02-17
 
 ### Added
