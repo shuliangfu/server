@@ -13,6 +13,7 @@
 
 - **i18n**：仅在入口初始化；`mod.ts` 中调用一次 `initServerI18n()`。`$t()`
   内不再调用 `ensureServerI18n()` 或设置 locale。
+- **依赖**：更新 JSR 依赖（如 @dreamer/console、@dreamer/esbuild）。
 
 ---
 
