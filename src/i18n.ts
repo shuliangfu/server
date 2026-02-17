@@ -61,20 +61,24 @@ export function ensureServerI18n(): void {
 }
 
 /**
- * Translate by key (server-side). When lang is not passed, uses detectLocale().
+ * Load translations and set current locale. Call once at entry (e.g. mod or Server).
+ */
+export function initServerI18n(): void {
+  ensureServerI18n();
+  $i18n.setLocale(detectLocale());
+}
+
+/**
+ * Translate by key (server-side). When lang is not passed, uses current locale (set at entry).
+ * Do not call ensure/init inside $t; call initServerI18n() at entry.
  */
 export function $t(
   key: string,
   params?: TranslationParams,
   lang?: Locale,
 ): string {
-  ensureServerI18n();
-  const current = $i18n.getLocale();
-  const isSupported = (l: string): l is Locale =>
-    SERVER_LOCALES.includes(l as Locale);
-
   if (lang !== undefined) {
-    const prev = current;
+    const prev = $i18n.getLocale();
     $i18n.setLocale(lang);
     try {
       return $i18n.t(key, params);
@@ -82,8 +86,5 @@ export function $t(
       $i18n.setLocale(prev);
     }
   }
-
-  const effective: Locale = isSupported(current) ? current : detectLocale();
-  $i18n.setLocale(effective);
   return $i18n.t(key, params);
 }

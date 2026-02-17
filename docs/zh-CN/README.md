@@ -436,11 +436,8 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.6** (2026-02-17)：服务端
-i18n：ServerOptions、DevConfig、HttpServerOptions 支持可选
-`lang`；日志、错误、404/503
-正文、HMR/构建消息已翻译；不传则从环境变量自动检测。文档补充 lang 与 i18n
-说明。[完整变更](./CHANGELOG.md)
+**v1.0.7** (2026-02-17)：i18n 仅在入口初始化（mod 中调用
+`initServerI18n()`）；`$t()` 内不再执行 ensure/init。[完整变更](./CHANGELOG.md)
 
 ---
 
