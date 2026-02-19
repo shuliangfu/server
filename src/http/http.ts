@@ -16,10 +16,9 @@ import type { Router } from "@dreamer/router";
 import type { ServeHandle, ServeOptions } from "@dreamer/runtime-adapter";
 import { serve as runtimeServe } from "@dreamer/runtime-adapter";
 
-import { $i18n } from "@dreamer/i18n";
 import type { HttpContext, HttpError } from "../context.ts";
 import { CookieManager } from "../cookie.ts";
-import { $t, type Locale } from "../i18n.ts";
+import { $tr, type Locale, setServerLocale } from "../i18n.ts";
 import {
   RouterAdapter,
   type RouterAdapterOptions,
@@ -101,9 +100,9 @@ export class Http {
     this.isShuttingDown = false;
     this.debug = options.debug === true;
 
-    // 若传入 lang，设置全局 locale，后续 $t() 不传 lang 时会使用该语言
+    // 若传入 lang，设置包内 locale，后续 $tr() 不传 lang 时会使用该语言
     if (options.lang) {
-      $i18n.setLocale(options.lang);
+      setServerLocale(options.lang);
     }
   }
 
@@ -112,7 +111,7 @@ export class Http {
    */
   private debugLog(message: string): void {
     if (this.debug) {
-      this.logger.debug(`${$t("http.debugPrefix")} ${message}`);
+      this.logger.debug(`${$tr("http.debugPrefix")} ${message}`);
     }
   }
 
@@ -239,7 +238,7 @@ export class Http {
     try {
       return await this.routerAdapter.handle(ctx);
     } catch (error) {
-      this.logger.error($t("http.routerError"), error);
+      this.logger.error($tr("http.routerError"), error);
       return false;
     }
   }
@@ -281,7 +280,7 @@ export class Http {
         if (Date.now() - startTime >= timeout) {
           if (checkTimerId !== null) clearTimeout(checkTimerId);
           this.logger.warn(
-            $t("http.gracefulShutdownTimeoutPending", {
+            $tr("http.gracefulShutdownTimeoutPending", {
               count: String(this.activeRequests.size),
             }),
           );
@@ -305,8 +304,8 @@ export class Http {
   private async handleRequest(request: Request): Promise<Response> {
     // 如果正在关闭，拒绝新请求
     if (this.isShuttingDown) {
-      this.debugLog($t("http.serverShuttingDownReject"));
-      return new Response($t("http.serverShuttingDownBody"), { status: 503 });
+      this.debugLog($tr("http.serverShuttingDownReject"));
+      return new Response($tr("http.serverShuttingDownBody"), { status: 503 });
     }
 
     // 创建请求 Promise 并跟踪
@@ -334,7 +333,7 @@ export class Http {
     const method = request.method;
 
     this.debugLog(
-      $t("http.requestReceived", {
+      $tr("http.requestReceived", {
         method,
         pathname,
         search: url.search ? `?${url.search}` : "",
@@ -343,26 +342,26 @@ export class Http {
 
     // 检查 WebSocket 升级请求
     if (request.headers.get("upgrade") === "websocket") {
-      this.debugLog($t("http.wsUpgradeRequest", { pathname }));
+      this.debugLog($tr("http.wsUpgradeRequest", { pathname }));
       const handler = this.wsHandlers.get(pathname);
       if (handler) {
-        this.debugLog($t("http.wsHandlerMatched", { pathname }));
+        this.debugLog($tr("http.wsHandlerMatched", { pathname }));
         return handler(request);
       }
-      this.debugLog($t("http.wsNoHandler", { pathname }));
+      this.debugLog($tr("http.wsNoHandler", { pathname }));
     }
 
     // 路径前置处理器：在中间件链之前执行，保证 /socket.io/ 等由框架挂载的处理器直接接管，避免被路由或其它中间件影响
     const pathHandlers = this.pathHandlersGetter?.() ?? [];
     this.debugLog(
-      $t("http.checkPathHandlers", { count: String(pathHandlers.length) }),
+      $tr("http.checkPathHandlers", { count: String(pathHandlers.length) }),
     );
     for (const ph of pathHandlers) {
       const prefixNoTrailing = ph.pathPrefix.replace(/\/$/, "");
       const matches = pathname.startsWith(ph.pathPrefix) ||
         pathname === prefixNoTrailing;
       this.debugLog(
-        $t(matches ? "http.pathHandlerMatch" : "http.pathHandlerNoMatch", {
+        $tr(matches ? "http.pathHandlerMatch" : "http.pathHandlerNoMatch", {
           prefix: ph.pathPrefix,
           pathname,
         }),
@@ -371,21 +370,21 @@ export class Http {
         const res = await Promise.resolve(ph.handler(request));
         if (res != null) {
           this.debugLog(
-            $t("http.pathHandlerTookOver", {
+            $tr("http.pathHandlerTookOver", {
               prefix: ph.pathPrefix,
               status: String(res.status),
             }),
           );
           return res;
         }
-        this.debugLog($t("http.pathHandlerReturnedNull"));
+        this.debugLog($tr("http.pathHandlerReturnedNull"));
       }
     }
 
     const ctx = this.createContext(request);
 
     try {
-      this.debugLog($t("http.enteringMiddlewareChain", { pathname }));
+      this.debugLog($tr("http.enteringMiddlewareChain", { pathname }));
       // 中间件链只执行一次：路径前缀（Socket.IO、静态）→ 插件（onRequest/next/onResponse）→ 路由；路由在链尾设置 ctx.response，插件的 onResponse 在 next() 返回后注入 CSS 等
       try {
         await this.middlewareChain.execute(ctx);
@@ -395,9 +394,9 @@ export class Http {
 
       // 获取响应
       let response = ctx.response ||
-        new Response($t("http.notFound"), { status: 404 });
+        new Response($tr("http.notFound"), { status: 404 });
       this.debugLog(
-        $t(
+        $tr(
           ctx.response
             ? "http.middlewareChainDone"
             : "http.middlewareChainDoneNoRoute",
@@ -424,9 +423,9 @@ export class Http {
       return response;
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      this.debugLog($t("http.requestException", { message: errMsg }));
+      this.debugLog($tr("http.requestException", { message: errMsg }));
       // 错误对象作为第三个参数传入，logger 会输出 message/stack，避免 JSON.stringify(Error) 得到 {}
-      this.logger.error($t("http.requestError"), undefined, error);
+      this.logger.error($tr("http.requestError"), undefined, error);
 
       // 使用自定义错误处理函数
       if (this.onError) {
@@ -481,16 +480,16 @@ export class Http {
    * @returns Promise，在所有请求完成后 resolve
    */
   async gracefulShutdown(timeout: number = 10000): Promise<void> {
-    this.logger.info($t("http.gracefulShutdownStart"));
+    this.logger.info($tr("http.gracefulShutdownStart"));
     this.isShuttingDown = true;
 
     // 等待所有进行中的请求完成
     const allCompleted = await this.waitForRequests(timeout);
 
     if (allCompleted) {
-      this.logger.info($t("http.allRequestsCompleted"));
+      this.logger.info($tr("http.allRequestsCompleted"));
     } else {
-      this.logger.warn($t("http.gracefulShutdownTimeoutForce"));
+      this.logger.warn($tr("http.gracefulShutdownTimeoutForce"));
     }
 
     // 清理资源

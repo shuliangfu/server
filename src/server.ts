@@ -11,7 +11,7 @@ import type { ServeHandle } from "@dreamer/runtime-adapter";
 import { DevTools } from "./dev/dev-tools.ts";
 import type { HttpServerOptions, PathHandler } from "./http/http.ts";
 import { Http } from "./http/http.ts";
-import { $t } from "./i18n.ts";
+import { $tr } from "./i18n.ts";
 import type { Locale } from "./i18n.ts";
 import { findAvailablePort } from "./port-utils.ts";
 import type { ServerMode, ServerOptions } from "./types.ts";
@@ -92,7 +92,7 @@ export class Server {
 
     if (actualPort !== this._port) {
       this.logger.info(
-        $t("server.portInUse", {
+        $tr("server.portInUse", {
           port: String(this._port),
           actualPort: String(actualPort),
         }, this._lang),
@@ -122,7 +122,7 @@ export class Server {
    * @param timeout 等待请求完成的超时时间（毫秒，默认使用配置的超时时间）
    */
   async stop(timeout?: number): Promise<void> {
-    this.logger.info($t("server.stopping", undefined, this._lang));
+    this.logger.info($tr("server.stopping", undefined, this._lang));
 
     // 先进行优雅关闭（等待请求完成）
     await this.httpApp.gracefulShutdown(timeout ?? this.shutdownTimeout);
@@ -137,7 +137,7 @@ export class Server {
       await this.serverHandle.shutdown();
     }
 
-    this.logger.info($t("server.stopped", undefined, this._lang));
+    this.logger.info($tr("server.stopped", undefined, this._lang));
   }
 
   /**

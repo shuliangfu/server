@@ -39,12 +39,12 @@
 
 import { initServerI18n } from "./i18n.ts";
 
-// 入口处初始化服务端 i18n（加载翻译并设置当前 locale，$t 内不再做 ensure/init）
+// 入口处初始化服务端 i18n（加载翻译并设置当前 locale，$tr 内不再做 ensure/init）
 initServerI18n();
 
 // 导出核心类
 export { Server } from "./server.ts";
-export type { Locale } from "./i18n.ts";
+// i18n 仅包内使用，不对外导出
 export type {
   DevConfig,
   HMRConfig,

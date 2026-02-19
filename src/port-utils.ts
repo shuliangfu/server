@@ -5,7 +5,7 @@
  */
 
 import { connect } from "@dreamer/runtime-adapter";
-import { $t, type Locale } from "./i18n.ts";
+import { $tr, type Locale } from "./i18n.ts";
 
 /**
  * 检测指定 host:port 是否已被占用（是否有进程在监听）
@@ -55,7 +55,7 @@ export async function findAvailablePort(
     }
   }
   throw new Error(
-    $t("error.noAvailablePort", {
+    $tr("error.noAvailablePort", {
       startPort: String(startPort),
       maxAttempts: String(maxAttempts),
     }, lang),
