@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.9] - 2026-02-19
+
+### Changed
+
+- **i18n**: i18n now initializes automatically when the i18n module is loaded;
+  `initServerI18n` is no longer exported. Removed explicit `initServerI18n()`
+  call from `mod.ts`. `$tr` and `setServerLocale` still ensure init when called.
+- **Dependencies**: Bumped @dreamer/console, @dreamer/render,
+  @dreamer/middleware, @dreamer/router, @dreamer/runtime-adapter, @dreamer/test,
+  @dreamer/esbuild.
+
+---
+
 ## [1.0.8] - 2026-02-19
 
 ### Changed

@@ -54,11 +54,8 @@ export function detectLocale(): Locale {
   return DEFAULT_LOCALE;
 }
 
-/**
- * Create server i18n instance and set locale. Call once at entry (e.g. mod or Server).
- * Does not call install(); uses module instance only.
- */
-export function initServerI18n(): void {
+/** 内部初始化，导入 i18n 时自动执行，不导出 */
+function initServerI18n(): void {
   if (serverI18n) return;
   const i18n = createI18n({
     defaultLocale: DEFAULT_LOCALE,
@@ -70,8 +67,10 @@ export function initServerI18n(): void {
   serverI18n = i18n;
 }
 
+initServerI18n();
+
 /**
- * Set server package locale (e.g. from HTTP options.lang). Call initServerI18n first if needed.
+ * Set server package locale (e.g. from HTTP options.lang).
  */
 export function setServerLocale(lang: Locale): void {
   initServerI18n();
@@ -87,6 +86,7 @@ export function $tr(
   params?: Record<string, string | number>,
   lang?: Locale,
 ): string {
+  if (!serverI18n) initServerI18n();
   if (!serverI18n) return key;
   if (lang !== undefined) {
     const prev = serverI18n.getLocale();

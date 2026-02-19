@@ -7,6 +7,18 @@
 
 ---
 
+## [1.0.9] - 2026-02-19
+
+### 变更
+
+- **i18n**：i18n 在加载 i18n 模块时自动初始化；`initServerI18n` 不再导出。已从
+  `mod.ts` 中移除显式 `initServerI18n()` 调用；`$tr` 与 `setServerLocale`
+  调用时仍会确保完成初始化。
+- **依赖**：升级 @dreamer/console、@dreamer/render、@dreamer/middleware、
+  @dreamer/router、@dreamer/runtime-adapter、@dreamer/test、@dreamer/esbuild。
+
+---
+
 ## [1.0.8] - 2026-02-19
 
 ### 变更

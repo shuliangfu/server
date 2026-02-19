@@ -12,9 +12,10 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.0.8] - 2026-02-19
+### [1.0.9] - 2026-02-19
 
-- **Changed**: i18n translation method `$t` → `$tr`.
+- **Changed**: i18n auto-initializes on module load; `initServerI18n` no longer
+  exported; removed explicit init from `mod.ts`. Dependency bumps.
 
 ---
 
@@ -406,9 +407,8 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.0.7** (2026-02-17): i18n init at entry only; `$t()` no longer calls
-ensure/init. Updated JSR dependencies.
-[Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.0.9** (2026-02-19): i18n auto-initializes on load; `initServerI18n` no
+longer exported. Dependency bumps. [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 
