@@ -4,7 +4,7 @@
  * 记录和统计 HMR 更新的性能指标
  */
 
-import { $t, type Locale } from "../i18n.ts";
+import { $tr, type Locale } from "../i18n.ts";
 
 /**
  * 性能指标
@@ -161,7 +161,7 @@ export class HMRPerformanceMonitor {
   private logPerformance(metrics: PerformanceMetrics): void {
     if (!metrics.success && metrics.error) {
       console.error(
-        $t("hmrPerformance.error", { message: metrics.error }, this.lang),
+        $tr("hmrPerformance.error", { message: metrics.error }, this.lang),
       );
     }
   }

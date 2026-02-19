@@ -9,6 +9,13 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-143%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
+**Changelog**: [English](./docs/en-US/CHANGELOG.md) |
+[中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
+
+### [1.0.8] - 2026-02-19
+
+- **Changed**: i18n translation method `$t` → `$tr`.
+
 ---
 
 ## 🎯 Features

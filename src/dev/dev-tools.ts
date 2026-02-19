@@ -12,7 +12,7 @@ import {
   watchFs,
 } from "@dreamer/runtime-adapter";
 
-import { $t } from "../i18n.ts";
+import { $tr } from "../i18n.ts";
 import type { Http } from "../http/http.ts";
 import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts";
 import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts";
@@ -220,7 +220,7 @@ export class DevTools {
               ws.send(
                 JSON.stringify({
                   type: "connected",
-                  message: $t("hmr.connected", undefined, this.config.lang),
+                  message: $tr("hmr.connected"),
                 }),
               );
             } catch {
@@ -231,11 +231,11 @@ export class DevTools {
         }
         // 其他运行时不支持 WebSocket
         return new Response(
-          $t("dev.wsNotSupported", undefined, this.config.lang),
+          $tr("dev.wsNotSupported"),
           { status: 426 },
         );
       } catch (error) {
-        const msg = $t("dev.wsUpgradeFailed", undefined, this.config.lang);
+        const msg = $tr("dev.wsUpgradeFailed");
         console.error(msg, error);
         return new Response(msg, { status: 426 });
       }
@@ -349,7 +349,7 @@ export class DevTools {
           const message = error instanceof Error
             ? error.message
             : String(error);
-          console.error($t("dev.buildFailed", { message }, this.config.lang));
+          console.error($tr("dev.buildFailed", { message }, this.config.lang));
           this.wsManager.broadcast({
             type: "error",
             message: error instanceof Error ? error.message : String(error),
@@ -385,7 +385,7 @@ export class DevTools {
       }
     })().catch((error) => {
       const message = error instanceof Error ? error.message : String(error);
-      console.error($t("dev.fileWatchError", { message }, this.config.lang));
+      console.error($tr("dev.fileWatchError", { message }, this.config.lang));
     });
   }
 

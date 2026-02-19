@@ -5,7 +5,7 @@
  */
 
 import { esbuild } from "@dreamer/esbuild";
-import { $t, type Locale } from "../i18n.ts";
+import { $tr, type Locale } from "../i18n.ts";
 
 // 缓存编译后的脚本
 let compiledScriptCache: string | null = null;
@@ -55,7 +55,7 @@ export async function generateHMRClientScript(
     const response: Response = await fetch(browserScriptUrl, requestInit);
     if (!response.ok) {
       throw new Error(
-        $t("error.fetchHmrClientFailed", {
+        $tr("error.fetchHmrClientFailed", {
           status: String(response.status),
           statusText: response.statusText,
           url: browserScriptUrl,
@@ -105,7 +105,7 @@ export async function generateHMRClientScript(
     return injectWSUrl(compiledCode, hmrPath, port, host);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error($t("hmr.compileClientScriptFailed", { message }, lang));
+    console.error($tr("hmr.compileClientScriptFailed", { message }, lang));
     // 如果编译失败，返回一个简单的回退脚本
     return generateFallbackScript(hmrPath, port, host, lang);
   }
@@ -168,7 +168,7 @@ function generateFallbackScript(
 ): string {
   const protocol = "ws:";
   const wsUrl = `${protocol}//${host}:${port}${hmrPath}`;
-  const connectedMsg = $t("hmr.connected", undefined, lang);
+  const connectedMsg = $tr("hmr.connected", undefined, lang);
 
   return `
 (function() {
