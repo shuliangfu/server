@@ -55,6 +55,8 @@ export interface DevConfig {
         outputFiles?: Array<{ path: string; contents: Uint8Array }>;
         /** 本次变更对应路由的 chunk URL，供 HMR 无感刷新使用 */
         chunkUrl?: string;
+        /** 各路由页面 chunk URL（改共享组件时供客户端按当前路由强制拉取） */
+        routeChunkUrls?: Record<string, string>;
       }
     >;
   };

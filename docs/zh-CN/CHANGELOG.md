@@ -7,6 +7,22 @@
 
 ---
 
+## [1.0.10] - 2026-04-06
+
+### 新增
+
+- **HMR `routeChunkUrls`**：开发态 `builder.rebuild()` 的返回值可包含可选字段
+  `routeChunkUrls`（路由 component 标识 → chunk URL）。DevTools WebSocket
+  广播会携带该字段；合并后的 HMR 消息保留最近一次映射。应用可将其与
+  `chunkUrl`、`routePath` 一并传给 `__HMR_REFRESH__`，在共享模块变更时仅按当前
+  路由拉取新 chunk，无需整页刷新（如 `@dreamer/dweb`）。
+
+### 变更
+
+- **类型**：`DevConfig.builder.rebuild` 的返回类型补充可选 `routeChunkUrls`。
+
+---
+
 ## [1.0.9] - 2026-02-19
 
 ### 变更

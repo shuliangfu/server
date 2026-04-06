@@ -12,10 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.0.9] - 2026-02-19
+### [1.0.10] - 2026-04-06
 
-- **Changed**: i18n auto-initializes on module load; `initServerI18n` no longer
-  exported; removed explicit init from `mod.ts`. Dependency bumps.
+- **Added**: HMR broadcast and `__HMR_REFRESH__` support optional
+  `routeChunkUrls` from `builder.rebuild()` for current-route refresh without
+  full reload. See [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
 

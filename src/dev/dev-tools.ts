@@ -332,6 +332,9 @@ export class DevTools {
             affectedModules,
             chunkUrl: result.chunkUrl,
             routePath: (result as { routePath?: string }).routePath,
+            routeChunkUrls:
+              (result as { routeChunkUrls?: Record<string, string> })
+                .routeChunkUrls,
           };
           if (updateType === "config-update") {
             updateMessage.type = "reload";

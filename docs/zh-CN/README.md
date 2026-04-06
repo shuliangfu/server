@@ -436,8 +436,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.9**（2026-02-19）：i18n 在模块加载时自动初始化；`initServerI18n`
-不再导出。依赖升级。[完整变更](./CHANGELOG.md)
+**v1.0.10**（2026-04-06）：HMR 支持可选 `routeChunkUrls`，与 `__HMR_REFRESH__`
+配合可在共享模块变更时仅刷新当前路由 chunk，无需整页刷新。
+[完整变更](./CHANGELOG.md)
 
 ---
 

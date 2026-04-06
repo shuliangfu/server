@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.10] - 2026-04-06
+
+### Added
+
+- **HMR `routeChunkUrls`**: Dev `builder.rebuild()` may resolve with optional
+  `routeChunkUrls` (`Record<routeComponentKey, chunkUrl>`). DevTools WebSocket
+  broadcast includes it; merged HMR messages keep the latest map. Apps can pass
+  it to `__HMR_REFRESH__` together with `chunkUrl` / `routePath` so the current
+  route chunk is re-fetched without a full page reload when shared modules
+  change (e.g. `@dreamer/dweb`).
+
+### Changed
+
+- **Types**: `DevConfig.builder.rebuild` return type documents optional
+  `routeChunkUrls`.
+
+---
+
 ## [1.0.9] - 2026-02-19
 
 ### Changed
