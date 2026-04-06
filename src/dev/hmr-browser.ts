@@ -39,6 +39,8 @@ interface HMRMessage {
   chunkUrl?: string;
   /** 与 chunkUrl 对应：该 chunk 所属路由的 path（如 "/"、"/signal"），view 细粒度 HMR 用 */
   routePath?: string;
+  /** 路由 component 标识 → chunk URL（改 components 等共享代码时刷新当前路由用） */
+  routeChunkUrls?: Record<string, string>;
 }
 
 /**
@@ -883,6 +885,9 @@ class HMRClient {
       ?.chunkUrl;
     const lastRoutePath = [...messages].reverse().find((m) => m.routePath)
       ?.routePath;
+    const lastRouteChunkUrls = [...messages].reverse().find((m) =>
+      m.routeChunkUrls != null && typeof m.routeChunkUrls === "object"
+    )?.routeChunkUrls;
     const merged: HMRMessage = {
       ...primaryMessage,
       path: Array.from(allPaths)[0] || primaryMessage.path,
@@ -890,6 +895,7 @@ class HMRClient {
       route: Array.from(allRoutes)[0] || primaryMessage.route,
       chunkUrl: lastChunkUrl ?? primaryMessage.chunkUrl,
       routePath: lastRoutePath ?? primaryMessage.routePath,
+      routeChunkUrls: lastRouteChunkUrls ?? primaryMessage.routeChunkUrls,
     };
 
     return merged;
@@ -897,18 +903,26 @@ class HMRClient {
 
   /**
    * 组件/布局/模块更新：优先调用应用注册的 __HMR_REFRESH__ 做无感重渲染（不整页刷新），
-   * 传入 chunkUrl/routePath 时客户端可加载新 chunk 实现细粒度更新；未注册时才整页重载。
+   * 传入 chunkUrl / routeChunkUrls / routePath 时客户端可加载新 chunk；未注册时才整页重载。
    */
   private doSeamlessUpdate(message: HMRMessage): void {
     const g = globalThis as unknown as {
       __HMR_REFRESH__?: (
-        options?: { chunkUrl?: string; routePath?: string },
+        options?: {
+          chunkUrl?: string;
+          routePath?: string;
+          routeChunkUrls?: Record<string, string>;
+        },
       ) => void;
     };
     const refresh = g.__HMR_REFRESH__;
     if (typeof refresh === "function") {
       try {
-        refresh({ chunkUrl: message.chunkUrl, routePath: message.routePath });
+        refresh({
+          chunkUrl: message.chunkUrl,
+          routePath: message.routePath,
+          routeChunkUrls: message.routeChunkUrls,
+        });
         this.statusUI.recordUpdate(true);
       } catch (e) {
         console.warn("[HMR] 无感更新失败，回退整页重载:", e);
