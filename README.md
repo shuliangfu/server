@@ -12,11 +12,13 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.0.10] - 2026-04-06
+### [1.0.11] - 2026-04-07
 
-- **Added**: HMR broadcast and `__HMR_REFRESH__` support optional
-  `routeChunkUrls` from `builder.rebuild()` for current-route refresh without
-  full reload. See [CHANGELOG](./docs/en-US/CHANGELOG.md).
+- **Fixed**: HMR dev overlay reuses a single `#__hmr-status-container` on
+  reconnect (no duplicate fixed-position widgets).
+- **Performance**: Hot-path tweaks in `Http`, `RouterAdapter`, dev file watcher
+  ignore handling, and HMR client message merge. See
+  [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
 

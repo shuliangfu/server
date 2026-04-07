@@ -34,6 +34,11 @@ export type PathHandler = {
 };
 
 /**
+ * 未配置 `pathHandlers` 时复用同一空数组，避免每个请求 `?? []` 产生新分配。
+ */
+const EMPTY_PATH_HANDLERS: readonly PathHandler[] = [];
+
+/**
  * HTTP 服务器配置选项
  */
 export interface HttpServerOptions {
@@ -188,18 +193,21 @@ export class Http {
    * 创建 HTTP 上下文
    *
    * @param request 请求对象
+   * @param parsedUrl 若调用方已解析 `request.url`，传入可避免重复 `new URL`
    * @returns HTTP 上下文
    */
-  private createContext(request: Request): HttpContext {
-    const url = new URL(request.url);
+  private createContext(request: Request, parsedUrl?: URL): HttpContext {
+    const url = parsedUrl ?? new URL(request.url);
     const cookieHeader = request.headers.get("Cookie");
     const cookieManager = new CookieManager(cookieHeader);
 
-    // 解析查询参数
+    // 无查询串时跳过 forEach，多数 GET 无 ? 可减少热路径分配
     const query: Record<string, string> = {};
-    url.searchParams.forEach((value, key) => {
-      query[key] = value;
-    });
+    if (url.search !== "") {
+      url.searchParams.forEach((value, key) => {
+        query[key] = value;
+      });
+    }
 
     const ctx: HttpContext = {
       request,
@@ -352,7 +360,9 @@ export class Http {
     }
 
     // 路径前置处理器：在中间件链之前执行，保证 /socket.io/ 等由框架挂载的处理器直接接管，避免被路由或其它中间件影响
-    const pathHandlers = this.pathHandlersGetter?.() ?? [];
+    const pathHandlers = this.pathHandlersGetter != null
+      ? this.pathHandlersGetter()
+      : EMPTY_PATH_HANDLERS;
     this.debugLog(
       $tr("http.checkPathHandlers", { count: String(pathHandlers.length) }),
     );
@@ -381,7 +391,7 @@ export class Http {
       }
     }
 
-    const ctx = this.createContext(request);
+    const ctx = this.createContext(request, url);
 
     try {
       this.debugLog($tr("http.enteringMiddlewareChain", { pathname }));

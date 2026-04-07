@@ -44,6 +44,19 @@ interface HMRMessage {
 }
 
 /**
+ * HMR 批处理合并时的类型优先级（越小越优先）；模块级常量避免每次 merge 分配新对象。
+ */
+const HMR_MERGE_PRIORITY: Record<string, number> = {
+  reload: 0,
+  error: 1,
+  "css-update": 2,
+  "component-update": 3,
+  "layout-update": 4,
+  "module-update": 5,
+  update: 6,
+};
+
+/**
  * 更新队列项
  */
 interface UpdateQueueItem {
@@ -147,6 +160,8 @@ class HMRStatusUI {
    * 监听 document.documentElement 的 lang 属性变化，语言切换时自动刷新 HMR UI 文案
    */
   private setupLangObserver(): void {
+    if (this.langObserver) return;
+
     const doc = (globalThis as any).document;
     if (!doc?.documentElement) return;
 
@@ -182,16 +197,30 @@ class HMRStatusUI {
   }
 
   /**
-   * 创建主容器
+   * 创建或复用主容器。
+   * WebSocket 每次重连都会 `connect()` → `init()`，若始终新建节点会导致多个同名 id 叠在 body 末尾。
    */
   private createContainer(): void {
     const doc = (globalThis as any).document;
     if (!doc || !doc.body) return;
 
+    const id = "__hmr-status-container";
+    /** 历史遗留或异常情况下可能已有多个同 id 节点，保留第一个、删掉其余 */
+    const dupes = doc.querySelectorAll(`#${id}`);
+    for (let i = 1; i < dupes.length; i++) {
+      dupes[i].remove();
+    }
+
+    const existing = doc.getElementById(id);
+    if (existing instanceof HTMLElement) {
+      this.container = existing;
+      return;
+    }
+
     this.container = doc.createElement("div");
     if (!this.container) return;
 
-    this.container.id = "__hmr-status-container";
+    this.container.id = id;
     this.container.style.cssText = `
       position: fixed;
       bottom: 20px;
@@ -205,13 +234,21 @@ class HMRStatusUI {
   }
 
   /**
-   * 创建连接状态指示器
+   * 创建连接状态指示器（已存在则复用，避免重连时重复子节点与重复监听）
    */
   private createStatusIndicator(): void {
     if (!this.container) return;
 
     const doc = (globalThis as any).document;
     if (!doc) return;
+
+    const existing = this.container.querySelector(
+      "#__hmr-status-indicator",
+    ) as HTMLElement | null;
+    if (existing) {
+      this.statusIndicator = existing;
+      return;
+    }
 
     this.statusIndicator = doc.createElement("div");
     if (!this.statusIndicator || !this.container) return;
@@ -253,13 +290,21 @@ class HMRStatusUI {
   }
 
   /**
-   * 创建更新进度条
+   * 创建更新进度条（已存在则复用）
    */
   private createProgressBar(): void {
     if (!this.container) return;
 
     const doc = (globalThis as any).document;
     if (!doc) return;
+
+    const existing = this.container.querySelector(
+      "#__hmr-progress-bar",
+    ) as HTMLElement | null;
+    if (existing) {
+      this.progressBar = existing;
+      return;
+    }
 
     this.progressBar = doc.createElement("div");
     if (!this.progressBar || !this.container) return;
@@ -287,13 +332,21 @@ class HMRStatusUI {
   }
 
   /**
-   * 创建统计面板
+   * 创建统计面板（已存在则复用）
    */
   private createStatsPanel(): void {
     if (!this.container) return;
 
     const doc = (globalThis as any).document;
     if (!doc) return;
+
+    const existing = this.container.querySelector(
+      "#__hmr-stats-panel",
+    ) as HTMLElement | null;
+    if (existing) {
+      this.statsPanel = existing;
+      return;
+    }
 
     this.statsPanel = doc.createElement("div");
     if (!this.statsPanel || !this.container) return;
@@ -842,21 +895,10 @@ class HMRClient {
       return messages[0];
     }
 
-    // 按优先级排序：reload > error > css-update > component-update > layout-update > module-update > update
-    const priority: Record<string, number> = {
-      reload: 0,
-      error: 1,
-      "css-update": 2,
-      "component-update": 3,
-      "layout-update": 4,
-      "module-update": 5,
-      update: 6,
-    };
-
-    // 找到优先级最高的消息类型
+    // 按优先级排序：reload > error > css-update > …（sort 会原地修改数组，调用方传入的已是 map 新数组）
     const sortedMessages = messages.sort((a, b) => {
-      const aPriority = priority[a.type] ?? 999;
-      const bPriority = priority[b.type] ?? 999;
+      const aPriority = HMR_MERGE_PRIORITY[a.type] ?? 999;
+      const bPriority = HMR_MERGE_PRIORITY[b.type] ?? 999;
       return aPriority - bPriority;
     });
 
@@ -879,20 +921,41 @@ class HMRClient {
       }
     }
 
-    // 构建合并后的消息
-    // chunkUrl/routePath 取最后一条有值的：多次快速构建时服务端缓存是最后一次构建，客户端必须请求最后一次的 chunk 否则会 404
-    const lastChunkUrl = [...messages].reverse().find((m) => m.chunkUrl)
-      ?.chunkUrl;
-    const lastRoutePath = [...messages].reverse().find((m) => m.routePath)
-      ?.routePath;
-    const lastRouteChunkUrls = [...messages].reverse().find((m) =>
-      m.routeChunkUrls != null && typeof m.routeChunkUrls === "object"
-    )?.routeChunkUrls;
+    // chunkUrl/routePath/routeChunkUrls：自后向前一次扫描，避免三次 [...messages].reverse() 拷贝
+    let lastChunkUrl: string | undefined;
+    let lastRoutePath: string | undefined;
+    let lastRouteChunkUrls: Record<string, string> | undefined;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (lastChunkUrl === undefined && m.chunkUrl !== undefined) {
+        lastChunkUrl = m.chunkUrl;
+      }
+      if (lastRoutePath === undefined && m.routePath !== undefined) {
+        lastRoutePath = m.routePath;
+      }
+      if (
+        lastRouteChunkUrls === undefined &&
+        m.routeChunkUrls != null &&
+        typeof m.routeChunkUrls === "object"
+      ) {
+        lastRouteChunkUrls = m.routeChunkUrls;
+      }
+      if (
+        lastChunkUrl !== undefined &&
+        lastRoutePath !== undefined &&
+        lastRouteChunkUrls !== undefined
+      ) {
+        break;
+      }
+    }
     const merged: HMRMessage = {
       ...primaryMessage,
-      path: Array.from(allPaths)[0] || primaryMessage.path,
+      path: (allPaths.size > 0 ? allPaths.values().next().value : undefined) ||
+        primaryMessage.path,
       files: allFiles.length > 0 ? allFiles : primaryMessage.files,
-      route: Array.from(allRoutes)[0] || primaryMessage.route,
+      route:
+        (allRoutes.size > 0 ? allRoutes.values().next().value : undefined) ||
+        primaryMessage.route,
       chunkUrl: lastChunkUrl ?? primaryMessage.chunkUrl,
       routePath: lastRoutePath ?? primaryMessage.routePath,
       routeChunkUrls: lastRouteChunkUrls ?? primaryMessage.routeChunkUrls,

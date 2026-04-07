@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.11] - 2026-04-07
+
+### Fixed
+
+- **HMR status UI**: Browser client reuses `#__hmr-status-container` (and
+  existing indicator / progress / stats nodes) on each WebSocket reconnect;
+  removes duplicate container IDs if present; `MutationObserver` for `lang` is
+  only registered once.
+
+### Performance
+
+- **Http**: Reuse one parsed `URL` in `processRequest` → `createContext`; skip
+  building `query` when there is no search string; reuse a shared empty array
+  when `pathHandlers` is unset.
+- **RouterAdapter**: Non-`Response` API handler results use `Response.json()`.
+- **DevTools**: Normalize `watch.ignore` patterns once when the file watcher
+  starts.
+- **HMR client script** (`hmr-browser.ts`): Module-level merge priority map;
+  single backward pass for last `chunkUrl` / `routePath` / `routeChunkUrls`;
+  avoid `Array.from(Set)` when picking merged path/route.
+
+---
+
 ## [1.0.10] - 2026-04-06
 
 ### Added
