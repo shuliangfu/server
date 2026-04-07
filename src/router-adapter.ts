@@ -84,9 +84,7 @@ export class RouterAdapter {
           });
           ctx.response = response instanceof Response
             ? response
-            : new Response(JSON.stringify(response), {
-              headers: { "Content-Type": "application/json" },
-            });
+            : Response.json(response);
           return true;
         }
       }

@@ -293,15 +293,15 @@ export class DevTools {
       recursive: watchConfig.options?.recursive ?? true,
     });
 
+    /** 启动时规范化一次，避免每次文件事件对 ignore 规则重复 replace */
+    const ignorePatterns = (watchConfig.ignore ?? []).map((p) =>
+      p.replace(/\\/g, "/")
+    );
     // 判断路径是否被 ignore 规则命中（规则为子串匹配，路径统一用 /）
     const isIgnored = (filePath: string): boolean => {
-      if (!watchConfig.ignore || watchConfig.ignore.length === 0) {
-        return false;
-      }
+      if (ignorePatterns.length === 0) return false;
       const normalized = filePath.replace(/\\/g, "/");
-      return watchConfig.ignore.some(
-        (pattern) => normalized.includes(pattern.replace(/\\/g, "/")),
-      );
+      return ignorePatterns.some((pattern) => normalized.includes(pattern));
     };
 
     // 执行一次构建并广播（供防抖后调用）

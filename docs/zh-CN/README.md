@@ -436,9 +436,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.10**（2026-04-06）：HMR 支持可选 `routeChunkUrls`，与 `__HMR_REFRESH__`
-配合可在共享模块变更时仅刷新当前路由 chunk，无需整页刷新。
-[完整变更](./CHANGELOG.md)
+**v1.0.11**（2026-04-07）：**修复** HMR 重连时重复创建状态容器；**性能** 优化
+`Http` 请求路径、`RouterAdapter` JSON 响应、开发态 watch 的 ignore 预处理及 HMR
+客户端消息合并逻辑。[完整变更](./CHANGELOG.md)
 
 ---
 

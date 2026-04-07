@@ -7,6 +7,26 @@
 
 ---
 
+## [1.0.11] - 2026-04-07
+
+### 修复
+
+- **HMR 状态面板**：浏览器端在每次 WebSocket 重连时复用已有
+  `#__hmr-status-container` 及内部指示器/进度条/统计面板；若存在多个同 id
+  容器会清理重复；`lang` 的 `MutationObserver` 仅注册一次。
+
+### 性能
+
+- **Http**：`processRequest` 与 `createContext` 共用已解析的 `URL`；无查询串时不
+  构建 `query`；未配置 `pathHandlers` 时复用共享空数组。
+- **RouterAdapter**：API 处理器返回非 `Response` 时使用 `Response.json()`。
+- **DevTools**：文件监听启动时一次性规范化 `watch.ignore` 规则。
+- **HMR 客户端脚本**（`hmr-browser.ts`）：合并优先级表提升为模块级常量；自后向前
+  一次扫描取得最近 `chunkUrl` / `routePath` / `routeChunkUrls`；合并路径时避免
+  `Array.from(Set)` 整表拷贝。
+
+---
+
 ## [1.0.10] - 2026-04-06
 
 ### 新增
