@@ -436,11 +436,10 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.1.0**（2026-04-17）：**新增** `ApiRouteContext` /
-`ApiContext`、`ServerResponse`、
-`buildApiRouteContext`、`createServerResponse`。**变更（破坏性）**
-`RouterAdapter` 向 API 处理器传入单一 `ApiRouteContext`；action 模式下的 handler
-解析。详见 [CHANGELOG.md](./CHANGELOG.md)。
+**v1.1.1**（2026-04-17）：**新增** `ApiRouteContext` 可选字段 **`body`**（JSON
+由 **`RouterAdapter`** 预解析）。上一版摘要见
+[1.1.0](./CHANGELOG.md#110---2026-04-17)。完整历史见
+[CHANGELOG.md](./CHANGELOG.md)。
 
 ---
 

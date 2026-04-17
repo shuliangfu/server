@@ -93,6 +93,7 @@ export class RouterAdapter {
             match.params || {},
             ctx.query || {},
           );
+          await RouterAdapter.attachParsedJsonBodyIfNeeded(apiCtx);
           const response = await handler(apiCtx);
           ctx.response = response instanceof Response
             ? response
@@ -128,6 +129,29 @@ export class RouterAdapter {
    */
   getRouter(): Router {
     return this.router;
+  }
+
+  /**
+   * 对 JSON 请求预解析正文并写入 `apiCtx.body`（GET/HEAD 跳过；无 body 或解析失败则保持 `undefined`）。
+   * 解析后 `req` 的 body 流已消费，勿再调用 `req.json()`。
+   *
+   * @param apiCtx 已由 {@link buildApiRouteContext} 构造的上下文
+   */
+  private static async attachParsedJsonBodyIfNeeded(
+    apiCtx: ApiRouteContext,
+  ): Promise<void> {
+    const method = (apiCtx.method ?? "GET").toUpperCase();
+    if (method === "GET" || method === "HEAD") return;
+
+    const ct = apiCtx.req.headers.get("content-type") ?? "";
+    if (!ct.toLowerCase().includes("json")) return;
+    if (!apiCtx.req.body) return;
+
+    try {
+      apiCtx.body = await apiCtx.req.json();
+    } catch {
+      apiCtx.body = undefined;
+    }
   }
 
   /**

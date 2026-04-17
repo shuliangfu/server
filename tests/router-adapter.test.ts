@@ -203,5 +203,43 @@ describe("RouterAdapter", () => {
       await adapter.handle(context);
       expect(await context.response!.text()).toBe("REST_POST");
     });
+
+    it("POST application/json 时预解析并注入 apiCtx.body", async () => {
+      let received: unknown;
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/api/body") {
+            return {
+              handlers: {
+                POST: async (ctx: Record<string, unknown>) => {
+                  received = ctx;
+                  return (ctx.res as { json: (d: unknown) => Response }).json({
+                    echo: ctx.body,
+                  });
+                },
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "restful" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request("http://localhost:8000/api/body", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ a: 1 }),
+      });
+      const context = createTestContext(request);
+      await adapter.handle(context);
+
+      const c = received as { body?: unknown };
+      expect(c.body).toEqual({ a: 1 });
+      const json = await context.response!.json() as { echo: unknown };
+      expect(json.echo).toEqual({ a: 1 });
+    });
   });
 });
