@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.2] - 2026-04-17
+
+### Changed
+
+- **`createServerResponse().json()`**: Response body is always
+  **`{ success: boolean, data: unknown }`**. The first argument is serialized as
+  **`data`** (or **`null`** if **`undefined`**). **`success`** is **`true`**
+  when the HTTP status is **2xx** (default **200**), otherwise **`false`**
+  (derive from **`init.status`**). Matches **`@dreamer/dweb`**
+  `createServerResponse` behavior for consistent file-route API payloads.
+
+### Tests
+
+- **`tests/router-adapter.test.ts`**: Assertions updated for wrapped JSON when
+  handlers use **`ctx.res.json()`**.
+
+---
+
 ## [1.1.1] - 2026-04-17
 
 ### Added

@@ -12,12 +12,12 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.1.1] - 2026-04-17
+### [1.1.2] - 2026-04-17
 
-- **Added**: Optional **`ctx.body`** — JSON pre-parsed by **`RouterAdapter`**
-  before API handlers (see [CHANGELOG](./docs/en-US/CHANGELOG.md)).
-- **Previous**: [1.1.0](./docs/en-US/CHANGELOG.md#110---2026-04-17) —
-  `ApiRouteContext`, breaking `RouterAdapter` handler signature.
+- **Changed**: **`createServerResponse().json()`** wraps payloads as
+  **`{ success, data }`** (see [CHANGELOG](./docs/en-US/CHANGELOG.md)).
+- **Previous**: [1.1.1](./docs/en-US/CHANGELOG.md#111---2026-04-17) — optional
+  **`ctx.body`** pre-parsed by **`RouterAdapter`**.
 
 ---
 
