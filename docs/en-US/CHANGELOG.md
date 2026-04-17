@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.1] - 2026-04-17
+
+### Added
+
+- **`ApiRouteContext` / `ApiContext`**: Optional **`body`** — when
+  **`Content-Type`** includes **`json`** and the request has a readable body,
+  **`RouterAdapter`** parses it with **`req.json()`** before invoking the API
+  handler and assigns the result to **`ctx.body`** (GET/HEAD skipped; parse
+  failures yield **`undefined`**). Handlers must not call **`req.json()`** /
+  **`text()`** again after that.
+
+### Tests
+
+- **`tests/router-adapter.test.ts`**: Covers POST **`application/json`** body
+  injection on **`apiCtx.body`**.
+
+---
+
 ## [1.1.0] - 2026-04-17
 
 ### Added

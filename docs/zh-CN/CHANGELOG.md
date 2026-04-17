@@ -7,6 +7,23 @@
 
 ---
 
+## [1.1.1] - 2026-04-17
+
+### 新增
+
+- **`ApiRouteContext` / `ApiContext`**：可选字段 **`body`** — 当
+  **`Content-Type`** 含 **`json`** 且存在可读正文时，**`RouterAdapter`** 在调用
+  API 处理器前用 **`req.json()`** 解析并写入 **`ctx.body`**（跳过
+  GET/HEAD；解析失败则为 **`undefined`**）。此后**勿再**对 **`req`** 调用
+  **`json()`** / **`text()`**。
+
+### 测试
+
+- **`tests/router-adapter.test.ts`**：覆盖 POST **`application/json`** 时
+  **`apiCtx.body`** 的注入。
+
+---
+
 ## [1.1.0] - 2026-04-17
 
 ### 新增

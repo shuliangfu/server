@@ -97,6 +97,12 @@ export interface ApiRouteContext {
   headers: Headers;
   /** 由 session 等中间件挂在 HttpContext 上时存在 */
   session?: unknown;
+  /**
+   * 当 `Content-Type` 含 `json` 且存在可读正文时，由 RouterAdapter 在调用 handler 前预解析
+   * `req.json()` 的结果；未解析或非 JSON 请求时为 `undefined`。
+   * **同一请求只能消费一次 body**，解析后请勿再对 `req` 调用 `json()` / `text()`。
+   */
+  body?: unknown;
   [key: string]: unknown;
 }
 
