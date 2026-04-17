@@ -7,10 +7,19 @@ import { parseCookie } from "./cookie.ts";
 import type { HttpContext } from "./context.ts";
 
 /**
- * 服务端响应辅助：与 dweb `createServerResponse` 行为一致，供 `ctx.res.json` 等使用
+ * 服务端响应辅助：与 dweb `createServerResponse` 行为一致；`json()` 统一封装为 `{ success, data }`
  */
 export interface ServerResponse {
   redirect(url: string, status?: number): Response;
+  /**
+   * 返回 JSON 响应（Content-Type: application/json）。
+   * 将业务载荷 `data` 统一封装为 `{ success, data }`：
+   * - `success`：由 `init.status` 推断（默认 `200`）；**2xx** 为 `true`，否则为 `false`。
+   * - `data`：第一参传入的对象或其它可序列化值；未传时为 `null`。
+   *
+   * @param data 业务数据，例如 `{ message: "登录成功" }` 或 `{ error: "email_and_password_required" }`
+   * @param init 可选 `ResponseInit`，常用 `{ status: 400 }` 等表示失败
+   */
   json(data: unknown, init?: ResponseInit): Response;
   html(body: string, init?: ResponseInit): Response;
   text(body: string, init?: ResponseInit): Response;
@@ -47,7 +56,14 @@ export function createServerResponse(): ServerResponse {
       });
     },
     json(data: unknown, init?: ResponseInit): Response {
-      const body = JSON.stringify(data);
+      // HTTP 状态码决定 success；业务载荷一律放在 data，与 @dreamer/dweb createServerResponse 保持一致
+      const status = init?.status ?? 200;
+      const success = status >= 200 && status < 300;
+      const envelope = {
+        success,
+        data: data === undefined ? null : data,
+      };
+      const body = JSON.stringify(envelope);
       const headers = new Headers(init?.headers ?? JSON_HEADERS);
       return new Response(body, { ...init, headers });
     },

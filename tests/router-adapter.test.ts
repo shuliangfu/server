@@ -238,8 +238,12 @@ describe("RouterAdapter", () => {
 
       const c = received as { body?: unknown };
       expect(c.body).toEqual({ a: 1 });
-      const json = await context.response!.json() as { echo: unknown };
-      expect(json.echo).toEqual({ a: 1 });
+      const json = await context.response!.json() as {
+        success: boolean;
+        data: { echo: unknown };
+      };
+      expect(json.success).toBe(true);
+      expect(json.data.echo).toEqual({ a: 1 });
     });
   });
 });

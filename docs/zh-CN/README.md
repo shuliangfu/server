@@ -436,9 +436,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.1.1**（2026-04-17）：**新增** `ApiRouteContext` 可选字段 **`body`**（JSON
-由 **`RouterAdapter`** 预解析）。上一版摘要见
-[1.1.0](./CHANGELOG.md#110---2026-04-17)。完整历史见
+**v1.1.2**（2026-04-17）：**变更** **`createServerResponse().json()`**
+统一封装为 **`{ success, data }`**。上一版摘要见
+[1.1.1](./CHANGELOG.md#111---2026-04-17)。完整历史见
 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---

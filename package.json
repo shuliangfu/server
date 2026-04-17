@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/server",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "HTTP server and request handling for Deno/Bun.",
   "type": "module",
   "license": "Apache-2.0",

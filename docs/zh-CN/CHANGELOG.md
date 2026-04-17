@@ -7,6 +7,25 @@
 
 ---
 
+## [1.1.2] - 2026-04-17
+
+### 变更
+
+- **`createServerResponse().json()`**：响应体统一为
+  **`{ success: boolean, data:
+  unknown }`**。第一参序列化为
+  **`data`**（未传则为 **`null`**）。**`success`** 由 **`init.status`**
+  推导：HTTP 状态码为 **2xx**（默认 **200**）时为 **`true`**，否则为
+  **`false`**。与 **`@dreamer/dweb`** 的 **`createServerResponse`**
+  行为一致，便于文件路由 API 统一返回结构。
+
+### 测试
+
+- **`tests/router-adapter.test.ts`**：针对 **`ctx.res.json()`** 封装后的 JSON
+  结构更新断言。
+
+---
+
 ## [1.1.1] - 2026-04-17
 
 ### 新增
