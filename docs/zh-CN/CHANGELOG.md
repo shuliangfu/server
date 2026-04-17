@@ -7,6 +7,27 @@
 
 ---
 
+## [1.1.0] - 2026-04-17
+
+### 新增
+
+- **`api-route-context.ts`**：从包入口（`mod.ts`）导出 **`ApiRouteContext`**、
+  **`ApiContext`**（别名）、**`ServerResponse`**、**`buildApiRouteContext`**、
+  **`createServerResponse`**。
+
+### 变更
+
+- **破坏性变更 — `RouterAdapter`**：文件路由 API 处理器改为接收单一参数
+  **`ApiRouteContext`**（含 `req`、`res`、`url`、`params`、`query`、`method`、
+  `cookies`、`headers`、可选 `session` 及索引签名），不再使用
+  **`(request, { params, query })`**。
+- **`RouterAdapter`**：**`resolveApiHandler`** — restful 模式优先匹配
+  **`handlers[GET|POST|…]`**；当路由实例提供 **`getApiMode()`** 且返回
+  **`"action"`** 时，按 **`params.action`** / **`params.method`**、路径末段或
+  kebab 转 camel（如 `test-connection` → **`testConnection`**）解析导出函数。
+
+---
+
 ## [1.0.11] - 2026-04-07
 
 ### 修复

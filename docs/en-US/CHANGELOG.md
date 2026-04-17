@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.0] - 2026-04-17
+
+### Added
+
+- **`api-route-context.ts`**: Exports **`ApiRouteContext`**, **`ApiContext`**
+  (alias), **`ServerResponse`**, **`buildApiRouteContext`**, and
+  **`createServerResponse`** from the package entry (`mod.ts`).
+
+### Changed
+
+- **Breaking — `RouterAdapter`**: File-route API handlers are invoked with a
+  single **`ApiRouteContext`** (`req`, `res`, `url`, `params`, `query`,
+  `method`, `cookies`, `headers`, optional `session`, index signature) instead
+  of **`(request, { params, query })`**.
+- **`RouterAdapter`**: **`resolveApiHandler`** — in restful mode, prefers
+  **`handlers[GET|POST|…]`**; when the router exposes **`getApiMode()`**
+  returning **`"action"`**, resolves by **`params.action`** /
+  **`params.method`**, the last URL segment, or kebab-case → camelCase (e.g.
+  `test-connection` → **`testConnection`**).
+
+---
+
 ## [1.0.11] - 2026-04-07
 
 ### Fixed

@@ -12,13 +12,15 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.0.11] - 2026-04-07
+### [1.1.0] - 2026-04-17
 
-- **Fixed**: HMR dev overlay reuses a single `#__hmr-status-container` on
-  reconnect (no duplicate fixed-position widgets).
-- **Performance**: Hot-path tweaks in `Http`, `RouterAdapter`, dev file watcher
-  ignore handling, and HMR client message merge. See
-  [CHANGELOG](./docs/en-US/CHANGELOG.md).
+- **Added**: `ApiRouteContext` / `ApiContext`, `ServerResponse`,
+  `buildApiRouteContext`, `createServerResponse` (see
+  [CHANGELOG](./docs/en-US/CHANGELOG.md)).
+- **Changed (breaking)**: `RouterAdapter` passes a single `ApiRouteContext` to
+  API handlers; action-mode handler resolution (`params.action`, path segment,
+  kebab→camel). Previous release line:
+  [1.0.11](./docs/en-US/CHANGELOG.md#1011---2026-04-07).
 
 ---
 

@@ -1,11 +1,22 @@
 /**
  * 路由适配器
  *
- * 集成 @dreamer/router 进行路由匹配和处理
+ * 集成 @dreamer/router 进行路由匹配和处理。
+ *
+ * `apiMode: "action"`（与 `@dreamer/router` `loadApiHandlers` 一致）：模块导出 `login`、`save` 等
+ * 进入 `RouteMatch.handlers`，HTTP 动词 **不作为**键；此处按动态参数 `params.action` 或 **路径末段**
+ * （含 kebab-case → camelCase）解析具体函数。
  */
 
 import type { RouteMatch, Router } from "@dreamer/router";
+import { buildApiRouteContext } from "./api-route-context.ts";
+import type { ApiRouteContext } from "./api-route-context.ts";
 import type { HttpContext } from "./context.ts";
+
+/** Router 实例上可选的 `getApiMode`（JSR 类型未必声明） */
+type RouterWithApiMode = Router & {
+  getApiMode?: () => "restful" | "action";
+};
 
 /**
  * SSR 渲染回调函数类型
@@ -36,7 +47,7 @@ export class RouterAdapter {
    * 创建路由适配器
    *
    * @param router 路由实例
-   * @param options 适配器选项
+   * @param options 路由适配器选项
    */
   constructor(router: Router, options?: RouterAdapterOptions) {
     this.router = router;
@@ -46,7 +57,7 @@ export class RouterAdapter {
   /**
    * 设置 SSR 渲染回调
    *
-   * @param callback SSR 渲染回调函数
+   * @param callback SSR 渲染回调
    */
   setSSRRender(callback: SSRRenderCallback): void {
     this.ssrRender = callback;
@@ -75,13 +86,14 @@ export class RouterAdapter {
 
       // 处理 API 路由
       if (match.isApi && match.handlers) {
-        const handler =
-          match.handlers[ctx.method as keyof typeof match.handlers];
+        const handler = this.resolveApiHandler(ctx, match);
         if (handler) {
-          const response = await handler(ctx.request, {
-            params: match.params || {},
-            query: ctx.query || {},
-          });
+          const apiCtx = buildApiRouteContext(
+            ctx,
+            match.params || {},
+            ctx.query || {},
+          );
+          const response = await handler(apiCtx);
           ctx.response = response instanceof Response
             ? response
             : Response.json(response);
@@ -116,5 +128,48 @@ export class RouterAdapter {
    */
   getRouter(): Router {
     return this.router;
+  }
+
+  /**
+   * 解析 API 处理器：`restful` / 混用动词导出时优先 `handlers[GET|POST|…]`；
+   * `action` 模式下再按 `params.action`、路径末段、kebab→camel 匹配。
+   */
+  private resolveApiHandler(
+    ctx: HttpContext,
+    match: RouteMatch,
+  ):
+    | ((context: ApiRouteContext) => Promise<Response> | Response)
+    | undefined {
+    /** Router 侧 handlers 类型仍为 (request, ctx)，运行时仅传入 ApiRouteContext */
+    const handlers = match.handlers as unknown as Record<
+      string,
+      ((context: ApiRouteContext) => Promise<Response> | Response) | undefined
+    >;
+    if (!handlers) return undefined;
+
+    const methodKey = (ctx.method ?? "GET").toUpperCase();
+    const byVerb = handlers[methodKey];
+    if (typeof byVerb === "function") return byVerb;
+
+    const apiMode = (this.router as RouterWithApiMode).getApiMode?.();
+    if (apiMode !== "action") return undefined;
+
+    const params = match.params ?? {};
+    const actionParam = params.action ?? params.method;
+    if (
+      actionParam &&
+      typeof handlers[actionParam] === "function"
+    ) {
+      return handlers[actionParam];
+    }
+
+    const seg = ctx.path.split("/").filter(Boolean).pop();
+    if (!seg) return undefined;
+    if (typeof handlers[seg] === "function") return handlers[seg];
+    if (seg.includes("-")) {
+      const camel = seg.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+      if (typeof handlers[camel] === "function") return handlers[camel];
+    }
+    return undefined;
   }
 }
