@@ -436,9 +436,11 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.0.11**（2026-04-07）：**修复** HMR 重连时重复创建状态容器；**性能** 优化
-`Http` 请求路径、`RouterAdapter` JSON 响应、开发态 watch 的 ignore 预处理及 HMR
-客户端消息合并逻辑。[完整变更](./CHANGELOG.md)
+**v1.1.0**（2026-04-17）：**新增** `ApiRouteContext` /
+`ApiContext`、`ServerResponse`、
+`buildApiRouteContext`、`createServerResponse`。**变更（破坏性）**
+`RouterAdapter` 向 API 处理器传入单一 `ApiRouteContext`；action 模式下的 handler
+解析。详见 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---
 
