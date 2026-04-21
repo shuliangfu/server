@@ -56,19 +56,25 @@ export type { HttpServerOptions, PathHandler } from "./http/http.ts";
 export { serve } from "./http/server.ts";
 export type { ServerOptions as ServeOptions } from "./http/server.ts";
 
-// 导出上下文类型
-export type { CookieOptions, HttpContext, HttpError } from "./context.ts";
-
-// API 文件路由上下文（req / res 简写；与 @dreamer/dweb 的 LoadContext 不同）
+// 上下文：HttpContext、从请求推导字段、ApiRouteContext / ServerResponse（见 ./context.ts）
 export type {
   ApiContext,
   ApiRouteContext,
+  CookieOptions,
+  HttpContext,
+  HttpError,
+  MatchedRouteSnapshot,
   ServerResponse,
-} from "./api-route-context.ts";
+} from "./context.ts";
 export {
   buildApiRouteContext,
   createServerResponse,
-} from "./api-route-context.ts";
+  pathnameFromHref,
+  resolveClientIp,
+  resolveRequestId,
+  searchFromHref,
+  snapshotMatchedRoute,
+} from "./context.ts";
 
 // 导出 Cookie 工具
 export { CookieManager, parseCookie, serializeCookie } from "./cookie.ts";

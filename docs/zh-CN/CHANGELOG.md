@@ -7,6 +7,27 @@
 
 ---
 
+## [1.1.4] - 2026-04-21
+
+### 变更
+
+- **`context.ts`**：将原 **`src/api-route-context.ts`** 中的 API 路由类型与
+  **`ServerResponse`**、**`buildApiRouteContext`**、**`createServerResponse`**
+  等合并至 **`context.ts`**，并删除独立文件；**`mod.ts`** 对外导出保持不变。
+
+### 测试
+
+- **`tests/create-server-response.test.ts`**：覆盖 **`createServerResponse()`**
+  （**`redirect`**、**`json`**
+  封装与状态边界、**`html`**、**`text`**、**`binary`**、
+  **`body`**、**`status`**）。
+- **`tests/i18n.test.ts`**：覆盖 **`setServerLocale`**、**`$tr`**（语言切换、
+  第三参临时语言、占位符替换）。
+- **`tests/req-context.test.ts`**：覆盖 pathname/search 辅助、请求 ID / 客户端
+  IP、匹配路由快照及 **`buildApiRouteContext`** 扩展字段。
+
+---
+
 ## [1.1.2] - 2026-04-17
 
 ### 变更
