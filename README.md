@@ -7,17 +7,20 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-143%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-175%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.1.2] - 2026-04-17
+### [1.1.4] - 2026-04-21
 
-- **Changed**: **`createServerResponse().json()`** wraps payloads as
-  **`{ success, data }`** (see [CHANGELOG](./docs/en-US/CHANGELOG.md)).
-- **Previous**: [1.1.1](./docs/en-US/CHANGELOG.md#111---2026-04-17) — optional
-  **`ctx.body`** pre-parsed by **`RouterAdapter`**.
+- **Changed**: API route context and **`createServerResponse`** live in
+  **`context.ts`** (internal file layout;
+  [CHANGELOG](./docs/en-US/CHANGELOG.md)).
+- **Tests**: Added coverage for **`createServerResponse`**, server **i18n**
+  (**`$tr`**), and **req-context** helpers.
+- **Previous**: [1.1.2](./docs/en-US/CHANGELOG.md#112---2026-04-17) —
+  **`json()`** **`{ success, data }`** envelope.
 
 ---
 
@@ -401,16 +404,17 @@ await server.start();
 
 ## 📊 Test Coverage
 
-- **Total tests**: 143
-- **Test files**: 10
+- **Total tests**: 175 (Deno `deno test -A tests/`)
+- **Test files**: 13
 - **Pass rate**: 100% ✅
 - **Details**: [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md)
 - **Changelog**: [CHANGELOG.md](./docs/en-US/CHANGELOG.md)
 
 ### Changelog (latest)
 
-**v1.0.9** (2026-02-19): i18n auto-initializes on load; `initServerI18n` no
-longer exported. Dependency bumps. [Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.1.4** (2026-04-21): internal merge of API route context into
+**`context.ts`**; new tests for **`createServerResponse`**, **i18n**, and
+**req-context**. [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.4] - 2026-04-21
+
+### Changed
+
+- **`context.ts`**: Consolidated API route types and helpers previously in
+  **`src/api-route-context.ts`** (`ApiRouteContext`, **`ServerResponse`**,
+  **`buildApiRouteContext`**, **`createServerResponse`**) into **`context.ts`**.
+  The standalone **`api-route-context.ts`** file was removed; **`mod.ts`**
+  public exports are unchanged.
+
+### Tests
+
+- **`tests/create-server-response.test.ts`**: Covers
+  **`createServerResponse()`** (**`redirect`**, **`json`** envelope and status
+  edges, **`html`**, **`text`**, **`binary`**, **`body`**, **`status`**).
+- **`tests/i18n.test.ts`**: Covers **`setServerLocale`**, **`$tr`** (locale
+  switching, temporary **`lang`** argument, placeholder substitution).
+- **`tests/req-context.test.ts`**: Covers pathname/search helpers, request id /
+  client IP resolution, matched route snapshot, and **`buildApiRouteContext`**
+  fields.
+
+---
+
 ## [1.1.2] - 2026-04-17
 
 ### Changed

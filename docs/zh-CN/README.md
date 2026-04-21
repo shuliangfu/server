@@ -6,7 +6,7 @@
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
-[![Tests](https://img.shields.io/badge/tests-143%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-175%20passed-brightgreen)](./TEST_REPORT.md)
 
 ---
 
@@ -428,17 +428,18 @@ await server.start();
 
 ## 📊 测试覆盖
 
-- **总测试数**: 143 个测试用例
-- **测试文件**: 10 个测试文件
+- **总测试数**: 175（Deno `deno test -A tests/`）
+- **测试文件**: 13
 - **通过率**: 100% ✅
 - **测试报告**: 详见 [TEST_REPORT.md](./TEST_REPORT.md)
 - **变更日志**: 详见 [CHANGELOG.md](./CHANGELOG.md)
 
 ### 变更日志（最新）
 
-**v1.1.2**（2026-04-17）：**变更** **`createServerResponse().json()`**
-统一封装为 **`{ success, data }`**。上一版摘要见
-[1.1.1](./CHANGELOG.md#111---2026-04-17)。完整历史见
+**v1.1.4**（2026-04-21）：API 路由上下文合并至
+**`context.ts`**（对外导出不变）；新增 **`createServerResponse`**、服务端
+**i18n**、**req-context** 相关测试。上一版摘要见
+[1.1.2](./CHANGELOG.md#112---2026-04-17)。完整历史见
 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---

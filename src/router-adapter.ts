@@ -9,8 +9,8 @@
  */
 
 import type { RouteMatch, Router } from "@dreamer/router";
-import { buildApiRouteContext } from "./api-route-context.ts";
-import type { ApiRouteContext } from "./api-route-context.ts";
+import { buildApiRouteContext } from "./context.ts";
+import type { ApiRouteContext } from "./context.ts";
 import type { HttpContext } from "./context.ts";
 
 /** Router 实例上可选的 `getApiMode`（JSR 类型未必声明） */
@@ -92,6 +92,7 @@ export class RouterAdapter {
             ctx,
             match.params || {},
             ctx.query || {},
+            match.route,
           );
           await RouterAdapter.attachParsedJsonBodyIfNeeded(apiCtx);
           const response = await handler(apiCtx);

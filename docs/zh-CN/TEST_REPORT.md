@@ -2,9 +2,9 @@
 
 ## 📊 测试概览
 
-- **测试库版本**：@dreamer/test@^1.0.0-beta.40
+- **测试库版本**：@dreamer/test@^1.1.7
 - **测试框架**：@dreamer/test（兼容 Deno 与 Bun）
-- **测试日期**：2026-02-11
+- **测试日期**：2026-04-21
 - **测试环境**：
   - Deno 2.6+
   - Bun 1.3.5
@@ -13,11 +13,16 @@
 
 ### 总体统计
 
-- **总用例数**：143
-- **通过**：143 ✅
+- **总用例数（Deno）**：175（`deno test -A tests/`）
+- **通过**：175 ✅
 - **失败**：0
 - **通过率**：100% ✅
-- **测试文件数**：10
+- **测试文件数**：13
+
+### Bun
+
+- **`bun test tests/`**：163 通过、0 失败（同样 **13** 个测试文件）。与 Deno
+  计数略有差异来自测试运行器实现；两侧均为绿色。
 
 ### 测试文件统计
 
@@ -26,10 +31,13 @@
 | **核心**     |                                   |        |             |
 |              | `context.test.ts`                 | 7      | ✅ 全部通过 |
 |              | `cookie.test.ts`                  | 20     | ✅ 全部通过 |
+|              | `create-server-response.test.ts`  | 14     | ✅ 全部通过 |
 |              | `http.test.ts`                    | 18     | ✅ 全部通过 |
+|              | `i18n.test.ts`                    | 5      | ✅ 全部通过 |
 |              | `mod.test.ts`                     | 16     | ✅ 全部通过 |
-|              | `router-adapter.test.ts`          | 5      | ✅ 全部通过 |
 |              | `port-utils.test.ts`              | 9      | ✅ 全部通过 |
+|              | `req-context.test.ts`             | 8      | ✅ 全部通过 |
+|              | `router-adapter.test.ts`          | 10     | ✅ 全部通过 |
 | **开发工具** |                                   |        |             |
 |              | `dev/hmr-client.test.ts`          | 9      | ✅ 全部通过 |
 |              | `dev/module-graph.test.ts`        | 14     | ✅ 全部通过 |
@@ -56,19 +64,38 @@
 
 - ✅ parseCookie / serializeCookie / CookieManager 完整流程
 
-#### 1.3 HTTP 应用 (http.test.ts) - 18 个用例
+#### 1.3 服务端响应助手 (create-server-response.test.ts) - 14 个用例
+
+- ✅
+  **`createServerResponse()`**：**`redirect`**（默认与自定义状态码）、**`json`**
+  （**`{ success, data }`**、未传 data、状态 **299** /
+  **300**）、**`html`**、**`text`**、 **`binary`**（Uint8Array /
+  ArrayBuffer）、**`body`**、**`status`**
+
+#### 1.4 HTTP 应用 (http.test.ts) - 18 个用例
 
 - ✅ Http 构造、中间件注册、路由集成、错误处理、请求/响应处理、优雅关闭
 
-#### 1.4 主模块 (mod.test.ts) - 16 个用例
+#### 1.5 主模块 (mod.test.ts) - 16 个用例
 
 - ✅ Server 类、类型导出、中间件/路由/错误处理注册
 
-#### 1.5 路由适配器 (router-adapter.test.ts) - 5 个用例
+#### 1.6 服务端 i18n (i18n.test.ts) - 5 个用例
 
-- ✅ RouterAdapter 实例、路由匹配、动态参数
+- ✅ **`setServerLocale`**、**`$tr`**（中英文文案、第三参临时语言、占位符替换）
 
-#### 1.6 端口检测与占用 (port-utils.test.ts) - 9 个用例
+#### 1.7 路由适配器 (router-adapter.test.ts) - 10 个用例
+
+- ✅ RouterAdapter 实例、路由匹配、动态参数、API 上下文形态、**`apiMode`**、
+  REST / action 解析、POST JSON **`body`** 注入
+
+#### 1.8 请求上下文辅助 (req-context.test.ts) - 8 个用例
+
+- ✅ **`pathnameFromHref`**、**`searchFromHref`**、**`resolveRequestId`**、
+  **`resolveClientIp`**、**`snapshotMatchedRoute`**、**`buildApiRouteContext`**
+  扩展字段
+
+#### 1.9 端口检测与占用 (port-utils.test.ts) - 9 个用例
 
 - ✅ isPortInUse：端口空闲返回 false，被占用返回 true
 - ✅ findAvailablePort：起始端口空闲时返回该端口；被占用时返回
@@ -107,7 +134,7 @@
 
 ## 📝 结论
 
-✅ **共 143 个用例通过，通过率 100%**
+✅ **Deno 共 175 个用例通过，通过率 100%**
 
 ✅ **端口占用**：端口检测（isPortInUse、findAvailablePort）及 Server
 在端口冲突时自动 port+1 由 port-utils.test.ts 覆盖
@@ -118,4 +145,4 @@
 
 ---
 
-_最后更新：2026-02-11_
+_最后更新：2026-04-21_
