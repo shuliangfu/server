@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.5] - 2026-04-21
+
+### Changed
+
+- **Dependencies**: bump **`@dreamer/router`** to **`^1.1.7`**;
+  **`@dreamer/render`** to **`^1.1.7`** (**`package.json`**);
+  **`@dreamer/test`** (dev) to **`^1.1.8`**; **`@dreamer/esbuild`** to
+  **`^1.1.9`**. **`deno.json`** imports aligned.
+
+---
+
 ## [1.1.4] - 2026-04-21
 
 ### Changed

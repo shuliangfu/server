@@ -412,9 +412,10 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.1.4** (2026-04-21): internal merge of API route context into
-**`context.ts`**; new tests for **`createServerResponse`**, **i18n**, and
-**req-context**. [Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.1.5** (2026-04-21): **Changed** — JSR deps aligned (**`@dreamer/router`** /
+**`@dreamer/render`** **`^1.1.7`**, **`@dreamer/test`** **`^1.1.8`** dev,
+**`@dreamer/esbuild`** **`^1.1.9`**).
+[Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 
