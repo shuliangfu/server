@@ -436,10 +436,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.1.4**（2026-04-21）：API 路由上下文合并至
-**`context.ts`**（对外导出不变）；新增 **`createServerResponse`**、服务端
-**i18n**、**req-context** 相关测试。上一版摘要见
-[1.1.2](./CHANGELOG.md#112---2026-04-17)。完整历史见
+**v1.1.5**（2026-04-21）：**变更** — 对齐 JSR 依赖（**`@dreamer/router`** /
+**`@dreamer/render`** **`^1.1.7`**，开发 **`@dreamer/test`** **`^1.1.8`**，
+**`@dreamer/esbuild`** **`^1.1.9`**）。完整历史见
 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---
