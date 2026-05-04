@@ -436,10 +436,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.1.5**（2026-04-21）：**变更** — 对齐 JSR 依赖（**`@dreamer/router`** /
-**`@dreamer/render`** **`^1.1.7`**，开发 **`@dreamer/test`** **`^1.1.8`**，
-**`@dreamer/esbuild`** **`^1.1.9`**）。完整历史见
-[CHANGELOG.md](./CHANGELOG.md)。
+**v1.1.6**（2026-05-04）：**修复** — WebSocket 升级响应（**101** / **Upgrade:
+websocket**）不再套 Cookie 重建 **`Response`**，避免破坏 Deno 升级与 Socket.IO
+握手。完整历史见 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---
 
