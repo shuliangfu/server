@@ -25,6 +25,21 @@ import {
   type SSRRenderCallback,
 } from "../router-adapter.ts";
 
+/**
+ * 判断是否为 WebSocket 协议升级响应。
+ *
+ * Deno `upgradeWebSocket` 返回的 `Response` 含运行时内部状态，不可用
+ * `new Response(body, …)` 复制；{@link CookieManager.applyToResponse} 会重建
+ * Response，导致升级失败（客户端常见为握手或 `/socket.io/websocket/` 500）。
+ *
+ * @param response 即将写出给底层的 HTTP 响应
+ */
+function isWebSocketUpgradeResponse(response: Response): boolean {
+  if (response.status === 101) return true;
+  const upgrade = response.headers.get("Upgrade");
+  return upgrade != null && upgrade.toLowerCase() === "websocket";
+}
+
 /** 路径前置处理器：在中间件链之前按路径前缀直接处理请求（用于 Socket.IO 等）；返回 null/undefined 表示不处理、继续后续 pathHandler 或中间件 */
 export type PathHandler = {
   pathPrefix: string;
@@ -414,20 +429,22 @@ export class Http {
         ),
       );
 
-      // 应用 Cookie 到响应头
-      const cookieManager = (ctx.cookies as any).__manager as CookieManager;
-      if (cookieManager) {
-        response = cookieManager.applyToResponse(response);
-      } else {
-        // 如果 Cookie 管理器不存在，重新创建并应用
-        const cookieHeader = request.headers.get("Cookie");
-        const manager = new CookieManager(cookieHeader);
-        // 复制已设置的 Cookie
-        const allCookies = ctx.cookies.getAll();
-        for (const [name, value] of Object.entries(allCookies)) {
-          manager.set(name, value);
+      // 应用 Cookie 到响应头（WebSocket 升级响应禁止重建 Response，见 isWebSocketUpgradeResponse）
+      if (!isWebSocketUpgradeResponse(response)) {
+        const cookieManager = (ctx.cookies as any).__manager as CookieManager;
+        if (cookieManager) {
+          response = cookieManager.applyToResponse(response);
+        } else {
+          // 如果 Cookie 管理器不存在，重新创建并应用
+          const cookieHeader = request.headers.get("Cookie");
+          const manager = new CookieManager(cookieHeader);
+          // 复制已设置的 Cookie
+          const allCookies = ctx.cookies.getAll();
+          for (const [name, value] of Object.entries(allCookies)) {
+            manager.set(name, value);
+          }
+          response = manager.applyToResponse(response);
         }
-        response = manager.applyToResponse(response);
       }
 
       return response;

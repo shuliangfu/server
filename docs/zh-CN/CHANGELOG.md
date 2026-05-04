@@ -7,6 +7,17 @@
 
 ---
 
+## [1.1.6] - 2026-05-04
+
+### 修复
+
+- **`http/http.ts`**：对 WebSocket 升级响应（HTTP **`101`** 或响应头
+  **`Upgrade: websocket`**）不再执行 **`CookieManager.applyToResponse`**。
+  此类响应不能用 **`new Response(...)`** 重建，否则会破坏 Deno 的升级语义，
+  可能导致 Socket.IO / 原生 WebSocket 握手失败（**500** 或升级中断）。
+
+---
+
 ## [1.1.5] - 2026-04-21
 
 ### 变更

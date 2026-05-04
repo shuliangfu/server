@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.6] - 2026-05-04
+
+### Fixed
+
+- **`http/http.ts`**: Do not run **`CookieManager.applyToResponse`** on
+  WebSocket upgrade responses (**`status === 101`** or **`Upgrade: websocket`**
+  header). Cloning those responses with **`new Response(...)`** breaks Deno’s
+  upgrade handling and can cause Socket.IO / raw WebSocket handshakes to fail
+  (**500** or dropped upgrades).
+
+---
+
 ## [1.1.5] - 2026-04-21
 
 ### Changed

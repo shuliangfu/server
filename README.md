@@ -12,15 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.1.4] - 2026-04-21
+### [1.1.6] - 2026-05-04
 
-- **Changed**: API route context and **`createServerResponse`** live in
-  **`context.ts`** (internal file layout;
-  [CHANGELOG](./docs/en-US/CHANGELOG.md)).
-- **Tests**: Added coverage for **`createServerResponse`**, server **i18n**
-  (**`$tr`**), and **req-context** helpers.
-- **Previous**: [1.1.2](./docs/en-US/CHANGELOG.md#112---2026-04-17) —
-  **`json()`** **`{ success, data }`** envelope.
+- **Fixed**: Skip cookie response rewriting on WebSocket upgrade responses
+  (**`101`** / **`Upgrade: websocket`**) so Deno upgrades and Socket.IO
+  handshakes stay valid ([CHANGELOG](./docs/en-US/CHANGELOG.md)).
 
 ---
 
