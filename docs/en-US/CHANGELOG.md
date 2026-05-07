@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.7] - 2026-05-08
+
+### Added
+
+- **`RouterAdapterOptions.extendApiContext`**: Optional hook to merge extra
+  fields into **`ApiRouteContext`** before file-route API handlers run (e.g.
+  framework **`app`**, **`container`**). New exported type
+  **`ApiContextExtender`**; re-exported from **`mod.ts`**.
+
+### Tests
+
+- **`tests/router-adapter.test.ts`**: Covers **`extendApiContext`** merging
+  **`app` / `container`** into the API handler context.
+
+---
+
 ## [1.1.6] - 2026-05-04
 
 ### Fixed

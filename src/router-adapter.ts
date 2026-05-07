@@ -28,11 +28,25 @@ export type SSRRenderCallback = (
 ) => Promise<Response | null>;
 
 /**
+ * API 上下文扩展函数。
+ *
+ * 说明：
+ * - server 包只提供扩展点，不直接依赖上层框架。
+ * - dweb 可通过该函数向 ApiContext 注入 app、container 等框架级对象。
+ */
+export type ApiContextExtender = (
+  ctx: HttpContext,
+  match: RouteMatch,
+) => Record<string, unknown> | void | Promise<Record<string, unknown> | void>;
+
+/**
  * 路由适配器配置选项
  */
 export interface RouterAdapterOptions {
   /** SSR 渲染回调函数（用于处理页面路由的服务端渲染） */
   ssrRender?: SSRRenderCallback;
+  /** API 上下文扩展函数，用于给文件路由 API 注入上层框架字段 */
+  extendApiContext?: ApiContextExtender;
 }
 
 /**
@@ -42,6 +56,7 @@ export interface RouterAdapterOptions {
 export class RouterAdapter {
   private router: Router;
   private ssrRender?: SSRRenderCallback;
+  private extendApiContext?: ApiContextExtender;
 
   /**
    * 创建路由适配器
@@ -52,6 +67,7 @@ export class RouterAdapter {
   constructor(router: Router, options?: RouterAdapterOptions) {
     this.router = router;
     this.ssrRender = options?.ssrRender;
+    this.extendApiContext = options?.extendApiContext;
   }
 
   /**
@@ -95,6 +111,13 @@ export class RouterAdapter {
             match.route,
           );
           await RouterAdapter.attachParsedJsonBodyIfNeeded(apiCtx);
+          const extra = await this.extendApiContext?.(ctx, match);
+          if (extra) {
+            Object.assign(
+              apiCtx as ApiRouteContext & Record<string, unknown>,
+              extra,
+            );
+          }
           const response = await handler(apiCtx);
           ctx.response = response instanceof Response
             ? response

@@ -81,6 +81,7 @@ export { CookieManager, parseCookie, serializeCookie } from "./cookie.ts";
 
 // 导出路由适配器
 export {
+  type ApiContextExtender,
   RouterAdapter,
   type RouterAdapterOptions,
   type SSRRenderCallback,

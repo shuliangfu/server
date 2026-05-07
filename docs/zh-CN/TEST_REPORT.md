@@ -2,9 +2,9 @@
 
 ## 📊 测试概览
 
-- **测试库版本**：@dreamer/test@^1.1.7
+- **测试库版本**：@dreamer/test@^1.1.8
 - **测试框架**：@dreamer/test（兼容 Deno 与 Bun）
-- **测试日期**：2026-04-21
+- **测试日期**：2026-05-08
 - **测试环境**：
   - Deno 2.6+
   - Bun 1.3.5
@@ -13,15 +13,15 @@
 
 ### 总体统计
 
-- **总用例数（Deno）**：175（`deno test -A tests/`）
-- **通过**：175 ✅
+- **总用例数（Deno）**：176（`deno test -A tests/`）
+- **通过**：176 ✅
 - **失败**：0
 - **通过率**：100% ✅
 - **测试文件数**：13
 
 ### Bun
 
-- **`bun test tests/`**：163 通过、0 失败（同样 **13** 个测试文件）。与 Deno
+- **`bun test tests/`**：164 通过、0 失败（同样 **13** 个测试文件）。与 Deno
   计数略有差异来自测试运行器实现；两侧均为绿色。
 
 ### 测试文件统计
@@ -37,7 +37,7 @@
 |              | `mod.test.ts`                     | 16     | ✅ 全部通过 |
 |              | `port-utils.test.ts`              | 9      | ✅ 全部通过 |
 |              | `req-context.test.ts`             | 8      | ✅ 全部通过 |
-|              | `router-adapter.test.ts`          | 10     | ✅ 全部通过 |
+|              | `router-adapter.test.ts`          | 11     | ✅ 全部通过 |
 | **开发工具** |                                   |        |             |
 |              | `dev/hmr-client.test.ts`          | 9      | ✅ 全部通过 |
 |              | `dev/module-graph.test.ts`        | 14     | ✅ 全部通过 |
@@ -84,10 +84,11 @@
 
 - ✅ **`setServerLocale`**、**`$tr`**（中英文文案、第三参临时语言、占位符替换）
 
-#### 1.7 路由适配器 (router-adapter.test.ts) - 10 个用例
+#### 1.7 路由适配器 (router-adapter.test.ts) - 11 个用例
 
-- ✅ RouterAdapter 实例、路由匹配、动态参数、API 上下文形态、**`apiMode`**、
-  REST / action 解析、POST JSON **`body`** 注入
+- ✅ RouterAdapter 实例、路由匹配、动态参数、API
+  上下文形态、**`extendApiContext`** 合并字段、**`apiMode`**、REST / action
+  解析、POST JSON **`body`** 注入
 
 #### 1.8 请求上下文辅助 (req-context.test.ts) - 8 个用例
 
@@ -134,7 +135,7 @@
 
 ## 📝 结论
 
-✅ **Deno 共 175 个用例通过，通过率 100%**
+✅ **Deno 共 176 个用例通过，通过率 100%**
 
 ✅ **端口占用**：端口检测（isPortInUse、findAvailablePort）及 Server
 在端口冲突时自动 port+1 由 port-utils.test.ts 覆盖
@@ -145,4 +146,4 @@
 
 ---
 
-_最后更新：2026-04-21_
+_最后更新：2026-05-08_

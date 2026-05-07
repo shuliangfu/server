@@ -7,6 +7,22 @@
 
 ---
 
+## [1.1.7] - 2026-05-08
+
+### 新增
+
+- **`RouterAdapterOptions.extendApiContext`**：可选钩子，在文件路由 API
+  处理器执行前将额外字段合并进 **`ApiRouteContext`**（例如上层框架的
+  **`app`**、**`container`**）。新增导出类型 **`ApiContextExtender`**，并由
+  **`mod.ts`** 再导出。
+
+### 测试
+
+- **`tests/router-adapter.test.ts`**：覆盖 **`extendApiContext`** 将 **`app` /
+  `container`** 合并进 API 处理器上下文。
+
+---
+
 ## [1.1.6] - 2026-05-04
 
 ### 修复
