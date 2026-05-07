@@ -7,16 +7,17 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-175%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-176%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.1.6] - 2026-05-04
+### [1.1.7] - 2026-05-08
 
-- **Fixed**: Skip cookie response rewriting on WebSocket upgrade responses
-  (**`101`** / **`Upgrade: websocket`**) so Deno upgrades and Socket.IO
-  handshakes stay valid ([CHANGELOG](./docs/en-US/CHANGELOG.md)).
+- **Added**: **`RouterAdapterOptions.extendApiContext`** and exported
+  **`ApiContextExtender`** so frameworks can inject fields into file-route API
+  **`ApiRouteContext`** before handlers run
+  ([CHANGELOG](./docs/en-US/CHANGELOG.md)).
 
 ---
 

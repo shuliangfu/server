@@ -121,6 +121,42 @@ describe("RouterAdapter", () => {
       expect(typeof c.res?.json).toBe("function");
     });
 
+    it("应该通过 extendApiContext 扩展 API 上下文", async () => {
+      let received: unknown;
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/api/ext") {
+            return {
+              handlers: {
+                GET: async (ctx: Record<string, unknown>) => {
+                  received = ctx;
+                  return new Response("OK");
+                },
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "restful" as const,
+      } as unknown as Router;
+
+      const app = { name: "test-app" };
+      const container = { get: () => app };
+      const adapter = new RouterAdapter(mockRouter, {
+        extendApiContext: () => ({ app, container }),
+      });
+      const request = new Request("http://localhost:8000/api/ext");
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      const c = received as { app?: unknown; container?: unknown };
+      expect(c.app).toBe(app);
+      expect(c.container).toBe(container);
+    });
+
     it("apiMode action：params.action 指向 login", async () => {
       const mockRouter = {
         match: async (path: string) => {

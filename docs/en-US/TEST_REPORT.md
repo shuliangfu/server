@@ -2,9 +2,9 @@
 
 ## 📊 Test Overview
 
-- **Test Library Version**: @dreamer/test@^1.1.7
+- **Test Library Version**: @dreamer/test@^1.1.8
 - **Test Framework**: @dreamer/test (compatible with Deno and Bun)
-- **Test Date**: 2026-04-21
+- **Test Date**: 2026-05-08
 - **Test Environment**:
   - Deno 2.6+
   - Bun 1.3.5
@@ -13,15 +13,15 @@
 
 ### Overall Statistics
 
-- **Total Tests (Deno)**: 175 (`deno test -A tests/`)
-- **Passed**: 175 ✅
+- **Total Tests (Deno)**: 176 (`deno test -A tests/`)
+- **Passed**: 176 ✅
 - **Failed**: 0
 - **Pass Rate**: 100% ✅
 - **Test Files**: 13
 
 ### Bun
 
-- **`bun test tests/`**: 163 passed, 0 failed (same **13** test files). Minor
+- **`bun test tests/`**: 164 passed, 0 failed (same **13** test files). Minor
   count differences vs Deno come from the test runner implementation; both runs
   are green.
 
@@ -38,7 +38,7 @@
 |               | `mod.test.ts`                     | 16    | ✅ All passed |
 |               | `port-utils.test.ts`              | 9     | ✅ All passed |
 |               | `req-context.test.ts`             | 8     | ✅ All passed |
-|               | `router-adapter.test.ts`          | 10    | ✅ All passed |
+|               | `router-adapter.test.ts`          | 11    | ✅ All passed |
 | **Dev Tools** |                                   |       |               |
 |               | `dev/hmr-client.test.ts`          | 9     | ✅ All passed |
 |               | `dev/module-graph.test.ts`        | 14    | ✅ All passed |
@@ -86,10 +86,11 @@
 - ✅ **`setServerLocale`**, **`$tr`** (EN/ZH strings, temporary **`lang`**
   argument, placeholder interpolation)
 
-#### 1.7 Router Adapter (router-adapter.test.ts) - 10 tests
+#### 1.7 Router Adapter (router-adapter.test.ts) - 11 tests
 
 - ✅ RouterAdapter instance, route matching, dynamic params, API context shape,
-  **`apiMode`**, REST vs action resolution, POST JSON **`body`** injection
+  **`extendApiContext`** merge, **`apiMode`**, REST vs action resolution, POST
+  JSON **`body`** injection
 
 #### 1.8 Request Context Helpers (req-context.test.ts) - 8 tests
 
@@ -137,7 +138,7 @@ None. All tests pass.
 
 ## 📝 Conclusion
 
-✅ **All 175 Deno tests passed (100% pass rate)**
+✅ **All 176 Deno tests passed (100% pass rate)**
 
 ✅ **Port occupancy**: Port detection (isPortInUse, findAvailablePort) and
 Server auto port+1 on conflict are covered by port-utils.test.ts
@@ -149,4 +150,4 @@ this library re-exports for compatibility
 
 ---
 
-_Last updated: 2026-04-21_
+_Last updated: 2026-05-08_

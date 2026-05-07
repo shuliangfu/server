@@ -6,7 +6,7 @@
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
-[![Tests](https://img.shields.io/badge/tests-175%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-176%20passed-brightgreen)](./TEST_REPORT.md)
 
 ---
 
@@ -428,7 +428,7 @@ await server.start();
 
 ## 📊 测试覆盖
 
-- **总测试数**: 175（Deno `deno test -A tests/`）
+- **总测试数**: 176（Deno `deno test -A tests/`）
 - **测试文件**: 13
 - **通过率**: 100% ✅
 - **测试报告**: 详见 [TEST_REPORT.md](./TEST_REPORT.md)
@@ -436,9 +436,10 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.1.6**（2026-05-04）：**修复** — WebSocket 升级响应（**101** / **Upgrade:
-websocket**）不再套 Cookie 重建 **`Response`**，避免破坏 Deno 升级与 Socket.IO
-握手。完整历史见 [CHANGELOG.md](./CHANGELOG.md)。
+**v1.1.7**（2026-05-08）：**新增** — **`RouterAdapterOptions.extendApiContext`**
+与类型 **`ApiContextExtender`**，在文件路由 API 执行前向 **`ApiRouteContext`**
+注入上层字段（如 **`app`**、**`container`**）。完整历史见
+[CHANGELOG.md](./CHANGELOG.md)。
 
 ---
 
