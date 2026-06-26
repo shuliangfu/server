@@ -12,11 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.1.7] - 2026-05-08
+### [1.1.9] - 2026-06-26
 
-- **Added**: **`RouterAdapterOptions.extendApiContext`** and exported
-  **`ApiContextExtender`** so frameworks can inject fields into file-route API
-  **`ApiRouteContext`** before handlers run
+- **Fixed**: `Http.listen()` invokes WebSocket handlers synchronously for
+  upgrade requests, fixing Deno 101 response errors when mounting WebSocket
+  servers. **Changed**: `@dreamer/runtime-adapter@^1.0.19`
   ([CHANGELOG](./docs/en-US/CHANGELOG.md)).
 
 ---
@@ -409,10 +409,10 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.1.8** (2026-06-26): **Fixed** — action-mode API routes fall back to
-**`index`** export; handlers that only call **`res.json()`** without
-**`return`** use **`takeLastResponse()`**; HMR browser timer typings for
-**`deno check`**. [Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.1.9** (2026-06-26): **Fixed** — `Http.listen()` synchronously routes
+WebSocket upgrade requests to registered WS handlers (Deno 101 fix). **Changed**
+— `@dreamer/runtime-adapter@^1.0.19`.
+[Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 

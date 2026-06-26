@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.9] - 2026-06-26
+
+### Fixed
+
+- **`Http.listen()` WebSocket upgrade**: Registered WebSocket handlers are
+  invoked synchronously on the `upgrade: websocket` path instead of going
+  through async `handleRequest()`, so Deno receives the original 101 response
+  from `upgradeWebSocket`. Fixes
+  `Upgrade response was not returned from callback` when mounting
+  `@dreamer/websocket` or custom WS handlers.
+
+### Changed
+
+- **Dependencies**: Bump `@dreamer/runtime-adapter` to `^1.0.19` (sync `serve()`
+  handler support for WebSocket upgrades).
+
+---
+
 ## [1.1.8] - 2026-06-26
 
 ### Fixed
