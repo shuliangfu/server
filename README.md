@@ -409,10 +409,10 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.1.5** (2026-04-21): **Changed** — JSR deps aligned (**`@dreamer/router`** /
-**`@dreamer/render`** **`^1.1.7`**, **`@dreamer/test`** **`^1.1.8`** dev,
-**`@dreamer/esbuild`** **`^1.1.9`**).
-[Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.1.8** (2026-06-26): **Fixed** — action-mode API routes fall back to
+**`index`** export; handlers that only call **`res.json()`** without
+**`return`** use **`takeLastResponse()`**; HMR browser timer typings for
+**`deno check`**. [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 

@@ -436,9 +436,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.1.7**（2026-05-08）：**新增** — **`RouterAdapterOptions.extendApiContext`**
-与类型 **`ApiContextExtender`**，在文件路由 API 执行前向 **`ApiRouteContext`**
-注入上层字段（如 **`app`**、**`container`**）。完整历史见
+**v1.1.8**（2026-06-26）：**修复** — action 模式 API 静态路径回落 **`index`**
+导出；处理器仅调用 **`res.json()`** 未 return 时使用 **`takeLastResponse()`**；
+HMR 浏览器 timer 类型修复以通过 **`deno check`**。完整历史见
 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---

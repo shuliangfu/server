@@ -554,7 +554,8 @@ class HMRStatusUI {
 class HMRClient {
   private wsUrl: string;
   private ws: WebSocket | null = null;
-  private reconnectTimer: number | null = null;
+  /** 重连定时器（浏览器/Deno 下 setTimeout 返回值类型不一致） */
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private readonly maxReconnectAttempts = 5; // 最多重连 5 次，失败则放弃；标签页重新可见时会再尝试一轮
   private reconnectDelay = 1000; // 初始延迟（毫秒）
@@ -570,7 +571,8 @@ class HMRClient {
 
   // 更新队列和批处理
   private updateQueue: UpdateQueueItem[] = [];
-  private queueTimer: number | null = null;
+  /** HMR 更新队列防抖定时器 */
+  private queueTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly queueDebounceDelay = 100; // 100ms 批处理延迟
 
   // 状态保持
