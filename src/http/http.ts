@@ -487,7 +487,18 @@ export class Http {
    * @returns 服务器句柄
    */
   listen(options: HttpServerOptions = {}): ServeHandle {
-    const handler = (request: Request) => this.handleRequest(request);
+    // WebSocket 升级须在同步路径返回 101；不可经 async handleRequest（Deno 会报 Upgrade response was not returned）
+    const handler = (request: Request): Response | Promise<Response> => {
+      const upgrade = request.headers.get("upgrade");
+      if (upgrade?.toLowerCase() === "websocket") {
+        const pathname = new URL(request.url).pathname;
+        const wsHandler = this.wsHandlers.get(pathname);
+        if (wsHandler) {
+          return wsHandler(request);
+        }
+      }
+      return this.handleRequest(request);
+    };
 
     const serverOptions: ServeOptions = {
       port: options.port,

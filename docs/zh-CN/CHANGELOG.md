@@ -7,6 +7,22 @@
 
 ---
 
+## [1.1.9] - 2026-06-26
+
+### 修复
+
+- **`Http.listen()` WebSocket 升级**：对 `upgrade: websocket` 请求同步调用已注册
+  的 WebSocket 处理器，不再走 async `handleRequest()`，使 Deno 能收到
+  `upgradeWebSocket` 的原始 101 响应。修复挂载 `@dreamer/websocket` 或自定义 WS
+  处理器时的 `Upgrade response was not returned from callback` 错误。
+
+### 变更
+
+- **依赖**：升级 `@dreamer/runtime-adapter` 至 `^1.0.19`（`serve()` 同步 handler
+  支持 WebSocket 升级）。
+
+---
+
 ## [1.1.8] - 2026-06-26
 
 ### 修复
