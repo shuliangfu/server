@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.8] - 2026-06-26
+
+### Fixed
+
+- **`RouterAdapter` (action mode)**: Static API paths such as `/api/order` now
+  fall back to the **`index`** export when no path-segment action matches,
+  fixing **404** for action-style route files.
+- **`RouterAdapter` (action mode)**: When a handler calls **`res.json()`** (or
+  other **`res.*`**) without **`return`**, the adapter uses
+  **`res.takeLastResponse()`** instead of failing on **`undefined`**.
+- **`createServerResponse()`**: Added **`takeLastResponse()`** to retrieve the
+  last response built via **`res.json` / `res.text` / …** helpers.
+- **`dev/hmr-browser.ts`**: Timer fields use **`ReturnType<typeof setTimeout>`**
+  so **`deno check`** passes across Deno and browser timer typings.
+
+### Tests
+
+- **`tests/router-adapter.test.ts`**: Covers action-mode **`index`** fallback
+  and handler-without-return using **`takeLastResponse`**.
+
+---
+
 ## [1.1.7] - 2026-05-08
 
 ### Added

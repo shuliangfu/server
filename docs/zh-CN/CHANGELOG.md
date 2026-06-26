@@ -7,6 +7,27 @@
 
 ---
 
+## [1.1.8] - 2026-06-26
+
+### 修复
+
+- **`RouterAdapter`（action 模式）**：静态 API 路径（如 `/api/order`）在无路径
+  末段 action 匹配时回落到 **`index`** 导出，修复 action 风格路由文件 **404**。
+- **`RouterAdapter`（action 模式）**：处理器调用 **`res.json()`** 等但未
+  **`return`** 时，通过 **`res.takeLastResponse()`** 取最后一次响应，避免
+  **`undefined`** 导致 **404**。
+- **`createServerResponse()`**：新增 **`takeLastResponse()`**，可获取
+  **`res.json` / `res.text` / …** 辅助方法构建的最后一次响应。
+- **`dev/hmr-browser.ts`**：定时器字段改为 **`ReturnType<typeof setTimeout>`**，
+  兼容 Deno 与浏览器 timer 类型差异，使 **`deno check`** 通过。
+
+### 测试
+
+- **`tests/router-adapter.test.ts`**：覆盖 action 模式 **`index`** 回落，以及 未
+  return 时 **`takeLastResponse`** 行为。
+
+---
+
 ## [1.1.7] - 2026-05-08
 
 ### 新增

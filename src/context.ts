@@ -251,6 +251,11 @@ export interface ServerResponse {
     init?: ResponseInit,
   ): Response;
   status(code: number, statusText?: string): Response;
+  /**
+   * 取出 handler 内最后一次 res.* 生成的 Response（action 模式常见未 return）
+   * 仅供 {@link RouterAdapter} 使用
+   */
+  takeLastResponse?(): Response | null;
 }
 
 const JSON_HEADERS = new Headers({
@@ -270,12 +275,20 @@ const BINARY_HEADERS = new Headers({
  * 创建与 dweb `createServerResponse` 一致的响应助手（纯 Web Response）
  */
 export function createServerResponse(): ServerResponse {
+  /** 记录最后一次 res.* 返回值，供 handler 未 return 时恢复响应 */
+  let lastResponse: Response | null = null;
+  const track = (response: Response): Response => {
+    lastResponse = response;
+    return response;
+  };
   return {
     redirect(url: string, status = 302): Response {
-      return new Response(null, {
-        status,
-        headers: new Headers({ Location: url }),
-      });
+      return track(
+        new Response(null, {
+          status,
+          headers: new Headers({ Location: url }),
+        }),
+      );
     },
     json(data: unknown, init?: ResponseInit): Response {
       // HTTP 状态码决定 success；业务载荷一律放在 data，与 @dreamer/dweb createServerResponse 保持一致
@@ -287,28 +300,33 @@ export function createServerResponse(): ServerResponse {
       };
       const body = JSON.stringify(envelope);
       const headers = new Headers(init?.headers ?? JSON_HEADERS);
-      return new Response(body, { ...init, headers });
+      return track(new Response(body, { ...init, headers }));
     },
     html(body: string, init?: ResponseInit): Response {
       const headers = new Headers(init?.headers ?? HTML_HEADERS);
-      return new Response(body, { ...init, headers });
+      return track(new Response(body, { ...init, headers }));
     },
     text(body: string, init?: ResponseInit): Response {
       const headers = new Headers(init?.headers ?? TEXT_HEADERS);
-      return new Response(body, { ...init, headers });
+      return track(new Response(body, { ...init, headers }));
     },
     binary(data: Uint8Array | ArrayBuffer, init?: ResponseInit): Response {
       const headers = new Headers(init?.headers ?? BINARY_HEADERS);
-      return new Response(data as BodyInit, { ...init, headers });
+      return track(new Response(data as BodyInit, { ...init, headers }));
     },
     body(
       body: string | ReadableStream<Uint8Array> | Blob | ArrayBuffer | null,
       init?: ResponseInit,
     ): Response {
-      return new Response(body, init);
+      return track(new Response(body, init));
     },
     status(code: number, statusText?: string): Response {
-      return new Response(null, { status: code, statusText });
+      return track(new Response(null, { status: code, statusText }));
+    },
+    takeLastResponse(): Response | null {
+      const response = lastResponse;
+      lastResponse = null;
+      return response;
     },
   };
 }
@@ -389,7 +407,8 @@ export function buildApiRouteContext(
     headers: ctx.request.headers,
     params,
     query,
-    body: undefined,
+    /** 保留上游中间件已解析的 body（若有）；否则由 RouterAdapter 再解析 */
+    body: ctx.body,
     error: undefined,
     url: href,
     cookies: cookieRecord,

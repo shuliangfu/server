@@ -59,6 +59,24 @@ export class RouterAdapter {
   private extendApiContext?: ApiContextExtender;
 
   /**
+   * 解析真实 HTTP 方法，供 `router.match` 与动词分发使用。
+   *
+   * 说明：`@dreamer/router` 在 `apiMode: "restful"` 下若未传入有效 `method`，
+   * `matchApiRoute` 不会返回 API 匹配，请求会落到 404「未找到」。
+   * 个别中间件链可能把 `ctx.method` 写成空字符串（`??` 无法回退），故统一回读到 `ctx.request.method`。
+   *
+   * @param ctx HTTP 上下文。
+   * @returns 非空方法名（默认 `GET`）。
+   */
+  private resolveHttpMethod(ctx: HttpContext): string {
+    const fromCtx = String(ctx.method ?? "").trim();
+    if (fromCtx.length > 0) return fromCtx;
+    const fromReq = String(ctx.request.method ?? "").trim();
+    if (fromReq.length > 0) return fromReq;
+    return "GET";
+  }
+
+  /**
    * 创建路由适配器
    *
    * @param router 路由实例
@@ -87,8 +105,11 @@ export class RouterAdapter {
    */
   async handle(ctx: HttpContext): Promise<boolean> {
     try {
+      const httpMethod = this.resolveHttpMethod(ctx);
+      /** 写回上下文，保证后续 `buildApiRouteContext` 与 JSON 预解析拿到真实动词。 */
+      ctx.method = httpMethod;
       const match = await this.router.match(ctx.path, {
-        method: ctx.method,
+        method: httpMethod,
       });
 
       if (!match) {
@@ -119,9 +140,19 @@ export class RouterAdapter {
             );
           }
           const response = await handler(apiCtx);
-          ctx.response = response instanceof Response
-            ? response
-            : Response.json(response);
+          if (response instanceof Response) {
+            ctx.response = response;
+          } else if (response !== undefined && response !== null) {
+            ctx.response = Response.json(response);
+          } else {
+            /** action 模式：requireLogin 等已 res.json 但未 return Response */
+            const fromRes = apiCtx.res.takeLastResponse?.() ?? null;
+            if (fromRes instanceof Response) {
+              ctx.response = fromRes;
+            } else {
+              return false;
+            }
+          }
           return true;
         }
       }
@@ -156,8 +187,8 @@ export class RouterAdapter {
   }
 
   /**
-   * 对 JSON 请求预解析正文并写入 `apiCtx.body`（GET/HEAD 跳过；无 body 或解析失败则保持 `undefined`）。
-   * 解析后 `req` 的 body 流已消费，勿再调用 `req.json()`。
+   * 对 JSON 请求预解析正文并写入 `apiCtx.body`（GET/HEAD 跳过；空正文或解析失败则保持 `undefined`）。
+   * 解析后请求体流已消费，勿再对同一 `req` 调用 `text()` / `json()`。
    *
    * @param apiCtx 已由 {@link buildApiRouteContext} 构造的上下文
    */
@@ -169,10 +200,14 @@ export class RouterAdapter {
 
     const ct = apiCtx.req.headers.get("content-type") ?? "";
     if (!ct.toLowerCase().includes("json")) return;
-    if (!apiCtx.req.body) return;
+    /** 已由中间件写入 {@link HttpContext.body} 并经 {@link buildApiRouteContext} 带入时不再读流 */
+    if (apiCtx.body !== undefined) return;
 
     try {
-      apiCtx.body = await apiCtx.req.json();
+      const raw = await apiCtx.req.text();
+      const trimmed = raw.trim();
+      if (!trimmed) return;
+      apiCtx.body = JSON.parse(trimmed);
     } catch {
       apiCtx.body = undefined;
     }
@@ -195,7 +230,7 @@ export class RouterAdapter {
     >;
     if (!handlers) return undefined;
 
-    const methodKey = (ctx.method ?? "GET").toUpperCase();
+    const methodKey = this.resolveHttpMethod(ctx).toUpperCase();
     const byVerb = handlers[methodKey];
     if (typeof byVerb === "function") return byVerb;
 
@@ -212,12 +247,23 @@ export class RouterAdapter {
     }
 
     const seg = ctx.path.split("/").filter(Boolean).pop();
-    if (!seg) return undefined;
-    if (typeof handlers[seg] === "function") return handlers[seg];
-    if (seg.includes("-")) {
+    if (seg && typeof handlers[seg] === "function") return handlers[seg];
+    if (seg?.includes("-")) {
       const camel = seg.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
       if (typeof handlers[camel] === "function") return handlers[camel];
     }
+
+    /**
+     * action 模式静态路径 `/api/resource`（无 :method 段）对应模块导出 `index`，
+     * 末段为 resource 名而非 handler 名（如 chart.ts 导出 index 而非 chart）。
+     */
+    if (typeof handlers.index === "function") {
+      const parts = ctx.path.split("/").filter(Boolean);
+      if (parts.length === 2 && parts[0] === "api") {
+        return handlers.index;
+      }
+    }
+
     return undefined;
   }
 }

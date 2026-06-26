@@ -214,6 +214,70 @@ describe("RouterAdapter", () => {
       expect(await context.response!.text()).toBe("TC_OK");
     });
 
+    it("apiMode action：静态 /api/foo 回落到 index 导出", async () => {
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/api/chart") {
+            return {
+              handlers: {
+                index: async () => new Response("INDEX_OK"),
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request("http://localhost:8000/api/chart");
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      expect(await context.response!.text()).toBe("INDEX_OK");
+    });
+
+    it("action 模式 handler 未 return 时使用 res.json 最后一次响应", async () => {
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/api/auth/login") {
+            return {
+              handlers: {
+                login: async (ctx: Record<string, unknown>) => {
+                  (ctx.res as { json: (d: unknown) => Response }).json({
+                    success: false,
+                    message: "请先登录",
+                  });
+                },
+              },
+              params: { method: "login" },
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request("http://localhost:8000/api/auth/login", {
+        method: "POST",
+      });
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      const json = await context.response!.json() as {
+        success: boolean;
+        data: { success: boolean; message: string };
+      };
+      expect(json.success).toBe(true);
+      expect(json.data.message).toBe("请先登录");
+    });
+
     it("restful 仍优先 HTTP 动词", async () => {
       const mockRouter = {
         match: async (path: string) => {
