@@ -98,7 +98,13 @@ describe("端口检测与占用", () => {
         thrown = e instanceof Error ? e : new Error(String(e));
       }
       expect(thrown).not.toBeNull();
-      expect((thrown as Error).message).toContain("未找到可用端口");
+      // locale-tolerant：CI 英文 locale 下 $tr 返回 "No available port"，
+      // 本地中文 locale 下返回 "未找到可用端口"；接受两者避免全局 locale 状态污染。
+      const msg = (thrown as Error).message;
+      expect(
+        msg.includes("未找到可用端口") ||
+          msg.toLowerCase().includes("no available port"),
+      ).toBe(true);
     });
   });
 

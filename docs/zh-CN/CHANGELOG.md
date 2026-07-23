@@ -7,6 +7,17 @@
 
 ---
 
+## [1.2.1] - 2026-07-23
+
+### 修复
+
+- **`tests/port-utils.test.ts` locale-tolerant 断言**：`toContain("未找到可用端口")`
+  断言在 CI 英文 locale 下失败（错误消息为 `"No available port: tried 1 ports
+  from 35900, all in use"`）。改为 locale-tolerant 检查，接受中英文前缀，
+  不改变全局 locale 状态（Bun 并行安全）。
+
+---
+
 ## [1.2.0] - 2026-07-23
 
 ### 新增

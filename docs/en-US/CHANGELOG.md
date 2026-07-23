@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.1] - 2026-07-23
+
+### Fixed
+
+- **`tests/port-utils.test.ts` locale-tolerant assertion**: the
+  `toContain("未找到可用端口")` assertion failed on CI where the locale is
+  English (error message is `"No available port: tried 1 ports from 35900,
+  all in use"`). Replaced with a locale-tolerant check that accepts either
+  the Chinese or English prefix without mutating global locale state (Bun
+  parallel-safe).
+
+---
+
 ## [1.2.0] - 2026-07-23
 
 ### Added
