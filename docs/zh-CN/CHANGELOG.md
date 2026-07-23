@@ -7,6 +7,47 @@
 
 ---
 
+## [1.2.0] - 2026-07-23
+
+### 新增
+
+- **Node.js 22+ 兼容** — `@dreamer/server` 现可运行于 Deno 2.9+、Bun 1.3+、
+  Node.js 22+。
+  - `package.json`：`engines.node >= 22`，`test:node` 脚本经 tsx 执行。
+  - `test-node.mjs`：Node 测试运行器——每文件在主进程执行（无 `--test`
+    fork/IPC），规避测试向 stdout 输出时 "Unable to deserialize cloned data"
+    问题。13 个测试文件均为纯单元测试——无需排除。
+  - `tsconfig.json`：Bundler 模块解析 + `dom` lib，跨运行时类型一致。
+  - CI：9-job 矩阵（3 Deno v2.9 + 3 Bun + 3 Node 22，无 Chromium、无外部服务）。
+
+### 变更
+
+- **依赖**：全部 `@dreamer/*` 依赖升至 Node 兼容版本——`@dreamer/render`
+  `^1.1.7` → `^1.2.0`、`@dreamer/router` `^1.1.7` → `^1.2.0`、
+  `@dreamer/runtime-adapter` `^1.0.19` → `^1.2.2`、`@dreamer/i18n` `^1.0.1`
+  → `^1.1.2`、`@dreamer/console` `^1.0.12` → `^1.1.0`、`@dreamer/middleware`
+  `^1.0.2` → `^1.1.0`、`@dreamer/logger` `^1.0.3` → `^1.1.0`、`@dreamer/test`
+  `^1.1.8` → `^1.2.3`、`@dreamer/esbuild` `^1.1.9` → `^1.3.0`——`deno.json`
+  与 `package.json` 同步。
+
+### 修复
+
+- **`Http.listen()` + `serve()` 异步返回类型**：runtime-adapter 的 `serve()`
+  在 Node 返回 `Promise<ServeHandle>`（异步端口绑定），在 Deno/Bun 同步返回
+  `ServeHandle`。`listen()` 现返回 `Promise<ServeHandle>`，`Server.start()`
+  加 `await`——不加 `await` 致 Node 下 `serverHandle` 为 Promise，
+  `Server.stop()` 调 `handle.shutdown()` 报 `not a function`。同
+  socket-io/websocket/upload 根因。
+- **`tests/port-utils.test.ts`**：所有 `runtimeServe(...)` 调用加 `await`
+  （同根因——Node 返回 Promise，Deno/Bun 同步）。
+
+### 测试
+
+- **Deno** 178 通过 / 0 失败；**Bun** 165 通过 / 0 失败 / 13 文件；
+  **Node.js 22** 13/13 文件通过——三端 0 失败。
+
+---
+
 ## [1.1.9] - 2026-06-26
 
 ### 修复

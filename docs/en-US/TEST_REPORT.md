@@ -1,29 +1,47 @@
 # @dreamer/server Test Report
 
+English | [中文](../zh-CN/TEST_REPORT.md)
+
 ## 📊 Test Overview
 
-- **Test Library Version**: @dreamer/test@^1.1.8
-- **Test Framework**: @dreamer/test (compatible with Deno and Bun)
-- **Test Date**: 2026-05-08
-- **Test Environment**:
-  - Deno 2.6+
-  - Bun 1.3.5
+| Item            | Info                                                |
+| --------------- | --------------------------------------------------- |
+| Package         | `@dreamer/server`                                   |
+| Version         | **1.2.0** (aligned with `deno.json`/`package.json`) |
+| Test framework  | @dreamer/test@^1.2.3                                |
+| Report date     | **2026-07-23**                                      |
+| Test environment| Deno 2.9+ / Bun 1.3+ / Node.js 22+                  |
+
+## How to Run
+
+From the **server package root**:
+
+```bash
+# Deno
+deno task test
+
+# Bun
+bun test tests/
+
+# Node.js 22+
+npm install
+npm run test:node
+# equivalent: node --import tsx --test-force-exit test-node.mjs
+```
 
 ## 📈 Test Results
 
-### Overall Statistics
+### Runtime Compatibility
 
-- **Total Tests (Deno)**: 176 (`deno test -A tests/`)
-- **Passed**: 176 ✅
-- **Failed**: 0
-- **Pass Rate**: 100% ✅
-- **Test Files**: 13
+| Runtime  | Version | Passed    | Failed | Files | Duration |
+| -------- | ------- | --------- | ------ | ----- | -------- |
+| Deno     | 2.9+    | **178**   | **0**  | 13    | ~2s      |
+| Bun      | 1.3+    | **165**   | **0**  | 13    | ~1s      |
+| Node.js  | 22+     | **13/13** | **0**  | 13    | ~15s     |
 
-### Bun
-
-- **`bun test tests/`**: 164 passed, 0 failed (same **13** test files). Minor
-  count differences vs Deno come from the test runner implementation; both runs
-  are green.
+> All 13 test files are pure unit tests — no browser tests, no external
+> services, no exclusions needed. Deno/Bun counts differ due to runner
+> counting conventions; treat **0 failures** as the invariant.
 
 ### Test File Statistics
 

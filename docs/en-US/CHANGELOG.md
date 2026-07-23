@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.0] - 2026-07-23
+
+### Added
+
+- **Node.js 22+ compatibility** — `@dreamer/server` now runs on Deno 2.9+,
+  Bun 1.3+, and Node.js 22+.
+  - `package.json`: `engines.node >= 22`, `test:node` script via tsx.
+  - `test-node.mjs`: Node test runner — each file runs in the main process
+    (no `--test` fork/IPC), avoiding "Unable to deserialize cloned data" when
+    tests write to stdout. All 13 test files are pure unit tests — no
+    exclusions needed.
+  - `tsconfig.json`: Bundler module resolution + `dom` lib for cross-runtime
+    type consistency.
+  - CI: 9-job matrix (3 Deno v2.9 + 3 Bun + 3 Node 22, no Chromium, no
+    external services).
+
+### Changed
+
+- **Dependencies**: all `@dreamer/*` deps bumped to Node-compatible versions —
+  `@dreamer/render` `^1.1.7` → `^1.2.0`, `@dreamer/router` `^1.1.7` →
+  `^1.2.0`, `@dreamer/runtime-adapter` `^1.0.19` → `^1.2.2`, `@dreamer/i18n`
+  `^1.0.1` → `^1.1.2`, `@dreamer/console` `^1.0.12` → `^1.1.0`,
+  `@dreamer/middleware` `^1.0.2` → `^1.1.0`, `@dreamer/logger` `^1.0.3` →
+  `^1.1.0`, `@dreamer/test` `^1.1.8` → `^1.2.3`, `@dreamer/esbuild`
+  `^1.1.9` → `^1.3.0` — synced across `deno.json` and `package.json`.
+
+### Fixed
+
+- **`Http.listen()` + `serve()` async return type**: `runtime-adapter`'s
+  `serve()` returns `Promise<ServeHandle>` on Node (async port binding) but
+  `ServeHandle` synchronously on Deno/Bun. `listen()` now returns
+  `Promise<ServeHandle>` and `Server.start()` awaits it — without `await`,
+  `serverHandle` is a Promise on Node, causing `handle.shutdown is not a
+  function` on `Server.stop()`. Same root cause as socket-io/websocket/upload.
+- **`tests/port-utils.test.ts`**: all `runtimeServe(...)` calls now `await`ed
+  (same root cause — Node returns Promise, Deno/Bun synchronous).
+
+### Tests
+
+- **Deno** 178 passed / 0 failed; **Bun** 165 pass / 0 fail / 13 files;
+  **Node.js 22** 13/13 files passed — 0 failures across all three runtimes.
+
+---
+
 ## [1.1.9] - 2026-06-26
 
 ### Fixed

@@ -1,12 +1,12 @@
 # @dreamer/server
 
-> 一个兼容 Deno 和 Bun 的统一 HTTP 服务器包，提供开发和生产环境的完整服务器功能
+> 一个兼容 Deno、Bun 和 Node.js 的统一 HTTP 服务器包，提供开发和生产环境的完整服务器功能
 
 [English](../../README.md) | 中文 (Chinese)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
-[![Tests](https://img.shields.io/badge/tests-176%20passed-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-Deno%20178%20%7C%20Bun%20165%20%7C%20Node%2013--13-brightgreen)](./TEST_REPORT.md)
 
 ---
 
@@ -53,16 +53,36 @@
 
 ## 📦 安装
 
+### Deno
+
 ```bash
 deno add jsr:@dreamer/server
+```
+
+### Bun
+
+```bash
+bunx jsr add @dreamer/server
+```
+
+### Node.js 22+
+
+```bash
+npx jsr add @dreamer/server
 ```
 
 ---
 
 ## 🌍 环境兼容性
 
-- **运行时要求**：Deno 2.6+ 或 Bun 1.3.5
-- **服务端**：✅ 支持（兼容 Deno 和 Bun 运行时）
+| 运行时  | 版本  | 状态          |
+| ------- | ----- | ------------- |
+| **Deno** | 2.9+ | ✅ 完全支持   |
+| **Bun**  | 1.3+ | ✅ 完全支持   |
+| **Node** | 22+  | ✅ 完全支持   |
+
+> **注意**：HMR（热模块替换）仅限 Deno/Bun——Node 跳过 dev-tools WebSocket
+> 分支。其余功能在三端均可用。
 
 ---
 

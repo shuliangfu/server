@@ -20,7 +20,7 @@ export interface ServerOptions extends ServeOptions {
  *
  * @param options 服务器选项
  * @param handler 请求处理器
- * @returns 服务器句柄
+ * @returns 服务器句柄（Node 上为 Promise，Deno/Bun 上同步；await 三端兼容）
  *
  * @example
  * ```typescript
@@ -37,7 +37,7 @@ export interface ServerOptions extends ServeOptions {
 export function serve(
   options: ServerOptions | ((req: Request) => Response | Promise<Response>),
   handler?: (req: Request) => Response | Promise<Response>,
-): ServeHandle {
+): ServeHandle | Promise<ServeHandle> {
   // 如果第一个参数是函数，则作为 handler
   if (typeof options === "function") {
     return runtimeServe(options);
@@ -50,5 +50,7 @@ export function serve(
     onListen: options.onListen,
   };
 
+  // 【Why 根源】runtime-adapter serve() 在 Node 返回 Promise<ServeHandle>（异步
+  // 端口绑定），在 Deno/Bun 同步返回 ServeHandle。调用方需 await 以三端兼容。
   return runtimeServe(serverOptions, handler!);
 }

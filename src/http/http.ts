@@ -486,7 +486,7 @@ export class Http {
    * @param options 服务器选项
    * @returns 服务器句柄
    */
-  listen(options: HttpServerOptions = {}): ServeHandle {
+  listen(options: HttpServerOptions = {}): Promise<ServeHandle> {
     // WebSocket 升级须在同步路径返回 101；不可经 async handleRequest（Deno 会报 Upgrade response was not returned）
     const handler = (request: Request): Response | Promise<Response> => {
       const upgrade = request.headers.get("upgrade");
@@ -506,9 +506,10 @@ export class Http {
       onListen: options.onListen,
     };
 
-    const handle = runtimeServe(serverOptions, handler);
-
-    return handle;
+    // 【Why 根源】runtime-adapter serve() 在 Node 返回 Promise<ServeHandle>（异步
+    // 端口绑定），在 Deno/Bun 同步返回 ServeHandle。await 非 Promise 是 no-op，
+    // 三端行为一致；不加 await 致 Node 下 handle 为 Promise、shutdown() 失败。
+    return Promise.resolve(runtimeServe(serverOptions, handler)).then((handle) => handle);
   }
 
   /**

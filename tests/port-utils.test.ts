@@ -38,7 +38,7 @@ describe("端口检测与占用", () => {
 
     it("端口已被监听时应返回 true", async () => {
       const port = await findAvailablePort("localhost", TEST_BASE_PORT);
-      tempHandle = runtimeServe(
+      tempHandle = await runtimeServe(
         { port, host: "localhost", onListen: () => {} },
         () => new Response("ok"),
       );
@@ -57,7 +57,7 @@ describe("端口检测与占用", () => {
 
     it("起始端口被占用时应返回 startPort+1", async () => {
       const port = await findAvailablePort("localhost", TEST_BASE_PORT);
-      tempHandle = runtimeServe(
+      tempHandle = await runtimeServe(
         { port, host: "localhost", onListen: () => {} },
         () => new Response("ok"),
       );
@@ -69,11 +69,11 @@ describe("端口检测与占用", () => {
     it("连续多个端口被占用时应返回第一个可用端口", async () => {
       const port0 = await findAvailablePort("localhost", TEST_BASE_PORT);
       const port1 = port0 + 1;
-      const h0 = runtimeServe(
+      const h0 = await runtimeServe(
         { port: port0, host: "localhost", onListen: () => {} },
         () => new Response("ok"),
       );
-      const h1 = runtimeServe(
+      const h1 = await runtimeServe(
         { port: port1, host: "localhost", onListen: () => {} },
         () => new Response("ok"),
       );
@@ -86,7 +86,7 @@ describe("端口检测与占用", () => {
 
     it("在 maxAttempts 内无可用端口时应抛出错误", async () => {
       const port = await findAvailablePort("localhost", TEST_BASE_PORT);
-      tempHandle = runtimeServe(
+      tempHandle = await runtimeServe(
         { port, host: "localhost", onListen: () => {} },
         () => new Response("ok"),
       );
@@ -105,7 +105,7 @@ describe("端口检测与占用", () => {
   describe("Server 启动时端口被占用", () => {
     it("配置端口被占用时应自动使用 port+1 并记录日志", async () => {
       const port = await findAvailablePort("localhost", TEST_BASE_PORT);
-      tempHandle = runtimeServe(
+      tempHandle = await runtimeServe(
         { port, host: "localhost", onListen: () => {} },
         () => new Response("ok"),
       );

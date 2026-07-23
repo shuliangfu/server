@@ -1,22 +1,26 @@
 # @dreamer/server
 
-> Unified HTTP server library compatible with Deno and Bun. Full server support
-> for both development and production.
+> Unified HTTP server library compatible with Deno, Bun, and Node.js. Full
+> server support for both development and production.
 
 English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-176%20passed-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-Deno%20178%20%7C%20Bun%20165%20%7C%20Node%2013--13-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.1.9] - 2026-06-26
+### [1.2.0] - 2026-07-23
 
-- **Fixed**: `Http.listen()` invokes WebSocket handlers synchronously for
-  upgrade requests, fixing Deno 101 response errors when mounting WebSocket
-  servers. **Changed**: `@dreamer/runtime-adapter@^1.0.19`
+- **Added**: Node.js 22+ compatibility — `@dreamer/server` now runs on Deno
+  2.9+, Bun 1.3+, and Node.js 22+. CI: 9-job matrix (3 Deno + 3 Bun + 3 Node).
+- **Changed**: all `@dreamer/*` deps bumped to Node-compatible versions
+  (render ^1.2.0, router ^1.2.0, runtime-adapter ^1.2.2, etc.).
+- **Fixed**: `Http.listen()` + `serve()` now return `Promise<ServeHandle>`
+  and `Server.start()` awaits it — runtime-adapter `serve()` returns Promise
+  on Node (async port binding), sync on Deno/Bun
   ([CHANGELOG](./docs/en-US/CHANGELOG.md)).
 
 ---
@@ -64,16 +68,36 @@ and production server features.
 
 ## 📦 Installation
 
+### Deno
+
 ```bash
 deno add jsr:@dreamer/server
+```
+
+### Bun
+
+```bash
+bunx jsr add @dreamer/server
+```
+
+### Node.js 22+
+
+```bash
+npx jsr add @dreamer/server
 ```
 
 ---
 
 ## 🌍 Environment Compatibility
 
-- **Runtime**: Deno 2.6+ or Bun 1.3.5
-- **Server**: ✅ Supported (Deno and Bun)
+| Runtime  | Version | Status              |
+| -------- | ------- | ------------------- |
+| **Deno** | 2.9+    | ✅ Full support     |
+| **Bun**  | 1.3+    | ✅ Full support     |
+| **Node** | 22+     | ✅ Full support     |
+
+> **Note**: HMR (hot module replacement) is Deno/Bun only — Node skips the
+> dev-tools WebSocket branch. All other features work on all three runtimes.
 
 ---
 

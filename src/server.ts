@@ -100,7 +100,9 @@ export class Server {
     }
 
     // 启动 HTTP 服务器
-    this.serverHandle = this.httpApp.listen({
+    // 【Why 根源】listen() 在 Node 返回 Promise<ServeHandle>（异步端口绑定），
+    // 在 Deno/Bun 同步返回 ServeHandle。await 三端兼容。
+    this.serverHandle = await this.httpApp.listen({
       port: actualPort,
       host: this._host,
       onListen: ({ host, port }) => {
