@@ -509,7 +509,9 @@ export class Http {
     // 【Why 根源】runtime-adapter serve() 在 Node 返回 Promise<ServeHandle>（异步
     // 端口绑定），在 Deno/Bun 同步返回 ServeHandle。await 非 Promise 是 no-op，
     // 三端行为一致；不加 await 致 Node 下 handle 为 Promise、shutdown() 失败。
-    return Promise.resolve(runtimeServe(serverOptions, handler)).then((handle) => handle);
+    return Promise.resolve(runtimeServe(serverOptions, handler)).then((
+      handle,
+    ) => handle);
   }
 
   /**

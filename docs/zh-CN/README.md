@@ -456,9 +456,8 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.1.9**（2026-06-26）：**修复** — `Http.listen()` 对 WebSocket 升级请求同步
-调用已注册处理器（Deno 101 修复）；**变更** —
-`@dreamer/runtime-adapter@^1.0.19`。 完整历史见 [CHANGELOG.md](./CHANGELOG.md)。
+**v1.2.2**（2026-11-01）：**修复** — `RouterAdapter` action 模式 `index` 回落支持 kind:api / apiOnly 根 `/` 与 `/<resource>`。
+[完整变更日志](./CHANGELOG.md)
 
 ---
 

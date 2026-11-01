@@ -7,10 +7,16 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-Deno%20178%20%7C%20Bun%20165%20%7C%20Node%2013--13-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-Deno%20180%20%7C%20Bun%20167%20%7C%20Node%2013--13-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
+
+### [1.2.2] - 2026-11-01
+
+- **Fixed**: `RouterAdapter` action-mode `index` fallback now covers kind:api /
+  apiOnly bare `/` and single-segment `/<resource>` (not only `/api/<resource>`).
+  [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ### [1.2.0] - 2026-07-23
 
@@ -425,7 +431,7 @@ await server.start();
 
 ## 📊 Test Coverage
 
-- **Total tests**: 175 (Deno `deno test -A tests/`)
+- **Total tests**: 180 (Deno `deno test -A tests/`)
 - **Test files**: 13
 - **Pass rate**: 100% ✅
 - **Details**: [TEST_REPORT.md](./docs/en-US/TEST_REPORT.md)
@@ -433,9 +439,8 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.1.9** (2026-06-26): **Fixed** — `Http.listen()` synchronously routes
-WebSocket upgrade requests to registered WS handlers (Deno 101 fix). **Changed**
-— `@dreamer/runtime-adapter@^1.0.19`.
+**v1.2.2** (2026-11-01): **Fixed** — `RouterAdapter` action-mode `index`
+fallback for kind:api / apiOnly bare `/` and `/<resource>`.
 [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---

@@ -7,6 +7,21 @@
 
 ---
 
+## [1.2.2] - 2026-11-01
+
+### 修复
+
+- **`RouterAdapter` action 模式 `index` 回落支持 kind:api / apiOnly**：
+  此前仅 `/api/<resource>`（两段且首段为 `api`）会回落到模块的 `index` 导出。
+  apiOnly 应用的根路径 `/` 与单段 `/<resource>` 即使导出了 `index` 也会 404。
+  现对 0 段或 1 段路径同样回落。显式 `/…/index` 仍由末段 / `:method` 命中，行为不变。
+
+### 测试
+
+- 新增 RouterAdapter 用例：apiOnly 根 `/` → `index`、静态 `/users` → `index`。
+
+---
+
 ## [1.2.1] - 2026-07-23
 
 ### 修复

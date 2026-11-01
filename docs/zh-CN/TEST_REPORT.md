@@ -7,9 +7,9 @@
 | 项目         | 说明                                                |
 | ------------ | --------------------------------------------------- |
 | 包名         | `@dreamer/server`                                   |
-| 版本         | **1.2.0**（与 `deno.json`/`package.json` 一致）     |
+| 版本         | **1.2.2**（与 `deno.json`/`package.json` 一致）     |
 | 测试框架     | @dreamer/test@^1.2.3                                |
-| 报告日期     | **2026-07-23**                                      |
+| 报告日期     | **2026-11-01**                                      |
 | 测试环境     | Deno 2.9+ / Bun 1.3+ / Node.js 22+                  |
 
 ## 如何运行
@@ -35,8 +35,8 @@ npm run test:node
 
 | 运行时  | 版本  | 通过      | 失败  | 文件   | 耗时   |
 | ------- | ----- | --------- | ----- | ------ | ------ |
-| Deno    | 2.9+  | **178**   | **0** | 13     | ~2s    |
-| Bun     | 1.3+  | **165**   | **0** | 13     | ~1s    |
+| Deno    | 2.9+  | **180**   | **0** | 13     | ~2s    |
+| Bun     | 1.3+  | **167**   | **0** | 13     | ~1s    |
 | Node.js | 22+   | **13/13** | **0** | 13     | ~15s   |
 
 > 13 个测试文件均为纯单元测试——无浏览器测试、无外部服务、无需排除。
@@ -55,7 +55,7 @@ npm run test:node
 |              | `mod.test.ts`                     | 16     | ✅ 全部通过 |
 |              | `port-utils.test.ts`              | 9      | ✅ 全部通过 |
 |              | `req-context.test.ts`             | 8      | ✅ 全部通过 |
-|              | `router-adapter.test.ts`          | 11     | ✅ 全部通过 |
+|              | `router-adapter.test.ts`          | 13     | ✅ 全部通过 |
 | **开发工具** |                                   |        |             |
 |              | `dev/hmr-client.test.ts`          | 9      | ✅ 全部通过 |
 |              | `dev/module-graph.test.ts`        | 14     | ✅ 全部通过 |
@@ -102,7 +102,7 @@ npm run test:node
 
 - ✅ **`setServerLocale`**、**`$tr`**（中英文文案、第三参临时语言、占位符替换）
 
-#### 1.7 路由适配器 (router-adapter.test.ts) - 11 个用例
+#### 1.7 路由适配器 (router-adapter.test.ts) - 13 个用例
 
 - ✅ RouterAdapter 实例、路由匹配、动态参数、API
   上下文形态、**`extendApiContext`** 合并字段、**`apiMode`**、REST / action

@@ -7,9 +7,9 @@ English | [中文](../zh-CN/TEST_REPORT.md)
 | Item            | Info                                                |
 | --------------- | --------------------------------------------------- |
 | Package         | `@dreamer/server`                                   |
-| Version         | **1.2.0** (aligned with `deno.json`/`package.json`) |
+| Version         | **1.2.2** (aligned with `deno.json`/`package.json`) |
 | Test framework  | @dreamer/test@^1.2.3                                |
-| Report date     | **2026-07-23**                                      |
+| Report date     | **2026-11-01**                                      |
 | Test environment| Deno 2.9+ / Bun 1.3+ / Node.js 22+                  |
 
 ## How to Run
@@ -35,8 +35,8 @@ npm run test:node
 
 | Runtime  | Version | Passed    | Failed | Files | Duration |
 | -------- | ------- | --------- | ------ | ----- | -------- |
-| Deno     | 2.9+    | **178**   | **0**  | 13    | ~2s      |
-| Bun      | 1.3+    | **165**   | **0**  | 13    | ~1s      |
+| Deno     | 2.9+    | **180**   | **0**  | 13    | ~2s      |
+| Bun      | 1.3+    | **167**   | **0**  | 13    | ~1s      |
 | Node.js  | 22+     | **13/13** | **0**  | 13    | ~15s     |
 
 > All 13 test files are pure unit tests — no browser tests, no external
@@ -56,7 +56,7 @@ npm run test:node
 |               | `mod.test.ts`                     | 16    | ✅ All passed |
 |               | `port-utils.test.ts`              | 9     | ✅ All passed |
 |               | `req-context.test.ts`             | 8     | ✅ All passed |
-|               | `router-adapter.test.ts`          | 11    | ✅ All passed |
+|               | `router-adapter.test.ts`          | 13    | ✅ All passed |
 | **Dev Tools** |                                   |       |               |
 |               | `dev/hmr-client.test.ts`          | 9     | ✅ All passed |
 |               | `dev/module-graph.test.ts`        | 14    | ✅ All passed |
@@ -104,7 +104,7 @@ npm run test:node
 - ✅ **`setServerLocale`**, **`$tr`** (EN/ZH strings, temporary **`lang`**
   argument, placeholder interpolation)
 
-#### 1.7 Router Adapter (router-adapter.test.ts) - 11 tests
+#### 1.7 Router Adapter (router-adapter.test.ts) - 13 tests
 
 - ✅ RouterAdapter instance, route matching, dynamic params, API context shape,
   **`extendApiContext`** merge, **`apiMode`**, REST vs action resolution, POST

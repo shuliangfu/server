@@ -240,6 +240,58 @@ describe("RouterAdapter", () => {
       expect(await context.response!.text()).toBe("INDEX_OK");
     });
 
+    it("apiMode action：apiOnly 根路径 / 回落到 index 导出", async () => {
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/") {
+            return {
+              handlers: {
+                index: async () => new Response("ROOT_INDEX_OK"),
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request("http://localhost:8000/");
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      expect(await context.response!.text()).toBe("ROOT_INDEX_OK");
+    });
+
+    it("apiMode action：apiOnly 静态 /users 回落到 index 导出", async () => {
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/users") {
+            return {
+              handlers: {
+                index: async () => new Response("USERS_INDEX_OK"),
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request("http://localhost:8000/users");
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      expect(await context.response!.text()).toBe("USERS_INDEX_OK");
+    });
+
     it("action 模式 handler 未 return 时使用 res.json 最后一次响应", async () => {
       const mockRouter = {
         match: async (path: string) => {

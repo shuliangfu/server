@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.2] - 2026-11-01
+
+### Fixed
+
+- **`RouterAdapter` action-mode `index` fallback for kind:api / apiOnly**:
+  previously only `/api/<resource>` (two segments, first `api`) resolved to the
+  module `index` export. Bare `/` and single-segment `/<resource>` on apiOnly
+  apps 404'd even when `index` was exported. Now also falls back when the path
+  has 0 or 1 segment(s). Explicit `/…/index` still matches via last-segment /
+  `:method` as before.
+
+### Tests
+
+- Added RouterAdapter cases: apiOnly root `/` → `index`, static `/users` → `index`.
+
+---
+
 ## [1.2.1] - 2026-07-23
 
 ### Fixed
