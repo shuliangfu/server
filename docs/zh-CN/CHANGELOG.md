@@ -9,6 +9,8 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-04
+
 ### 新增
 
 - **HMR 状态桥 `__DREAMER_HMR__`（DEV）**：`hmr-browser` 在 `globalThis` 上发布
@@ -16,7 +18,8 @@
   `@dreamer/view` DevTools overlay 等可 `claimUi` 接管状态展示并**隐藏**独立
   「HMR 已连接」胶囊；无 claimer 时仍显示原胶囊。仅开发态 HMR 客户端；
   生产不注入。
-- **HMR 客户端源码加载**：`file://` 下 `fetch` 失败时回退 `node:fs` 读盘（Node 兼容），保证编译产物含 `__DREAMER_HMR__` 桥。
+- **HMR 客户端源码加载**：`file://` 下 `fetch` 失败时回退 `node:fs` 读盘（Node
+  兼容），保证编译产物含 `__DREAMER_HMR__` 桥。
 
 ### 测试
 
@@ -26,10 +29,10 @@
 
 ### 修复
 
-- **`RouterAdapter` action 模式 `index` 回落支持 kind:api / apiOnly**：
-  此前仅 `/api/<resource>`（两段且首段为 `api`）会回落到模块的 `index` 导出。
-  apiOnly 应用的根路径 `/` 与单段 `/<resource>` 即使导出了 `index` 也会 404。
-  现对 0 段或 1 段路径同样回落。显式 `/…/index` 仍由末段 / `:method` 命中，行为不变。
+- **`RouterAdapter` action 模式 `index` 回落支持 kind:api / apiOnly**： 此前仅
+  `/api/<resource>`（两段且首段为 `api`）会回落到模块的 `index` 导出。 apiOnly
+  应用的根路径 `/` 与单段 `/<resource>` 即使导出了 `index` 也会 404。 现对 0
+  段或 1 段路径同样回落。显式 `/…/index` 仍由末段 / `:method` 命中，行为不变。
 
 ### 测试
 
@@ -41,10 +44,12 @@
 
 ### 修复
 
-- **`tests/port-utils.test.ts` locale-tolerant 断言**：`toContain("未找到可用端口")`
-  断言在 CI 英文 locale 下失败（错误消息为 `"No available port: tried 1 ports
-  from 35900, all in use"`）。改为 locale-tolerant 检查，接受中英文前缀，
-  不改变全局 locale 状态（Bun 并行安全）。
+- **`tests/port-utils.test.ts` locale-tolerant
+  断言**：`toContain("未找到可用端口")` 断言在 CI 英文 locale 下失败（错误消息为
+  `"No available port: tried 1 ports
+  from 35900, all in use"`）。改为
+  locale-tolerant 检查，接受中英文前缀， 不改变全局 locale 状态（Bun
+  并行安全）。
 
 ---
 
@@ -63,29 +68,29 @@
 
 ### 变更
 
-- **依赖**：全部 `@dreamer/*` 依赖升至 Node 兼容版本——`@dreamer/render`
-  `^1.1.7` → `^1.2.0`、`@dreamer/router` `^1.1.7` → `^1.2.0`、
-  `@dreamer/runtime-adapter` `^1.0.19` → `^1.2.2`、`@dreamer/i18n` `^1.0.1`
-  → `^1.1.2`、`@dreamer/console` `^1.0.12` → `^1.1.0`、`@dreamer/middleware`
-  `^1.0.2` → `^1.1.0`、`@dreamer/logger` `^1.0.3` → `^1.1.0`、`@dreamer/test`
-  `^1.1.8` → `^1.2.3`、`@dreamer/esbuild` `^1.1.9` → `^1.3.0`——`deno.json`
-  与 `package.json` 同步。
+- **依赖**：全部 `@dreamer/*` 依赖升至 Node 兼容版本——`@dreamer/render` `^1.1.7`
+  → `^1.2.0`、`@dreamer/router` `^1.1.7` → `^1.2.0`、 `@dreamer/runtime-adapter`
+  `^1.0.19` → `^1.2.2`、`@dreamer/i18n` `^1.0.1` → `^1.1.2`、`@dreamer/console`
+  `^1.0.12` → `^1.1.0`、`@dreamer/middleware` `^1.0.2` →
+  `^1.1.0`、`@dreamer/logger` `^1.0.3` → `^1.1.0`、`@dreamer/test` `^1.1.8` →
+  `^1.2.3`、`@dreamer/esbuild` `^1.1.9` → `^1.3.0`——`deno.json` 与
+  `package.json` 同步。
 
 ### 修复
 
-- **`Http.listen()` + `serve()` 异步返回类型**：runtime-adapter 的 `serve()`
-  在 Node 返回 `Promise<ServeHandle>`（异步端口绑定），在 Deno/Bun 同步返回
-  `ServeHandle`。`listen()` 现返回 `Promise<ServeHandle>`，`Server.start()`
-  加 `await`——不加 `await` 致 Node 下 `serverHandle` 为 Promise，
-  `Server.stop()` 调 `handle.shutdown()` 报 `not a function`。同
-  socket-io/websocket/upload 根因。
+- **`Http.listen()` + `serve()` 异步返回类型**：runtime-adapter 的 `serve()` 在
+  Node 返回 `Promise<ServeHandle>`（异步端口绑定），在 Deno/Bun 同步返回
+  `ServeHandle`。`listen()` 现返回 `Promise<ServeHandle>`，`Server.start()` 加
+  `await`——不加 `await` 致 Node 下 `serverHandle` 为 Promise， `Server.stop()`
+  调 `handle.shutdown()` 报 `not a function`。同 socket-io/websocket/upload
+  根因。
 - **`tests/port-utils.test.ts`**：所有 `runtimeServe(...)` 调用加 `await`
   （同根因——Node 返回 Promise，Deno/Bun 同步）。
 
 ### 测试
 
-- **Deno** 178 通过 / 0 失败；**Bun** 165 通过 / 0 失败 / 13 文件；
-  **Node.js 22** 13/13 文件通过——三端 0 失败。
+- **Deno** 178 通过 / 0 失败；**Bun** 165 通过 / 0 失败 / 13 文件； **Node.js
+  22** 13/13 文件通过——三端 0 失败。
 
 ---
 

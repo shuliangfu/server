@@ -7,27 +7,16 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-Deno%20180%20%7C%20Bun%20167%20%7C%20Node%2013--13-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-Deno%20182%20%7C%20Bun%20168%20%7C%20Node%2013--13-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.2.2] - 2026-11-01
+### [1.3.0] - 2026-11-04
 
-- **Fixed**: `RouterAdapter` action-mode `index` fallback now covers kind:api /
-  apiOnly bare `/` and single-segment `/<resource>` (not only `/api/<resource>`).
-  [CHANGELOG](./docs/en-US/CHANGELOG.md).
-
-### [1.2.0] - 2026-07-23
-
-- **Added**: Node.js 22+ compatibility — `@dreamer/server` now runs on Deno
-  2.9+, Bun 1.3+, and Node.js 22+. CI: 9-job matrix (3 Deno + 3 Bun + 3 Node).
-- **Changed**: all `@dreamer/*` deps bumped to Node-compatible versions
-  (render ^1.2.0, router ^1.2.0, runtime-adapter ^1.2.2, etc.).
-- **Fixed**: `Http.listen()` + `serve()` now return `Promise<ServeHandle>`
-  and `Server.start()` awaits it — runtime-adapter `serve()` returns Promise
-  on Node (async port binding), sync on Deno/Bun
-  ([CHANGELOG](./docs/en-US/CHANGELOG.md)).
+- **Added**: HMR status bridge `__DREAMER_HMR__` (DEV) with `claimUi` so
+  DevTools overlay can hide the standalone HMR capsule; `file://` client load
+  falls back to `node:fs`. [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
 
@@ -96,11 +85,11 @@ npx jsr add @dreamer/server
 
 ## 🌍 Environment Compatibility
 
-| Runtime  | Version | Status              |
-| -------- | ------- | ------------------- |
-| **Deno** | 2.9+    | ✅ Full support     |
-| **Bun**  | 1.3+    | ✅ Full support     |
-| **Node** | 22+     | ✅ Full support     |
+| Runtime  | Version | Status          |
+| -------- | ------- | --------------- |
+| **Deno** | 2.9+    | ✅ Full support |
+| **Bun**  | 1.3+    | ✅ Full support |
+| **Node** | 22+     | ✅ Full support |
 
 > **Note**: HMR (hot module replacement) is Deno/Bun only — Node skips the
 > dev-tools WebSocket branch. All other features work on all three runtimes.
@@ -439,9 +428,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.2.2** (2026-11-01): **Fixed** — `RouterAdapter` action-mode `index`
-fallback for kind:api / apiOnly bare `/` and `/<resource>`.
-[Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.3.0** (2026-11-04): **Added** — HMR `__DREAMER_HMR__` bridge with `claimUi`
+(hide capsule when DevTools overlay owns UI); `file://` load falls back to
+`node:fs`. [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 

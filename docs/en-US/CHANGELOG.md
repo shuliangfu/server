@@ -9,15 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-04
+
 ### Added
 
 - **HMR status bridge `__DREAMER_HMR__` (DEV)**: `hmr-browser` publishes
   `version` / `getSnapshot` / `subscribe` / `claimUi` / `isUiClaimed` on
-  `globalThis`. Consumers such as `@dreamer/view` DevTools overlay can
-  `claimUi` to own the status UI and **hide** the standalone “HMR Connected”
-  capsule; with no claimers the capsule still shows. Dev HMR client only —
-  not injected in production.
-- **HMR client source load**: when `fetch(file://…)` fails, fall back to `node:fs` so Node compiles the real client (incl. `__DREAMER_HMR__` bridge).
+  `globalThis`. Consumers such as `@dreamer/view` DevTools overlay can `claimUi`
+  to own the status UI and **hide** the standalone “HMR Connected” capsule; with
+  no claimers the capsule still shows. Dev HMR client only — not injected in
+  production.
+- **HMR client source load**: when `fetch(file://…)` fails, fall back to
+  `node:fs` so Node compiles the real client (incl. `__DREAMER_HMR__` bridge).
 
 ### Tests
 
@@ -37,7 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Tests
 
-- Added RouterAdapter cases: apiOnly root `/` → `index`, static `/users` → `index`.
+- Added RouterAdapter cases: apiOnly root `/` → `index`, static `/users` →
+  `index`.
 
 ---
 
@@ -47,10 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - **`tests/port-utils.test.ts` locale-tolerant assertion**: the
   `toContain("未找到可用端口")` assertion failed on CI where the locale is
-  English (error message is `"No available port: tried 1 ports from 35900,
-  all in use"`). Replaced with a locale-tolerant check that accepts either
-  the Chinese or English prefix without mutating global locale state (Bun
-  parallel-safe).
+  English (error message is
+  `"No available port: tried 1 ports from 35900,
+  all in use"`). Replaced with
+  a locale-tolerant check that accepts either the Chinese or English prefix
+  without mutating global locale state (Bun parallel-safe).
 
 ---
 
@@ -58,27 +63,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- **Node.js 22+ compatibility** — `@dreamer/server` now runs on Deno 2.9+,
-  Bun 1.3+, and Node.js 22+.
+- **Node.js 22+ compatibility** — `@dreamer/server` now runs on Deno 2.9+, Bun
+  1.3+, and Node.js 22+.
   - `package.json`: `engines.node >= 22`, `test:node` script via tsx.
-  - `test-node.mjs`: Node test runner — each file runs in the main process
-    (no `--test` fork/IPC), avoiding "Unable to deserialize cloned data" when
-    tests write to stdout. All 13 test files are pure unit tests — no
-    exclusions needed.
+  - `test-node.mjs`: Node test runner — each file runs in the main process (no
+    `--test` fork/IPC), avoiding "Unable to deserialize cloned data" when tests
+    write to stdout. All 13 test files are pure unit tests — no exclusions
+    needed.
   - `tsconfig.json`: Bundler module resolution + `dom` lib for cross-runtime
     type consistency.
-  - CI: 9-job matrix (3 Deno v2.9 + 3 Bun + 3 Node 22, no Chromium, no
-    external services).
+  - CI: 9-job matrix (3 Deno v2.9 + 3 Bun + 3 Node 22, no Chromium, no external
+    services).
 
 ### Changed
 
 - **Dependencies**: all `@dreamer/*` deps bumped to Node-compatible versions —
-  `@dreamer/render` `^1.1.7` → `^1.2.0`, `@dreamer/router` `^1.1.7` →
-  `^1.2.0`, `@dreamer/runtime-adapter` `^1.0.19` → `^1.2.2`, `@dreamer/i18n`
-  `^1.0.1` → `^1.1.2`, `@dreamer/console` `^1.0.12` → `^1.1.0`,
-  `@dreamer/middleware` `^1.0.2` → `^1.1.0`, `@dreamer/logger` `^1.0.3` →
-  `^1.1.0`, `@dreamer/test` `^1.1.8` → `^1.2.3`, `@dreamer/esbuild`
-  `^1.1.9` → `^1.3.0` — synced across `deno.json` and `package.json`.
+  `@dreamer/render` `^1.1.7` → `^1.2.0`, `@dreamer/router` `^1.1.7` → `^1.2.0`,
+  `@dreamer/runtime-adapter` `^1.0.19` → `^1.2.2`, `@dreamer/i18n` `^1.0.1` →
+  `^1.1.2`, `@dreamer/console` `^1.0.12` → `^1.1.0`, `@dreamer/middleware`
+  `^1.0.2` → `^1.1.0`, `@dreamer/logger` `^1.0.3` → `^1.1.0`, `@dreamer/test`
+  `^1.1.8` → `^1.2.3`, `@dreamer/esbuild` `^1.1.9` → `^1.3.0` — synced across
+  `deno.json` and `package.json`.
 
 ### Fixed
 
@@ -86,8 +91,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `serve()` returns `Promise<ServeHandle>` on Node (async port binding) but
   `ServeHandle` synchronously on Deno/Bun. `listen()` now returns
   `Promise<ServeHandle>` and `Server.start()` awaits it — without `await`,
-  `serverHandle` is a Promise on Node, causing `handle.shutdown is not a
-  function` on `Server.stop()`. Same root cause as socket-io/websocket/upload.
+  `serverHandle` is a Promise on Node, causing
+  `handle.shutdown is not a
+  function` on `Server.stop()`. Same root cause as
+  socket-io/websocket/upload.
 - **`tests/port-utils.test.ts`**: all `runtimeServe(...)` calls now `await`ed
   (same root cause — Node returns Promise, Deno/Bun synchronous).
 

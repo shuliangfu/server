@@ -182,8 +182,8 @@ function createHmrBridgeState(): HmrBridgeState {
 
 /** Module singleton — also published on globalThis for cross-bundle consumers. */
 const hmrBridgeState: HmrBridgeState = createHmrBridgeState();
-(globalThis as Record<string, unknown>)[DREAMER_HMR_KEY] = hmrBridgeState.bridge;
-
+(globalThis as Record<string, unknown>)[DREAMER_HMR_KEY] =
+  hmrBridgeState.bridge;
 
 /**
  * HMR 面板文案（根据 document.documentElement.lang 或 navigator.language 选择）

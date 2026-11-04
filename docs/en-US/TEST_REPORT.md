@@ -4,13 +4,13 @@ English | [中文](../zh-CN/TEST_REPORT.md)
 
 ## 📊 Test Overview
 
-| Item            | Info                                                |
-| --------------- | --------------------------------------------------- |
-| Package         | `@dreamer/server`                                   |
-| Version         | **1.2.2** (aligned with `deno.json`/`package.json`) |
-| Test framework  | @dreamer/test@^1.2.3                                |
-| Report date     | **2026-11-01**                                      |
-| Test environment| Deno 2.9+ / Bun 1.3+ / Node.js 22+                  |
+| Item             | Info                                                |
+| ---------------- | --------------------------------------------------- |
+| Package          | `@dreamer/server`                                   |
+| Version          | **1.3.0** (aligned with `deno.json`/`package.json`) |
+| Test framework   | @dreamer/test@^1.2.3                                |
+| Report date      | **2026-11-04**                                      |
+| Test environment | Deno 2.9+ / Bun 1.3+ / Node.js 22+                  |
 
 ## How to Run
 
@@ -33,15 +33,15 @@ npm run test:node
 
 ### Runtime Compatibility
 
-| Runtime  | Version | Passed    | Failed | Files | Duration |
-| -------- | ------- | --------- | ------ | ----- | -------- |
-| Deno     | 2.9+    | **180**   | **0**  | 13    | ~2s      |
-| Bun      | 1.3+    | **167**   | **0**  | 13    | ~1s      |
-| Node.js  | 22+     | **13/13** | **0**  | 13    | ~15s     |
+| Runtime | Version | Passed    | Failed | Files | Duration |
+| ------- | ------- | --------- | ------ | ----- | -------- |
+| Deno    | 2.9+    | **182**   | **0**  | 14    | ~2s      |
+| Bun     | 1.3+    | **168**   | **0**  | 14    | ~1s      |
+| Node.js | 22+     | **13/13** | **0**  | 13    | ~15s     |
 
 > All 13 test files are pure unit tests — no browser tests, no external
-> services, no exclusions needed. Deno/Bun counts differ due to runner
-> counting conventions; treat **0 failures** as the invariant.
+> services, no exclusions needed. Deno/Bun counts differ due to runner counting
+> conventions; treat **0 failures** as the invariant.
 
 ### Test File Statistics
 
