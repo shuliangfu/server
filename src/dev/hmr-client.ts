@@ -20,9 +20,56 @@ function getHmrBrowserScriptUrl(): string {
 }
 
 /**
+ * Load hmr-browser.ts source.
+ * Prefer fetch (JSR / http / Deno file://); fall back to node:fs for Node where
+ * `fetch(file://…)` often fails.
+ */
+async function readHmrBrowserSource(lang?: Locale): Promise<string> {
+  const browserScriptUrl = getHmrBrowserScriptUrl();
+
+  try {
+    const requestInit: RequestInit = {
+      method: "GET",
+      headers: {
+        Accept: "text/plain, application/typescript, */*",
+      },
+    };
+    const response: Response = await fetch(browserScriptUrl, requestInit);
+    if (response.ok) {
+      return await response.text();
+    }
+    // Non-OK — try filesystem before giving up (Node file:// quirks).
+  } catch {
+    // fetch threw (common on Node for file://) — try filesystem.
+  }
+
+  if (browserScriptUrl.startsWith("file:")) {
+    const { readFile } = await import("node:fs/promises");
+    const { fileURLToPath } = await import("node:url");
+    return await readFile(fileURLToPath(browserScriptUrl), "utf8");
+  }
+
+  // Last resort: re-fetch to surface the original error via caller
+  const response: Response = await fetch(browserScriptUrl, {
+    method: "GET",
+    headers: { Accept: "text/plain, application/typescript, */*" },
+  });
+  if (!response.ok) {
+    throw new Error(
+      $tr("error.fetchHmrClientFailed", {
+        status: String(response.status),
+        statusText: response.statusText,
+        url: browserScriptUrl,
+      }, lang),
+    );
+  }
+  return await response.text();
+}
+
+/**
  * 生成 HMR 客户端脚本
  *
- * 通过 fetch 获取 hmr-browser.ts 源码，使用 esbuild stdin 编译（不依赖入口文件路径）
+ * 通过 fetch／本地文件读取 hmr-browser.ts 源码，使用 esbuild stdin 编译
  *
  * @param hmrPath WebSocket 路径
  * @param port 服务器端口
@@ -42,27 +89,7 @@ export async function generateHMRClientScript(
   }
 
   try {
-    // 通过相对路径得到 hmr-browser.ts 的 URL（支持 file:// 与 JSR 等）
-    const browserScriptUrl = getHmrBrowserScriptUrl();
-
-    // 通过 fetch 获取 hmr-browser.ts 源码（使用 RequestInit 明确请求方式与 Accept）
-    const requestInit: RequestInit = {
-      method: "GET",
-      headers: {
-        Accept: "text/plain, application/typescript, */*",
-      },
-    };
-    const response: Response = await fetch(browserScriptUrl, requestInit);
-    if (!response.ok) {
-      throw new Error(
-        $tr("error.fetchHmrClientFailed", {
-          status: String(response.status),
-          statusText: response.statusText,
-          url: browserScriptUrl,
-        }, lang),
-      );
-    }
-    const sourceContent = await response.text();
+    const sourceContent = await readHmrBrowserSource(lang);
 
     // 使用 esbuild stdin 编译（直接传内容，不依赖入口文件路径）
     const result = await esbuild.build({

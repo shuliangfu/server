@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `claimUi` to own the status UI and **hide** the standalone “HMR Connected”
   capsule; with no claimers the capsule still shows. Dev HMR client only —
   not injected in production.
+- **HMR client source load**: when `fetch(file://…)` fails, fall back to `node:fs` so Node compiles the real client (incl. `__DREAMER_HMR__` bridge).
 
 ### Tests
 

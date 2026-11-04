@@ -16,6 +16,7 @@
   `@dreamer/view` DevTools overlay 等可 `claimUi` 接管状态展示并**隐藏**独立
   「HMR 已连接」胶囊；无 claimer 时仍显示原胶囊。仅开发态 HMR 客户端；
   生产不注入。
+- **HMR 客户端源码加载**：`file://` 下 `fetch` 失败时回退 `node:fs` 读盘（Node 兼容），保证编译产物含 `__DREAMER_HMR__` 桥。
 
 ### 测试
 
