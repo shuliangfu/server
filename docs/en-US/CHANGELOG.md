@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **HMR status bridge `__DREAMER_HMR__` (DEV)**: `hmr-browser` publishes
+  `version` / `getSnapshot` / `subscribe` / `claimUi` / `isUiClaimed` on
+  `globalThis`. Consumers such as `@dreamer/view` DevTools overlay can
+  `claimUi` to own the status UI and **hide** the standalone “HMR Connected”
+  capsule; with no claimers the capsule still shows. Dev HMR client only —
+  not injected in production.
+
+### Tests
+
+- `tests/dev/hmr-status-bridge.test.ts`: compiled client contains bridge API
+  symbols.
+
 ## [1.2.2] - 2026-11-01
 
 ### Fixed

@@ -7,6 +7,20 @@
 
 ---
 
+## [Unreleased]
+
+### 新增
+
+- **HMR 状态桥 `__DREAMER_HMR__`（DEV）**：`hmr-browser` 在 `globalThis` 上发布
+  `version`／`getSnapshot`／`subscribe`／`claimUi`／`isUiClaimed`。
+  `@dreamer/view` DevTools overlay 等可 `claimUi` 接管状态展示并**隐藏**独立
+  「HMR 已连接」胶囊；无 claimer 时仍显示原胶囊。仅开发态 HMR 客户端；
+  生产不注入。
+
+### 测试
+
+- `tests/dev/hmr-status-bridge.test.ts`：编译产物含桥 API 符号。
+
 ## [1.2.2] - 2026-11-01
 
 ### 修复

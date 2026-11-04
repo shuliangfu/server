@@ -70,6 +70,122 @@ interface UpdateQueueItem {
 type ConnectionStatus = "connected" | "disconnected" | "reconnecting" | "error";
 
 /**
+ * Snapshot published on `globalThis.__DREAMER_HMR__` for DEV tooling
+ * (e.g. `@dreamer/view/devtools/overlay`) to render HMR without a second capsule.
+ */
+interface DreamerHmrSnapshot {
+  connection: ConnectionStatus;
+  updateCount: number;
+  successCount: number;
+  failureCount: number;
+  lastUpdateTime: number | null;
+  updating: boolean;
+  lastProgressPath: string | null;
+}
+
+/** Public bridge — claimUi hides the standalone HMR capsule while a panel owns UI. */
+interface DreamerHmrBridge {
+  readonly version: 1;
+  getSnapshot(): DreamerHmrSnapshot;
+  subscribe(listener: (snap: DreamerHmrSnapshot) => void): () => void;
+  /**
+   * Take over the HMR status UI (hide capsule). Call the returned function to
+   * release; when no claimers remain the capsule is shown again.
+   */
+  claimUi(claimerId?: string): () => void;
+  isUiClaimed(): boolean;
+}
+
+interface HmrCapsuleHost {
+  setCapsuleVisible(visible: boolean): void;
+}
+
+interface HmrBridgeState {
+  bridge: DreamerHmrBridge;
+  setHost(host: HmrCapsuleHost | null): void;
+  patchSnapshot(partial: Partial<DreamerHmrSnapshot>): void;
+}
+
+const DREAMER_HMR_KEY = "__DREAMER_HMR__";
+
+function createHmrBridgeState(): HmrBridgeState {
+  let snapshot: DreamerHmrSnapshot = {
+    connection: "disconnected",
+    updateCount: 0,
+    successCount: 0,
+    failureCount: 0,
+    lastUpdateTime: null,
+    updating: false,
+    lastProgressPath: null,
+  };
+  const listeners = new Set<(snap: DreamerHmrSnapshot) => void>();
+  const claimers = new Set<string>();
+  let uiHost: HmrCapsuleHost | null = null;
+  let claimSeq = 0;
+
+  const notify = (): void => {
+    const snap: DreamerHmrSnapshot = { ...snapshot };
+    for (const listener of listeners) {
+      try {
+        listener(snap);
+      } catch {
+        /* swallow listener errors */
+      }
+    }
+  };
+
+  const applyClaimVisibility = (): void => {
+    uiHost?.setCapsuleVisible(claimers.size === 0);
+  };
+
+  const bridge: DreamerHmrBridge = {
+    version: 1,
+    getSnapshot: () => ({ ...snapshot }),
+    subscribe: (listener) => {
+      listeners.add(listener);
+      try {
+        listener({ ...snapshot });
+      } catch {
+        /* ignore */
+      }
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    claimUi: (claimerId) => {
+      const id = claimerId ?? `claimer-${++claimSeq}`;
+      claimers.add(id);
+      applyClaimVisibility();
+      let released = false;
+      return () => {
+        if (released) return;
+        released = true;
+        claimers.delete(id);
+        applyClaimVisibility();
+      };
+    },
+    isUiClaimed: () => claimers.size > 0,
+  };
+
+  return {
+    bridge,
+    setHost(host) {
+      uiHost = host;
+      applyClaimVisibility();
+    },
+    patchSnapshot(partial) {
+      snapshot = { ...snapshot, ...partial };
+      notify();
+    },
+  };
+}
+
+/** Module singleton — also published on globalThis for cross-bundle consumers. */
+const hmrBridgeState: HmrBridgeState = createHmrBridgeState();
+(globalThis as Record<string, unknown>)[DREAMER_HMR_KEY] = hmrBridgeState.bridge;
+
+
+/**
  * HMR 面板文案（根据 document.documentElement.lang 或 navigator.language 选择）
  */
 const HMR_L10N: Record<string, Record<string, string>> = {
@@ -141,6 +257,9 @@ class HMRStatusUI {
   /** MutationObserver 监听 lang 属性变化，用于语言切换时刷新 UI */
   private langObserver: MutationObserver | null = null;
 
+  /** 首次展示胶囊的延迟定时器（给 DevTools overlay 一点时间 claimUi） */
+  private revealTimer: ReturnType<typeof setTimeout> | null = null;
+
   /**
    * 初始化 UI
    */
@@ -154,6 +273,34 @@ class HMRStatusUI {
     this.createProgressBar();
     this.createStatsPanel();
     this.setupLangObserver();
+
+    // Register as capsule host so claimUi can hide/show without a second indicator.
+    hmrBridgeState.setHost({
+      setCapsuleVisible: (visible) => this.setCapsuleVisible(visible),
+    });
+
+    // Start hidden; briefly delay reveal so a concurrent overlay mount can claim.
+    this.setCapsuleVisible(false);
+    if (this.revealTimer !== null) {
+      clearTimeout(this.revealTimer);
+      this.revealTimer = null;
+    }
+    this.revealTimer = setTimeout(() => {
+      this.revealTimer = null;
+      this.setCapsuleVisible(!hmrBridgeState.bridge.isUiClaimed());
+    }, 50);
+  }
+
+  /**
+   * Show or hide the standalone HMR capsule (not the bridge itself).
+   */
+  private setCapsuleVisible(visible: boolean): void {
+    if (!this.container) return;
+    this.container.style.display = visible ? "" : "none";
+    this.container.setAttribute(
+      "data-hmr-ui",
+      visible ? "capsule" : "claimed",
+    );
   }
 
   /**
@@ -392,6 +539,7 @@ class HMRStatusUI {
    */
   updateConnectionStatus(status: ConnectionStatus): void {
     this.lastConnectionStatus = status;
+    hmrBridgeState.patchSnapshot({ connection: status });
     if (!this.statusIndicator) return;
 
     const dot = this.statusIndicator.querySelector("span") as HTMLElement;
@@ -425,6 +573,10 @@ class HMRStatusUI {
    * 显示更新进度
    */
   showProgress(_filePath: string): void {
+    hmrBridgeState.patchSnapshot({
+      updating: true,
+      lastProgressPath: _filePath || null,
+    });
     if (!this.progressBar) return;
 
     const progressFill = this.progressBar.querySelector("div") as HTMLElement;
@@ -447,6 +599,7 @@ class HMRStatusUI {
    * 隐藏更新进度
    */
   hideProgress(): void {
+    hmrBridgeState.patchSnapshot({ updating: false });
     if (!this.progressBar) return;
 
     const progressFill = this.progressBar.querySelector("div") as HTMLElement;
@@ -472,6 +625,13 @@ class HMRStatusUI {
       this.failureCount++;
     }
     this.lastUpdateTime = Date.now();
+    hmrBridgeState.patchSnapshot({
+      updateCount: this.updateCount,
+      successCount: this.successCount,
+      failureCount: this.failureCount,
+      lastUpdateTime: this.lastUpdateTime,
+      updating: false,
+    });
     this.updateStatsContent();
   }
 
@@ -534,6 +694,11 @@ class HMRStatusUI {
    * 销毁 UI
    */
   destroy(): void {
+    if (this.revealTimer !== null) {
+      clearTimeout(this.revealTimer);
+      this.revealTimer = null;
+    }
+    hmrBridgeState.setHost(null);
     if (this.langObserver) {
       this.langObserver.disconnect();
       this.langObserver = null;
