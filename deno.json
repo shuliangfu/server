@@ -37,7 +37,7 @@
     "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.2.2",
     "@dreamer/logger": "jsr:@dreamer/logger@^1.1.0",
     "@dreamer/test": "jsr:@dreamer/test@^1.2.3",
-    "@dreamer/esbuild": "jsr:@dreamer/esbuild@^1.3.0"
+    "@dreamer/esbuild": "jsr:@dreamer/esbuild@^1.4.0"
   },
   "lint": {
     "include": [
