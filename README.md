@@ -12,11 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.3.0] - 2026-11-04
+### [1.3.1] - 2026-11-11
 
-- **Added**: HMR status bridge `__DREAMER_HMR__` (DEV) with `claimUi` so
-  DevTools overlay can hide the standalone HMR capsule; `file://` client load
-  falls back to `node:fs`. [CHANGELOG](./docs/en-US/CHANGELOG.md).
+- **Fixed**: action-mode `index` fallback now works for static API paths of any
+  depth (e.g. `GET /api/rbac/admins`). Unknown `:method` still 404s.
+  [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
 
@@ -428,9 +428,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.3.0** (2026-11-04): **Added** — HMR `__DREAMER_HMR__` bridge with `claimUi`
-(hide capsule when DevTools overlay owns UI); `file://` load falls back to
-`node:fs`. [Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.3.1** (2026-11-11): **Fixed** — action-mode `index` fallback for static API
+paths of any depth (e.g. `GET /api/rbac/admins`); unknown `:method` still 404s.
+[Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 

@@ -7,9 +7,9 @@ English | [中文](../zh-CN/TEST_REPORT.md)
 | Item             | Info                                                |
 | ---------------- | --------------------------------------------------- |
 | Package          | `@dreamer/server`                                   |
-| Version          | **1.3.0** (aligned with `deno.json`/`package.json`) |
+| Version          | **1.3.1** (aligned with `deno.json`/`package.json`) |
 | Test framework   | @dreamer/test@^1.2.3                                |
-| Report date      | **2026-11-04**                                      |
+| Report date      | **2026-11-11**                                      |
 | Test environment | Deno 2.9+ / Bun 1.3+ / Node.js 22+                  |
 
 ## How to Run

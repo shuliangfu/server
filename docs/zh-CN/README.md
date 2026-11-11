@@ -457,8 +457,8 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.3.0**（2026-11-04）：**新增** — HMR `__DREAMER_HMR__` 桥与
-`claimUi`（DevTools overlay 接管时可藏独立胶囊）；`file://` 加载回退 `node:fs`。
+**v1.3.1**（2026-11-11）：**修复** — action 模式 `index` 回落支持任意深度静态
+API 路径（如 `GET /api/rbac/admins`）；未知 `:method` 仍 404。
 [完整变更日志](./CHANGELOG.md)
 
 ---

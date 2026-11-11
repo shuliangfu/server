@@ -9,6 +9,8 @@
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-11
+
 ### 修复
 
 - **`RouterAdapter` action 模式 `index` 回落支持任意深度路径**：此前仅

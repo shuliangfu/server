@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-11
+
 ### Fixed
 
 - **`RouterAdapter` action-mode `index` fallback for any path depth**:
