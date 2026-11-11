@@ -9,6 +9,20 @@
 
 ## [Unreleased]
 
+### 修复
+
+- **`RouterAdapter` action 模式 `index` 回落支持任意深度路径**：此前仅
+  `/api/<resource>`（两段）以及 apiOnly 的 `/`、`/<resource>`（0/1 段）会回落到
+  模块的 `index` 导出。多层路径如 `GET /api/rbac/admins` 即使目录下有 `index.ts`
+  且已注册静态路由，也会因末段被当成方法名而 404。现对未带 `:method` / `:action`
+  的静态资源路径，不论几段都回落 `index`。带了 `:method` / `:action`
+  却找不到对应导出时仍 404，避免未知方法误打到 `index`。
+
+### 测试
+
+- 新增 RouterAdapter 用例：三段 `/api/rbac/admins` → `index`、十段静态路径 →
+  `index`、未知 `:method` 不回落。
+
 ## [1.3.0] - 2026-11-04
 
 ### 新增

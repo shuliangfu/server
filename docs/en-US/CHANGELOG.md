@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`RouterAdapter` action-mode `index` fallback for any path depth**:
+  previously only `/api/<resource>` (two segments) and apiOnly `/` /
+  `/<resource>` (0/1 segment) resolved to the module `index` export. Nested
+  paths such as `GET /api/rbac/admins` 404'd even when `index.ts` was registered
+  as a static route, because the last segment was treated as a method name.
+  Static resource paths now fall back to `index` at any depth when `:method` /
+  `:action` is absent. Unknown `:method` / `:action` still 404s so a typo does
+  not hit `index`.
+
+### Tests
+
+- Added RouterAdapter cases: three-segment `/api/rbac/admins` → `index`,
+  ten-segment static path → `index`, unknown `:method` does not fall back.
+
 ## [1.3.0] - 2026-11-04
 
 ### Added

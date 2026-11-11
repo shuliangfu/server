@@ -254,21 +254,14 @@ export class RouterAdapter {
     }
 
     /**
-     * action 模式静态资源路径（无 :method 段）对应模块导出 `index`，
-     * 末段为 resource 名而非 handler 名（如 chart.ts 导出 index 而非 chart）。
-     * - 带 `/api` 前缀：`/api/<resource>`（parts.length === 2 && parts[0] === "api"）
-     * - kind:api / apiOnly：根 `/`（0 段）或 `/<resource>`（1 段）
+     * action 模式静态资源路径（无 :method / :action 段）对应模块导出 `index`，
+     * 末段为 resource 名而非 handler 名（如 /api/rbac/admins 目录的 index.ts）。
+     * 任意深度均可回落（/api/foo、/api/a/b/c、apiOnly 的 / 与 /users 等）；
+     * 路径上带了 :method/:action 却找不到对应导出时不回落，避免未知方法误打到 index。
      * 显式 `/…/index` 已由路径末段或 `:method` 命中 `handlers.index`，不必再走此回落。
      */
-    if (typeof handlers.index === "function") {
-      const parts = ctx.path.split("/").filter(Boolean);
-      if (
-        (parts.length === 2 && parts[0] === "api") ||
-        parts.length === 1 ||
-        parts.length === 0
-      ) {
-        return handlers.index;
-      }
+    if (typeof handlers.index === "function" && !actionParam) {
+      return handlers.index;
     }
 
     return undefined;

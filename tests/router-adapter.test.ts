@@ -292,6 +292,87 @@ describe("RouterAdapter", () => {
       expect(await context.response!.text()).toBe("USERS_INDEX_OK");
     });
 
+    it("apiMode action：三段静态 /api/rbac/admins 回落到 index 导出", async () => {
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/api/rbac/admins") {
+            return {
+              handlers: {
+                index: async () => new Response("ADMINS_INDEX_OK"),
+                create: async () => new Response("CREATE_OK"),
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request("http://localhost:8000/api/rbac/admins");
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      expect(await context.response!.text()).toBe("ADMINS_INDEX_OK");
+    });
+
+    it("apiMode action：十段静态资源路径回落到 index 导出", async () => {
+      const deep = "/api/a/b/c/d/e/f/g/h/i";
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === deep) {
+            return {
+              handlers: {
+                index: async () => new Response("DEEP_INDEX_OK"),
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request(`http://localhost:8000${deep}`);
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      expect(await context.response!.text()).toBe("DEEP_INDEX_OK");
+    });
+
+    it("apiMode action：未知 :method 不回落到 index", async () => {
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/api/rbac/admins/missing") {
+            return {
+              handlers: {
+                index: async () => new Response("ADMINS_INDEX_OK"),
+              },
+              params: { method: "missing" },
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request(
+        "http://localhost:8000/api/rbac/admins/missing",
+      );
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(false);
+    });
+
     it("action 模式 handler 未 return 时使用 res.json 最后一次响应", async () => {
       const mockRouter = {
         match: async (path: string) => {
