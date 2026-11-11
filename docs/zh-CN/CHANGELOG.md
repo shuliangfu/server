@@ -20,8 +20,8 @@
 
 ### 测试
 
-- 新增 RouterAdapter 用例：三段 `/api/rbac/admins` → `index`、十段静态路径 →
-  `index`、未知 `:method` 不回落。
+- 新增 RouterAdapter 用例：三段 `/api/rbac/admins`、五段
+  `/api/a/b/c/d`、十段静态路径 → `index`、未知 `:method` 不回落。
 
 ## [1.3.0] - 2026-11-04
 

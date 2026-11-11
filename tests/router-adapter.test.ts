@@ -319,6 +319,34 @@ describe("RouterAdapter", () => {
       expect(await context.response!.text()).toBe("ADMINS_INDEX_OK");
     });
 
+    it("apiMode action：五段静态 /api/a/b/c/d 回落到 index 导出", async () => {
+      const path5 = "/api/a/b/c/d";
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === path5) {
+            return {
+              handlers: {
+                index: async () => new Response("FIVE_INDEX_OK"),
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "action" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request(`http://localhost:8000${path5}`);
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(path5.split("/").filter(Boolean).length).toBe(5);
+      expect(handled).toBe(true);
+      expect(await context.response!.text()).toBe("FIVE_INDEX_OK");
+    });
+
     it("apiMode action：十段静态资源路径回落到 index 导出", async () => {
       const deep = "/api/a/b/c/d/e/f/g/h/i";
       const mockRouter = {
@@ -342,6 +370,7 @@ describe("RouterAdapter", () => {
       const context = createTestContext(request);
       const handled = await adapter.handle(context);
 
+      expect(deep.split("/").filter(Boolean).length).toBe(10);
       expect(handled).toBe(true);
       expect(await context.response!.text()).toBe("DEEP_INDEX_OK");
     });

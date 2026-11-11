@@ -22,8 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Tests
 
-- Added RouterAdapter cases: three-segment `/api/rbac/admins` → `index`,
-  ten-segment static path → `index`, unknown `:method` does not fall back.
+- Added RouterAdapter cases: three-segment `/api/rbac/admins`, five-segment
+  `/api/a/b/c/d`, and ten-segment static path → `index`; unknown `:method` does
+  not fall back.
 
 ## [1.3.0] - 2026-11-04
 
