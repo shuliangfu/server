@@ -16,6 +16,7 @@ import { $tr } from "../i18n.ts";
 import type { Http } from "../http/http.ts";
 import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts";
 import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts";
+import { determineHmrUpdateType, hmrBroadcastType } from "./hmr-policy.ts";
 import { ModuleGraphManager } from "./module-graph.ts";
 import {
   createPerformanceMonitor,
@@ -336,9 +337,11 @@ export class DevTools {
               (result as { routeChunkUrls?: Record<string, string> })
                 .routeChunkUrls,
           };
-          if (updateType === "config-update") {
-            updateMessage.type = "reload";
-          } else if (updateType === "component-update") {
+          const broadcastType = hmrBroadcastType(updateType);
+          if (broadcastType !== updateType) {
+            updateMessage.type = broadcastType;
+          }
+          if (updateType === "component-update") {
             updateMessage.componentPath = path;
           } else if (updateType === "layout-update") {
             updateMessage.layoutPath = path;
@@ -401,60 +404,7 @@ export class DevTools {
    * @returns 更新类型
    */
   private determineUpdateType(filePath: string): string {
-    // 配置文件需要全量刷新
-    if (this.isConfigFile(filePath)) {
-      return "config-update";
-    }
-
-    // CSS 文件
-    if (filePath.endsWith(".css")) {
-      return "css-update";
-    }
-
-    // 使用路由推断器判断文件类型
-    if (this.routeInferrer.isLayoutFile(filePath)) {
-      return "layout-update";
-    }
-
-    if (this.routeInferrer.isPageFile(filePath)) {
-      return "component-update";
-    }
-
-    if (this.routeInferrer.isComponentFile(filePath)) {
-      return "component-update";
-    }
-
-    // 其他 JS/TS 文件视为模块更新
-    if (/\.(ts|js|mjs|tsx|jsx)$/.test(filePath)) {
-      return "module-update";
-    }
-
-    // 默认使用通用更新
-    return "update";
-  }
-
-  /**
-   * 检查文件是否是配置文件
-   *
-   * 配置文件变化时需要全量刷新
-   *
-   * @param filePath 文件路径
-   * @returns 是否是配置文件
-   */
-  private isConfigFile(filePath: string): boolean {
-    const configPatterns = [
-      /deno\.json$/i,
-      /package\.json$/i,
-      /tsconfig\.json$/i,
-      /vite\.config\.(ts|js)$/i,
-      /webpack\.config\.(ts|js)$/i,
-      /rollup\.config\.(ts|js)$/i,
-      /esbuild\.config\.(ts|js)$/i,
-      /tailwind\.config\.(ts|js)$/i,
-      /\.config\.(ts|js|json)$/i,
-    ];
-
-    return configPatterns.some((pattern) => pattern.test(filePath));
+    return determineHmrUpdateType(filePath, this.routeInferrer);
   }
 
   /**

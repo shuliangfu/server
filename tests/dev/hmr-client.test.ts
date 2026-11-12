@@ -59,38 +59,42 @@ describe("HMR 客户端脚本生成", () => {
   });
 
   describe("generateHMRClientScript", () => {
-    it("应该生成包含 WebSocket URL 的脚本", async () => {
-      // 注意：esbuild 会启动子进程，在 Deno 环境下需要禁用资源清理检查
-      // 但在 Bun 环境下不需要，因为 Bun 会自动处理
+    it("应该生成按当前页面地址连接的 WebSocket 表达式", async () => {
       const script = await generateHMRClientScript("/__hmr", 3000, "localhost");
 
       expect(typeof script).toBe("string");
       expect(script.length).toBeGreaterThan(0);
-      // 应该包含 WebSocket URL（可能以 JSON 字符串形式）
-      const wsUrlPattern = /ws:\/\/localhost:3000\/__hmr/;
-      expect(wsUrlPattern.test(script)).toBe(true);
+      expect(script).toContain("location.host");
+      expect(script).toContain("location.protocol");
+      expect(script).toContain("/__hmr");
+      expect(script).not.toContain("ws://localhost:3000/__hmr");
     });
 
-    it("应该支持自定义路径", async () => {
+    it("应该支持自定义路径且不写死 host", async () => {
       const script = await generateHMRClientScript(
         "/custom-hmr",
         8080,
         "example.com",
       );
 
-      expect(script).toContain("ws://example.com:8080/custom-hmr");
+      expect(script).toContain("/custom-hmr");
+      expect(script).toContain("location.host");
+      expect(script).not.toContain("ws://example.com:8080/custom-hmr");
     });
 
-    it("应该支持自定义端口和主机", async () => {
+    it("传入的 host/port 不应被写进脚本", async () => {
       const script = await generateHMRClientScript("/__hmr", 9000, "127.0.0.1");
 
-      expect(script).toContain("ws://127.0.0.1:9000/__hmr");
+      expect(script).toContain("location.host");
+      expect(script).not.toContain("ws://127.0.0.1:9000/__hmr");
     });
 
-    it("应该使用默认值", async () => {
+    it("默认路径为 /__hmr，并使用 location", async () => {
       const script = await generateHMRClientScript();
 
-      expect(script).toContain("ws://localhost:3000/__hmr");
+      expect(script).toContain("/__hmr");
+      expect(script).toContain("location.host");
+      expect(script).not.toContain("ws://localhost:3000/__hmr");
     });
   });
 }, {

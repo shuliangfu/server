@@ -12,10 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.3.1] - 2026-11-11
+### [1.3.2] - 2026-11-12
 
-- **Fixed**: action-mode `index` fallback now works for static API paths of any
-  depth (e.g. `GET /api/rbac/admins`). Unknown `:method` still 404s.
+- **Fixed**: HMR WebSocket now uses the current page host (`location.host`), so
+  `localhost` and `127.0.0.1` both work. Generic file and CSS updates prefer
+  seamless refresh over a full reload.
   [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
@@ -428,8 +429,8 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.3.1** (2026-11-11): **Fixed** — action-mode `index` fallback for static API
-paths of any depth (e.g. `GET /api/rbac/admins`); unknown `:method` still 404s.
+**v1.3.2** (2026-11-12): **Fixed** — HMR WebSocket follows the current page
+origin; generic file and CSS updates prefer seamless refresh over a full reload.
 [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---

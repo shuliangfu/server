@@ -6,6 +6,7 @@
 
 import { esbuild } from "@dreamer/esbuild";
 import { $tr, type Locale } from "../i18n.ts";
+import { hmrWebSocketUrlExpression } from "./hmr-policy.ts";
 
 // 缓存编译后的脚本
 let compiledScriptCache: string | null = null;
@@ -72,8 +73,8 @@ async function readHmrBrowserSource(lang?: Locale): Promise<string> {
  * 通过 fetch／本地文件读取 hmr-browser.ts 源码，使用 esbuild stdin 编译
  *
  * @param hmrPath WebSocket 路径
- * @param port 服务器端口
- * @param host 服务器主机名
+ * @param port 保留参数（兼容旧调用）；URL 改由浏览器 location 决定
+ * @param host 保留参数（兼容旧调用）；URL 改由浏览器 location 决定
  * @param lang 服务端文案语言（可选）；不传则从环境变量自动检测
  * @returns HMR 客户端脚本代码（编译后的 JavaScript）
  */
@@ -83,9 +84,11 @@ export async function generateHMRClientScript(
   host: string = "localhost",
   lang?: Locale,
 ): Promise<string> {
+  void port;
+  void host;
   // 如果已缓存，直接返回
   if (compiledScriptCache) {
-    return injectWSUrl(compiledScriptCache, hmrPath, port, host);
+    return injectWSUrl(compiledScriptCache, hmrPath);
   }
 
   try {
@@ -129,12 +132,12 @@ export async function generateHMRClientScript(
     compiledScriptCache = compiledCode;
 
     // 注入 WebSocket URL
-    return injectWSUrl(compiledCode, hmrPath, port, host);
+    return injectWSUrl(compiledCode, hmrPath);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error($tr("hmr.compileClientScriptFailed", { message }, lang));
     // 如果编译失败，返回一个简单的回退脚本
-    return generateFallbackScript(hmrPath, port, host, lang);
+    return generateFallbackScript(hmrPath, lang);
   }
 }
 
@@ -150,31 +153,22 @@ export async function generateHMRClientScript(
 function injectWSUrl(
   script: string,
   hmrPath: string,
-  port: number,
-  host: string,
 ): string {
-  // 确定协议（ws 或 wss）
-  const protocol = "ws:"; // 开发环境默认使用 ws
-  const wsUrl = `${protocol}//${host}:${port}${hmrPath}`;
-
-  // 替换占位符 wsUrl
+  const expr = hmrWebSocketUrlExpression(hmrPath);
   // 查找 const wsUrl = ""; 或 var wsUrl = ""; 或 const wsUrl = ''; 并替换
-  // 支持编译后的不同格式（const 或 var）
   const wsUrlPattern = /(const|var)\s+wsUrl\s*=\s*["'][^"']*["']\s*;/;
   const match = script.match(wsUrlPattern);
   if (match) {
-    // 保持原有的声明方式（const 或 var）
-    const declaration = match[1]; // "const" 或 "var"
+    const declaration = match[1];
     return script.replace(
       wsUrlPattern,
-      `${declaration} wsUrl = ${JSON.stringify(wsUrl)};`,
+      `${declaration} wsUrl = ${expr};`,
     );
   }
 
-  // 如果没找到，尝试直接替换（向后兼容）
   return script.replace(
     /wsUrl\s*=\s*["'][^"']*["']\s*;/,
-    `wsUrl = ${JSON.stringify(wsUrl)};`,
+    `wsUrl = ${expr};`,
   );
 }
 
@@ -189,18 +183,15 @@ function injectWSUrl(
  */
 function generateFallbackScript(
   hmrPath: string,
-  port: number,
-  host: string,
   lang?: Locale,
 ): string {
-  const protocol = "ws:";
-  const wsUrl = `${protocol}//${host}:${port}${hmrPath}`;
   const connectedMsg = $tr("hmr.connected", undefined, lang);
+  const wsExpr = hmrWebSocketUrlExpression(hmrPath);
 
   return `
 (function() {
   'use strict';
-  const wsUrl = ${JSON.stringify(wsUrl)};
+  const wsUrl = ${wsExpr};
   let ws = null;
 
   function connect() {
@@ -210,7 +201,7 @@ function generateFallbackScript(
       ws.onmessage = (e) => {
         try {
           const msg = JSON.parse(e.data);
-          if (msg.type === 'reload' || msg.type === 'update') {
+          if (msg.type === 'reload') {
             location.reload();
           }
         } catch {}

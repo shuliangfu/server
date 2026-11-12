@@ -457,8 +457,8 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.3.1**（2026-11-11）：**修复** — action 模式 `index` 回落支持任意深度静态
-API 路径（如 `GET /api/rbac/admins`）；未知 `:method` 仍 404。
+**v1.3.2**（2026-11-12）：**修复** — HMR WebSocket 跟当前页面地址走；通用文件
+和 CSS 更新优先无感刷新，减少整页重载。
 [完整变更日志](./CHANGELOG.md)
 
 ---

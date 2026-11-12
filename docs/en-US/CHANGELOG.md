@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-12
+
+### Fixed
+
+- **HMR WebSocket follows the current page origin**: the client now builds
+  `ws:`/`wss:` from `location.protocol` and `location.host` instead of baking in
+  the listen host (default `127.0.0.1`). Opening the app at `localhost` no
+  longer fails the same-origin upgrade check.
+
+### Changed
+
+- **Fewer full page reloads**: generic file updates (e.g. locale JSON) go
+  through `__HMR_REFRESH__` instead of `location.reload()`. CSS updates prefer
+  the app hook (or a FOUC-safe `<link>` swap) and no longer inject filesystem
+  paths as stylesheets. Config file changes still do a full reload.
+
+### Tests
+
+- Added HMR policy coverage for update types, client apply mode, and runtime
+  WebSocket URL resolution; client script tests now assert the URL is not
+  hardcoded.
+
 ## [1.3.1] - 2026-11-11
 
 ### Fixed

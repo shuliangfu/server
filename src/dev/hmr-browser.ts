@@ -1174,8 +1174,10 @@ class HMRClient {
   private handleMergedUpdate(message: HMRMessage): void {
     switch (message.type) {
       case "update":
+        // 通用文件（如文案 JSON）重建后走无感刷新，不再整页 reload
         console.log("[HMR] 检测到更新:", message.path);
-        this.handleUpdate(message);
+        this.statusUI.showProgress(message.path || "");
+        this.doSeamlessUpdate(message);
         break;
 
       case "css-update":
@@ -1212,6 +1214,15 @@ class HMRClient {
     // 显示更新进度
     if (message.path) {
       this.statusUI.showProgress(message.path);
+    }
+
+    // 应用已注册无感刷新时优先走这条路径，避免后续一堆 reload 回退
+    const refresh = (globalThis as unknown as {
+      __HMR_REFRESH__?: unknown;
+    }).__HMR_REFRESH__;
+    if (typeof refresh === "function") {
+      this.doSeamlessUpdate(message);
+      return;
     }
 
     // 0. 检查路由是否匹配（如果提供了路由信息）
@@ -1457,34 +1468,103 @@ class HMRClient {
       return;
     }
 
-    // 显示更新进度
     this.statusUI.showProgress(message.path);
 
-    // 查找现有的 <link> 标签
-    const linkTag = this.findLinkTag(message.path);
+    const g = globalThis as unknown as {
+      __HMR_CSS_REFRESH__?: () => void;
+      __HMR_REFRESH__?: unknown;
+    };
 
+    // 应用已登记样式入口时，走应用刷新（用可访问的 CSS URL），不要用磁盘路径注入 <link>
+    if (typeof g.__HMR_CSS_REFRESH__ === "function") {
+      try {
+        g.__HMR_CSS_REFRESH__();
+        this.statusUI.recordUpdate(true);
+      } catch (e) {
+        console.warn("[HMR] CSS 原地更新失败，改走无感刷新:", e);
+        this.doSeamlessUpdate(message);
+        return;
+      }
+      setTimeout(() => this.statusUI.hideProgress(), 300);
+      return;
+    }
+    if (typeof g.__HMR_REFRESH__ === "function") {
+      this.doSeamlessUpdate(message);
+      return;
+    }
+
+    const linkTag = this.findLinkTag(message.path);
     if (linkTag) {
-      // 更新 href（添加时间戳避免缓存）
-      const currentHref = linkTag.getAttribute("href") || "";
-      const baseHref = currentHref.split("?")[0] || message.path;
-      const newHref = `${baseHref}?t=${Date.now()}`;
-      linkTag.setAttribute("href", newHref);
+      this.swapStylesheetLink(linkTag);
       console.log(`[HMR] CSS 已更新: ${message.path}`);
-    } else {
-      // 如果没有找到，创建新的 <link> 标签
+      this.statusUI.recordUpdate(true);
+      setTimeout(() => this.statusUI.hideProgress(), 300);
+      return;
+    }
+
+    // 仅当 path 是浏览器可请求的地址时才追加，避免把本机磁盘路径写成 href
+    if (this.isBrowsableStylesheetHref(message.path)) {
       const newLink = (globalThis as any).document.createElement("link");
       newLink.rel = "stylesheet";
       newLink.href = `${message.path}?t=${Date.now()}`;
       (globalThis as any).document.head.appendChild(newLink);
       console.log(`[HMR] CSS 已注入: ${message.path}`);
+    } else {
+      console.warn(
+        `[HMR] 未找到可更新的样式节点，且路径不可直接请求，跳过注入: ${message.path}`,
+      );
     }
 
-    // 记录成功更新
     this.statusUI.recordUpdate(true);
-    // 隐藏进度
-    setTimeout(() => {
-      this.statusUI.hideProgress();
-    }, 300);
+    setTimeout(() => this.statusUI.hideProgress(), 300);
+  }
+
+  /**
+   * 先加载新样式再移除旧节点，避免直接改 href 造成短暂无样式。
+   */
+  private swapStylesheetLink(linkTag: any): void {
+    const currentHref = linkTag.getAttribute("href") || "";
+    const baseHref = currentHref.split("?")[0];
+    if (!baseHref) {
+      return;
+    }
+    const next = linkTag.cloneNode(false);
+    next.removeAttribute("id");
+    next.href = `${baseHref}?t=${Date.now()}`;
+    const oldId = linkTag.id;
+    next.onload = () => {
+      linkTag.remove();
+      if (oldId) next.id = oldId;
+    };
+    next.onerror = () => {
+      next.remove();
+    };
+    linkTag.after(next);
+  }
+
+  private isBrowsableStylesheetHref(path: string): boolean {
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      return true;
+    }
+    // 只接受站点相对路径，拒绝 /Users、/home 等本机磁盘绝对路径
+    if (!path.startsWith("/") || path.startsWith("//")) {
+      return false;
+    }
+    const first = path.split("/").filter(Boolean)[0] ?? "";
+    const diskRoots = new Set([
+      "Users",
+      "home",
+      "var",
+      "tmp",
+      "opt",
+      "usr",
+      "etc",
+      "private",
+      "System",
+      "Volumes",
+      "root",
+    ]);
+    return !diskRoots.has(first);
   }
 
   /**
