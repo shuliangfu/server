@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-11-15
+
+### Fixed
+
+- **HMR no longer swaps the current page for another route**: editing `/about`
+  while viewing `/index` does not render about in place. The client still
+  receives `__HMR_REFRESH__` so the app can preload the new chunk, and
+  navigating to that route shows the latest content without a full refresh.
+
 ## [1.3.2] - 2026-11-12
 
 ### Fixed

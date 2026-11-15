@@ -12,12 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.3.2] - 2026-11-12
+### [1.3.3] - 2026-11-15
 
-- **Fixed**: HMR WebSocket now uses the current page host (`location.host`), so
-  `localhost` and `127.0.0.1` both work. Generic file and CSS updates prefer
-  seamless refresh over a full reload.
-  [CHANGELOG](./docs/en-US/CHANGELOG.md).
+- **Fixed**: Editing another route no longer swaps the current page. The new
+  chunk is still sent so the app can preload it, and navigating there shows the
+  latest content without a full refresh. [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
 
@@ -429,9 +428,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.3.2** (2026-11-12): **Fixed** — HMR WebSocket follows the current page
-origin; generic file and CSS updates prefer seamless refresh over a full reload.
-[Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.3.3** (2026-11-15): **Fixed** — editing another route no longer swaps the
+current page; the new chunk can be preloaded so navigation shows the latest
+content without a full refresh. [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 
