@@ -68,6 +68,15 @@ describe("HMR 客户端脚本生成", () => {
       expect(script).toContain("location.protocol");
       expect(script).toContain("/__hmr");
       expect(script).not.toContain("ws://localhost:3000/__hmr");
+      // Compiled browser client, not the stdin-fallback that only handles reload.
+      // esbuild escapes Chinese log text as \uXXXX, so decode before asserting.
+      expect(script).toContain("pageRoute");
+      expect(script).toContain("hmrShouldSkipSeamlessUpdate");
+      const decoded = script.replace(
+        /\\u([0-9a-fA-F]{4})/g,
+        (_, h) => String.fromCharCode(parseInt(h, 16)),
+      );
+      expect(decoded).toContain("与当前路由不匹配，预加载后不刷新当前页");
     });
 
     it("应该支持自定义路径且不写死 host", async () => {

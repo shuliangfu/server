@@ -41,6 +41,11 @@ interface HMRMessage {
   routePath?: string;
   /** 路由 component 标识 → chunk URL（改 components 等共享代码时刷新当前路由用） */
   routeChunkUrls?: Record<string, string>;
+  /**
+   * Only set when the changed file is a page. The client skips the update
+   * when this route is not the page currently being viewed.
+   */
+  pageRoute?: string;
 }
 
 /**
@@ -55,6 +60,76 @@ const HMR_MERGE_PRIORITY: Record<string, number> = {
   "module-update": 5,
   update: 6,
 };
+
+/**
+ * Keep in sync with hmr-policy.ts. This file is compiled from stdin, so it
+ * cannot import sibling modules.
+ */
+function hmrShouldSkipSeamlessUpdate(
+  pageRoute: string | undefined,
+  isCurrentRoute: (route: string) => boolean,
+): boolean {
+  return typeof pageRoute === "string" && pageRoute.length > 0 &&
+    !isCurrentRoute(pageRoute);
+}
+
+interface HmrMergeFields {
+  pageRoute?: string;
+  chunkUrl?: string;
+  routePath?: string;
+  routeChunkUrls?: Record<string, string>;
+}
+
+function mergeHmrClientFields(
+  messages: readonly HmrMergeFields[],
+): HmrMergeFields {
+  const pageRoutes = [
+    ...new Set(
+      messages
+        .map((message) => message.pageRoute)
+        .filter((route): route is string =>
+          typeof route === "string" && route.length > 0
+        ),
+    ),
+  ];
+  const hasShared = messages.some((message) =>
+    typeof message.pageRoute !== "string" || message.pageRoute.length === 0
+  );
+  const pageRoute = !hasShared && pageRoutes.length === 1
+    ? pageRoutes[0]
+    : undefined;
+
+  let chunkUrl: string | undefined;
+  let routePath: string | undefined;
+  let routeChunkUrls: Record<string, string> | undefined;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (chunkUrl === undefined && message.chunkUrl !== undefined) {
+      chunkUrl = message.chunkUrl;
+    }
+    if (routePath === undefined && message.routePath !== undefined) {
+      routePath = message.routePath;
+    }
+    if (
+      routeChunkUrls === undefined &&
+      message.routeChunkUrls != null &&
+      typeof message.routeChunkUrls === "object"
+    ) {
+      routeChunkUrls = message.routeChunkUrls;
+    }
+    if (
+      chunkUrl !== undefined &&
+      routePath !== undefined &&
+      routeChunkUrls !== undefined
+    ) {
+      break;
+    }
+  }
+  if (hasShared || pageRoutes.length !== 1) {
+    chunkUrl = undefined;
+  }
+  return { pageRoute, chunkUrl, routePath, routeChunkUrls };
+}
 
 /**
  * 更新队列项
@@ -1088,33 +1163,7 @@ class HMRClient {
       }
     }
 
-    // chunkUrl/routePath/routeChunkUrls：自后向前一次扫描，避免三次 [...messages].reverse() 拷贝
-    let lastChunkUrl: string | undefined;
-    let lastRoutePath: string | undefined;
-    let lastRouteChunkUrls: Record<string, string> | undefined;
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const m = messages[i];
-      if (lastChunkUrl === undefined && m.chunkUrl !== undefined) {
-        lastChunkUrl = m.chunkUrl;
-      }
-      if (lastRoutePath === undefined && m.routePath !== undefined) {
-        lastRoutePath = m.routePath;
-      }
-      if (
-        lastRouteChunkUrls === undefined &&
-        m.routeChunkUrls != null &&
-        typeof m.routeChunkUrls === "object"
-      ) {
-        lastRouteChunkUrls = m.routeChunkUrls;
-      }
-      if (
-        lastChunkUrl !== undefined &&
-        lastRoutePath !== undefined &&
-        lastRouteChunkUrls !== undefined
-      ) {
-        break;
-      }
-    }
+    const mergedFields = mergeHmrClientFields(messages);
     const merged: HMRMessage = {
       ...primaryMessage,
       path: (allPaths.size > 0 ? allPaths.values().next().value : undefined) ||
@@ -1123,9 +1172,11 @@ class HMRClient {
       route:
         (allRoutes.size > 0 ? allRoutes.values().next().value : undefined) ||
         primaryMessage.route,
-      chunkUrl: lastChunkUrl ?? primaryMessage.chunkUrl,
-      routePath: lastRoutePath ?? primaryMessage.routePath,
-      routeChunkUrls: lastRouteChunkUrls ?? primaryMessage.routeChunkUrls,
+      pageRoute: mergedFields.pageRoute,
+      chunkUrl: mergedFields.chunkUrl,
+      routePath: mergedFields.routePath ?? primaryMessage.routePath,
+      routeChunkUrls: mergedFields.routeChunkUrls ??
+        primaryMessage.routeChunkUrls,
     };
 
     return merged;
@@ -1136,6 +1187,15 @@ class HMRClient {
    * 传入 chunkUrl / routeChunkUrls / routePath 时客户端可加载新 chunk；未注册时才整页重载。
    */
   private doSeamlessUpdate(message: HMRMessage): void {
+    const isOtherPage = hmrShouldSkipSeamlessUpdate(
+      message.pageRoute,
+      (route) => this.isCurrentRoute(route),
+    );
+    if (isOtherPage) {
+      console.log(
+        `[HMR] 更新的路由 "${message.pageRoute}" 与当前路由不匹配，预加载后不刷新当前页`,
+      );
+    }
     const g = globalThis as unknown as {
       __HMR_REFRESH__?: (
         options?: {
@@ -1155,9 +1215,15 @@ class HMRClient {
         });
         this.statusUI.recordUpdate(true);
       } catch (e) {
-        console.warn("[HMR] 无感更新失败，回退整页重载:", e);
-        globalThis.location.reload();
+        if (isOtherPage) {
+          console.warn("[HMR] 预加载非当前路由失败:", e);
+        } else {
+          console.warn("[HMR] 无感更新失败，回退整页重载:", e);
+          globalThis.location.reload();
+        }
       }
+      this.statusUI.hideProgress();
+    } else if (isOtherPage) {
       this.statusUI.hideProgress();
     } else {
       this.statusUI.recordUpdate(true);

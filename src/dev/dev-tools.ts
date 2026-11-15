@@ -16,7 +16,11 @@ import { $tr } from "../i18n.ts";
 import type { Http } from "../http/http.ts";
 import type { DevConfig, HMRConfig, WatchConfig } from "../types.ts";
 import { generateHMRClientScript, injectHMRClient } from "./hmr-client.ts";
-import { determineHmrUpdateType, hmrBroadcastType } from "./hmr-policy.ts";
+import {
+  determineHmrUpdateType,
+  hmrBroadcastType,
+  hmrPageRoute,
+} from "./hmr-policy.ts";
 import { ModuleGraphManager } from "./module-graph.ts";
 import {
   createPerformanceMonitor,
@@ -311,9 +315,10 @@ export class DevTools {
       if (!this.config.builder) {
         const route = this.inferRouteFromPath(path);
         this.wsManager.broadcast({
-          type: updateType === "css-update" ? "css-update" : "reload",
+          type: hmrBroadcastType(updateType),
           path,
           route,
+          pageRoute: hmrPageRoute(path, this.routeInferrer),
         });
         return;
       }
@@ -329,6 +334,7 @@ export class DevTools {
             path,
             files: result.outputFiles,
             route,
+            pageRoute: hmrPageRoute(path, this.routeInferrer),
             moduleId,
             affectedModules,
             chunkUrl: result.chunkUrl,

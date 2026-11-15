@@ -7,10 +7,14 @@ import {
   determineHmrUpdateType,
   hmrBroadcastType,
   hmrClientApplyMode,
+  hmrPageRoute,
   type HmrRouteInferrer,
+  hmrShouldSkipSeamlessUpdate,
   hmrWebSocketUrlExpression,
   isHmrConfigFile,
+  mergeHmrClientFields,
 } from "../../src/dev/hmr-policy.ts";
+import { createRouteInferrer } from "../../src/dev/route-inference.ts";
 
 const inferrer: HmrRouteInferrer = {
   isLayoutFile: (p) => p.includes("_layout") || p.endsWith("/layout.tsx"),
@@ -113,5 +117,69 @@ describe("hmrWebSocketUrlExpression", () => {
       host: "127.0.0.1:8001",
     });
     expect(secure).toBe("wss://127.0.0.1:8001/__hmr");
+  });
+});
+
+describe("hmrPageRoute / hmrShouldSkipSeamlessUpdate", () => {
+  const pages = createRouteInferrer();
+
+  it("only sets pageRoute for page files", () => {
+    expect(hmrPageRoute("src/routes/index.tsx", pages)).toBe("/");
+    expect(hmrPageRoute("src/routes/about.tsx", pages)).toBe("/about");
+    expect(hmrPageRoute("src/routes/about/index.tsx", pages)).toBe("/about");
+    expect(hmrPageRoute("src/components/Button.tsx", pages)).toBeUndefined();
+    expect(hmrPageRoute("src/routes/_layout.tsx", pages)).toBeUndefined();
+    expect(hmrPageRoute("src/locales/zh-CN.json", pages)).toBeUndefined();
+  });
+
+  it("skips seamless refresh on a different route page", () => {
+    const onAbout = (route: string) => route === "/about";
+    expect(hmrShouldSkipSeamlessUpdate("/index", onAbout)).toBe(true);
+    expect(hmrShouldSkipSeamlessUpdate("/", onAbout)).toBe(true);
+    expect(hmrShouldSkipSeamlessUpdate("/about", onAbout)).toBe(false);
+    expect(hmrShouldSkipSeamlessUpdate(undefined, onAbout)).toBe(false);
+  });
+});
+
+describe("mergeHmrClientFields", () => {
+  it("keeps a single page chunk", () => {
+    expect(mergeHmrClientFields([
+      {
+        pageRoute: "/",
+        chunkUrl: "/index-bbbbbb.js",
+        routeChunkUrls: {
+          index: "/index-bbbbbb.js",
+          about: "/about-aaaaaa.js",
+        },
+      },
+    ])).toEqual({
+      pageRoute: "/",
+      chunkUrl: "/index-bbbbbb.js",
+      routePath: undefined,
+      routeChunkUrls: { index: "/index-bbbbbb.js", about: "/about-aaaaaa.js" },
+    });
+  });
+
+  it("drops a foreign page chunk when a shared update is in the same batch", () => {
+    const merged = mergeHmrClientFields([
+      {
+        pageRoute: "/",
+        chunkUrl: "/index-bbbbbb.js",
+        routeChunkUrls: { about: "/about-aaaaaa.js" },
+      },
+      { routeChunkUrls: { about: "/about-aaaaaa.js" } },
+    ]);
+    expect(merged.pageRoute).toBeUndefined();
+    expect(merged.chunkUrl).toBeUndefined();
+    expect(merged.routeChunkUrls).toEqual({ about: "/about-aaaaaa.js" });
+  });
+
+  it("drops chunkUrl when two different page routes are batched", () => {
+    const merged = mergeHmrClientFields([
+      { pageRoute: "/", chunkUrl: "/index-bbbbbb.js" },
+      { pageRoute: "/about", chunkUrl: "/about-aaaaaa.js" },
+    ]);
+    expect(merged.pageRoute).toBeUndefined();
+    expect(merged.chunkUrl).toBeUndefined();
   });
 });

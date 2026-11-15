@@ -21,6 +21,7 @@ export interface HmrRouteInferrer {
   isLayoutFile(filePath: string): boolean;
   isPageFile(filePath: string): boolean;
   isComponentFile(filePath: string): boolean;
+  inferRoute?(filePath: string): string | undefined;
 }
 
 /** 配置文件变化需要整页重载（构建图/工具链已变） */
@@ -88,4 +89,95 @@ export function hmrWebSocketUrlExpression(hmrPath: string): string {
   return `(location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host + ${
     JSON.stringify(hmrPath)
   }`;
+}
+
+/**
+ * Route path to attach to an HMR broadcast when the changed file is a
+ * page. Shared components, layouts, CSS, and other files return undefined
+ * so the current page still refreshes.
+ */
+export function hmrPageRoute(
+  filePath: string,
+  inferrer?: HmrRouteInferrer,
+): string | undefined {
+  if (!inferrer?.isPageFile(filePath)) {
+    return undefined;
+  }
+  const route = inferrer.inferRoute?.(filePath);
+  if (typeof route === "string" && route.length > 0) {
+    return route;
+  }
+  return undefined;
+}
+
+/** Skip seamless refresh when the update is a different route page. */
+export function hmrShouldSkipSeamlessUpdate(
+  pageRoute: string | undefined,
+  isCurrentRoute: (route: string) => boolean,
+): boolean {
+  return typeof pageRoute === "string" && pageRoute.length > 0 &&
+    !isCurrentRoute(pageRoute);
+}
+
+export interface HmrMergeFields {
+  pageRoute?: string;
+  chunkUrl?: string;
+  routePath?: string;
+  routeChunkUrls?: Record<string, string>;
+}
+
+/**
+ * Merge batched HMR payloads.
+ * A foreign page chunkUrl must not be kept when the batch also has a shared
+ * update, or when several different page routes were saved together.
+ */
+export function mergeHmrClientFields(
+  messages: readonly HmrMergeFields[],
+): HmrMergeFields {
+  const pageRoutes = [
+    ...new Set(
+      messages
+        .map((message) => message.pageRoute)
+        .filter((route): route is string =>
+          typeof route === "string" && route.length > 0
+        ),
+    ),
+  ];
+  const hasShared = messages.some((message) =>
+    typeof message.pageRoute !== "string" || message.pageRoute.length === 0
+  );
+  const pageRoute = !hasShared && pageRoutes.length === 1
+    ? pageRoutes[0]
+    : undefined;
+
+  let chunkUrl: string | undefined;
+  let routePath: string | undefined;
+  let routeChunkUrls: Record<string, string> | undefined;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (chunkUrl === undefined && message.chunkUrl !== undefined) {
+      chunkUrl = message.chunkUrl;
+    }
+    if (routePath === undefined && message.routePath !== undefined) {
+      routePath = message.routePath;
+    }
+    if (
+      routeChunkUrls === undefined &&
+      message.routeChunkUrls != null &&
+      typeof message.routeChunkUrls === "object"
+    ) {
+      routeChunkUrls = message.routeChunkUrls;
+    }
+    if (
+      chunkUrl !== undefined &&
+      routePath !== undefined &&
+      routeChunkUrls !== undefined
+    ) {
+      break;
+    }
+  }
+  if (hasShared || pageRoutes.length !== 1) {
+    chunkUrl = undefined;
+  }
+  return { pageRoute, chunkUrl, routePath, routeChunkUrls };
 }
