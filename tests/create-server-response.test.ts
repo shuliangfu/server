@@ -23,34 +23,35 @@ describe("createServerResponse()", () => {
   });
 
   describe("json()", () => {
-    it("返回 application/json 且 body 为 { success, data } 封装", async () => {
+    it("返回 application/json 且 body 为传入对象", async () => {
       const r = res.json({ a: 1 });
       expect(r.headers.get("Content-Type")).toContain("application/json");
-      expect(await r.json()).toEqual({ success: true, data: { a: 1 } });
+      expect(await r.json()).toEqual({ a: 1 });
     });
 
-    it("init.status 非 2xx 时 success 为 false", async () => {
+    it("支持 return res.json({ success: true }) 原样输出", async () => {
+      const r = res.json({ success: true });
+      expect(await r.json()).toEqual({ success: true });
+    });
+
+    it("init.status 只改状态码，不另包一层", async () => {
       const r = res.json({ error: "bad" }, { status: 400 });
       expect(r.status).toBe(400);
-      expect(await r.json()).toEqual({
-        success: false,
-        data: { error: "bad" },
-      });
+      expect(await r.json()).toEqual({ error: "bad" });
     });
 
-    /** 未传 data 时信封 data 为 null（与 undefined 分支一致） */
-    it("仅传 init 或未传第一参时 data 为 null", async () => {
+    it("未传第一参时 body 为 null", async () => {
       const r = res.json(undefined);
-      expect(await r.json()).toEqual({ success: true, data: null });
+      expect(await r.json()).toBe(null);
     });
 
-    /** 边界：299 仍为 success true；300 为 success false */
-    it("success 由 2xx 判定：299 为 true，300 为 false", async () => {
+    it("自定义状态码保留在 Response 上", async () => {
       const r299 = res.json({ x: 1 }, { status: 299 });
-      expect(await r299.json()).toEqual({ success: true, data: { x: 1 } });
+      expect(r299.status).toBe(299);
+      expect(await r299.json()).toEqual({ x: 1 });
       const r300 = res.json(null, { status: 300 });
-      const body300 = await r300.json() as { success: boolean };
-      expect(body300.success).toBe(false);
+      expect(r300.status).toBe(300);
+      expect(await r300.json()).toBe(null);
     });
   });
 

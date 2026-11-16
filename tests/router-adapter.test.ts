@@ -434,10 +434,39 @@ describe("RouterAdapter", () => {
       expect(handled).toBe(true);
       const json = await context.response!.json() as {
         success: boolean;
-        data: { success: boolean; message: string };
+        message: string;
       };
-      expect(json.success).toBe(true);
-      expect(json.data.message).toBe("请先登录");
+      expect(json.success).toBe(false);
+      expect(json.message).toBe("请先登录");
+    });
+
+    it("支持 handler 直接 return { success: true }", async () => {
+      const mockRouter = {
+        match: async (path: string) => {
+          if (path === "/api/ok") {
+            return {
+              handlers: {
+                GET: async () => ({ success: true }),
+              },
+              params: {},
+              isApi: true,
+            };
+          }
+          return null;
+        },
+        getApiMode: () => "restful" as const,
+      } as unknown as Router;
+
+      const adapter = new RouterAdapter(mockRouter);
+      const request = new Request("http://localhost:8000/api/ok");
+      const context = createTestContext(request);
+      const handled = await adapter.handle(context);
+
+      expect(handled).toBe(true);
+      expect(context.response!.headers.get("Content-Type")).toContain(
+        "application/json",
+      );
+      expect(await context.response!.json()).toEqual({ success: true });
     });
 
     it("restful 仍优先 HTTP 动词", async () => {
@@ -501,11 +530,9 @@ describe("RouterAdapter", () => {
       const c = received as { body?: unknown };
       expect(c.body).toEqual({ a: 1 });
       const json = await context.response!.json() as {
-        success: boolean;
-        data: { echo: unknown };
+        echo: unknown;
       };
-      expect(json.success).toBe(true);
-      expect(json.data.echo).toEqual({ a: 1 });
+      expect(json.echo).toEqual({ a: 1 });
     });
   });
 });
