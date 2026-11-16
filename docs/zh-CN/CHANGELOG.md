@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-11-16
+
+### 变更
+
+- **`res.json()` 原样序列化第一参**：不再自动包成 `{ success, data }`。
+  `return res.json({ success: true })` 和 `return { success: true }` 都会得到
+  `{ success: true }`。状态码仍由 `init.status` 决定。
+
 ## [1.3.3] - 2026-11-15
 
 ### 修复

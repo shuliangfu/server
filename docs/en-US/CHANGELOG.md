@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-11-16
+
+### Changed
+
+- **`res.json()` serializes the first argument as-is**: it no longer wraps the
+  payload in `{ success, data }`. `return res.json({ success: true })` and
+  `return { success: true }` both produce `{ success: true }`. HTTP status still
+  comes from `init.status`.
+
 ## [1.3.3] - 2026-11-15
 
 ### Fixed

@@ -12,11 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.3.3] - 2026-11-15
+### [1.3.4] - 2026-11-16
 
-- **Fixed**: Editing another route no longer swaps the current page. The new
-  chunk is still sent so the app can preload it, and navigating there shows the
-  latest content without a full refresh. [CHANGELOG](./docs/en-US/CHANGELOG.md).
+- **Changed**: `res.json()` now serializes the first argument as-is and no
+  longer wraps it in `{ success, data }`.
+  [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
 
@@ -428,9 +428,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.3.3** (2026-11-15): **Fixed** — editing another route no longer swaps the
-current page; the new chunk can be preloaded so navigation shows the latest
-content without a full refresh. [Full changelog](./docs/en-US/CHANGELOG.md)
+**v1.3.4** (2026-11-16): **Changed** — `res.json()` serializes the first
+argument as-is, without a `{ success, data }` envelope.
+[Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
 
