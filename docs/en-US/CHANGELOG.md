@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **Cookie serialization rejects CR/LF**: `serializeCookie` now calls
+  `assertSafeHeaderValue` on the cookie name, value, `domain`, and `path`, so a
+  crafted value cannot split `Set-Cookie` into extra response headers.
+- **`res.redirect` rejects CR/LF in `Location`**: a redirect target that
+  contains a carriage return or line feed throws instead of writing a split
+  header.
+- **`resolveClientIp` no longer trusts forwarded headers by default**: unless
+  `trustProxy` is true, the client IP comes only from `remoteAddr` (injected
+  from the `@dreamer/runtime-adapter` `remoteAddrMap` WeakMap). With
+  `trustProxy: true`, `X-Forwarded-For` (first hop), `X-Real-IP`,
+  `cf-connecting-ip`, and `true-client-ip` are still read.
+
+### Changed
+
+- Bumped dependencies with `deno update --min-dep-age 0` (also synced
+  `package.json`): `@dreamer/router` ^1.2.0 → ^1.2.3, `@dreamer/runtime-adapter`
+  ^1.2.2 → ^1.2.3, `@dreamer/i18n` ^1.1.2 → ^1.1.3, `@dreamer/logger` ^1.1.0 →
+  ^1.1.1, `@dreamer/console` ^1.1.0 → ^1.1.2, `@dreamer/render` ^1.2.0 → ^1.5.6,
+  `@dreamer/esbuild` ^1.4.0 → ^1.5.4, `@dreamer/test` ^1.2.3 → ^1.2.5, `tsx`
+  ^4.19.2 → ^4.23.15. `@dreamer/middleware` stays at ^1.1.0 (no newer compatible
+  release).
+
+### Tests
+
+- Cookie and redirect cases now assert CR/LF values are rejected.
+- Request-context cases cover the default untrusted-forwarded-header behavior
+  and `trustProxy` reading the first `X-Forwarded-For` hop.
+  `buildApiRouteContext` no longer treats a header IP as `clientIp` unless
+  `trustProxy` is set.
+
 ## [1.3.4] - 2026-11-16
 
 ### Changed

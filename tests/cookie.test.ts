@@ -155,3 +155,10 @@ describe("Cookie 管理", () => {
     });
   });
 });
+
+describe("serializeCookie 头注入防护", () => {
+  it("拒绝名称或值中的 CR/LF", () => {
+    expect(() => serializeCookie("ok\r\nX", "v")).toThrow();
+    expect(() => serializeCookie("ok", "v\r\nSet-Cookie: a=1")).toThrow();
+  });
+});

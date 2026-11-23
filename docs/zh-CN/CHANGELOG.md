@@ -9,6 +9,33 @@
 
 ## [Unreleased]
 
+### 安全
+
+- **Cookie 序列化拒绝 CR/LF**：`serializeCookie` 会对名称、值、`domain`、 `path`
+  调用 `assertSafeHeaderValue`，避免被构造的值把 `Set-Cookie` 拆成额外 响应头。
+- **`res.redirect` 拒绝 `Location` 中的 CR/LF**：含回车或换行的跳转地址会抛错，
+  不再写出被拆开的响应头。
+- **`resolveClientIp` 默认不信任转发头**：未打开 `trustProxy` 时，客户端 IP 只
+  来自 `remoteAddr`（由 `@dreamer/runtime-adapter` 的 `remoteAddrMap` WeakMap
+  注入）。打开 `trustProxy: true` 后，仍读取 `X-Forwarded-For`（首段）、
+  `X-Real-IP`、`cf-connecting-ip`、`true-client-ip`。
+
+### 变更
+
+- 使用 `deno update --min-dep-age 0` 升级依赖（同步更新 `package.json`）：
+  `@dreamer/router` ^1.2.0 → ^1.2.3， `@dreamer/runtime-adapter` ^1.2.2 →
+  ^1.2.3， `@dreamer/i18n` ^1.1.2 → ^1.1.3， `@dreamer/logger` ^1.1.0 → ^1.1.1，
+  `@dreamer/console` ^1.1.0 → ^1.1.2， `@dreamer/render` ^1.2.0 → ^1.5.6，
+  `@dreamer/esbuild` ^1.4.0 → ^1.5.4， `@dreamer/test` ^1.2.3 → ^1.2.5， `tsx`
+  ^4.19.2 → ^4.23.15。 `@dreamer/middleware` 仍为 ^1.1.0（没有更新的兼容版本）。
+
+### 测试
+
+- Cookie 与跳转用例断言含 CR/LF 的值会被拒绝。
+- 请求上下文用例覆盖默认不信任转发头，以及 `trustProxy` 下读取 `X-Forwarded-For`
+  首段。`buildApiRouteContext` 在未设置 `trustProxy` 时， 不再把请求头里的 IP
+  当作 `clientIp`。
+
 ## [1.3.4] - 2026-11-16
 
 ### 变更

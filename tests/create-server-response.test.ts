@@ -20,6 +20,10 @@ describe("createServerResponse()", () => {
       expect(r.status).toBe(301);
       expect(r.headers.get("Location")).toBe("/moved");
     });
+
+    it("拒绝 Location 中的 CR/LF", () => {
+      expect(() => res.redirect("/ok\r\nSet-Cookie: x=1")).toThrow();
+    });
   });
 
   describe("json()", () => {

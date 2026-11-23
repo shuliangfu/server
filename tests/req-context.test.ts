@@ -45,9 +45,15 @@ describe("req-context", () => {
   });
 
   describe("resolveClientIp()", () => {
-    it("x-forwarded-for 取首段", () => {
+    it("默认不信任转发头", () => {
       const h = new Headers({ "x-forwarded-for": "1.1.1.1, 2.2.2.2" });
-      expect(resolveClientIp(h)).toBe("1.1.1.1");
+      expect(resolveClientIp(h)).toBeUndefined();
+      expect(resolveClientIp(h, { remoteAddr: "10.0.0.1" })).toBe("10.0.0.1");
+    });
+
+    it("trustProxy 时 x-forwarded-for 取首段", () => {
+      const h = new Headers({ "x-forwarded-for": "1.1.1.1, 2.2.2.2" });
+      expect(resolveClientIp(h, { trustProxy: true })).toBe("1.1.1.1");
     });
   });
 
@@ -96,7 +102,7 @@ describe("buildApiRouteContext() 扩展", () => {
     expect(api.req).toBe(req);
     expect(api.search).toBe("?k=1");
     expect(api.requestId).toBe("r-1");
-    expect(api.clientIp).toBe("9.9.9.9");
+    expect(api.clientIp).toBeUndefined();
     expect(api.matchedRoute).toEqual({
       path: "/api/hi",
       file: "api/hi.ts",

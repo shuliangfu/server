@@ -29,15 +29,15 @@
     "fmt": "deno fmt src/ tests/"
   },
   "imports": {
-    "@dreamer/i18n": "jsr:@dreamer/i18n@^1.1.2",
-    "@dreamer/console": "jsr:@dreamer/console@^1.1.0",
-    "@dreamer/render": "jsr:@dreamer/render@^1.2.0",
+    "@dreamer/i18n": "jsr:@dreamer/i18n@^1.1.3",
+    "@dreamer/console": "jsr:@dreamer/console@^1.1.2",
+    "@dreamer/render": "jsr:@dreamer/render@^1.5.6",
     "@dreamer/middleware": "jsr:@dreamer/middleware@^1.1.0",
-    "@dreamer/router": "jsr:@dreamer/router@^1.2.0",
-    "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.2.2",
-    "@dreamer/logger": "jsr:@dreamer/logger@^1.1.0",
-    "@dreamer/test": "jsr:@dreamer/test@^1.2.3",
-    "@dreamer/esbuild": "jsr:@dreamer/esbuild@^1.4.0"
+    "@dreamer/router": "jsr:@dreamer/router@^1.2.3",
+    "@dreamer/runtime-adapter": "jsr:@dreamer/runtime-adapter@^1.2.3",
+    "@dreamer/logger": "jsr:@dreamer/logger@^1.1.1",
+    "@dreamer/test": "jsr:@dreamer/test@^1.2.5",
+    "@dreamer/esbuild": "jsr:@dreamer/esbuild@^1.5.4"
   },
   "lint": {
     "include": [

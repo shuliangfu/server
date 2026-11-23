@@ -224,12 +224,17 @@ export class Http {
       });
     }
 
+    const remoteMap = (globalThis as unknown as Record<
+      symbol,
+      WeakMap<Request, string> | undefined
+    >)[Symbol.for("@dreamer/runtime-adapter.remoteAddrMap")];
     const ctx: HttpContext = {
       request,
       path: url.pathname,
       method: request.method,
       url,
       headers: request.headers,
+      remoteAddr: remoteMap?.get(request),
       query,
       cookies: {
         get: (name: string) => cookieManager.get(name),

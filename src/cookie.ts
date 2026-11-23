@@ -4,7 +4,7 @@
  * 提供 Cookie 解析和设置功能
  */
 
-import type { CookieOptions } from "./context.ts";
+import { assertSafeHeaderValue, type CookieOptions } from "./context.ts";
 
 /**
  * 解析 Cookie 请求头
@@ -72,6 +72,10 @@ export function serializeCookie(
   value: string,
   options: CookieOptions = {},
 ): string {
+  assertSafeHeaderValue(name, "Cookie name");
+  assertSafeHeaderValue(value, "Cookie value");
+  if (options.domain) assertSafeHeaderValue(options.domain, "Cookie domain");
+  if (options.path) assertSafeHeaderValue(options.path, "Cookie path");
   const parts: string[] = [`${name}=${encodeURIComponent(value)}`];
 
   // Max-Age（优先级高于 Expires）

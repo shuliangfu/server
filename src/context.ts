@@ -114,6 +114,12 @@ export interface HttpContext extends MiddlewareContext {
     getAll(): Record<string, string>;
   };
 
+  /**
+   * 套接字远端地址（由 runtime-adapter serve 注入，不读转发头）。
+   * 限流等场景在 trustProxy 为 false 时应优先使用此值。
+   */
+  remoteAddr?: string;
+
   // 注意：session 属性由 @dreamer/session 库通过模块增强添加
   // 索引签名允许运行时动态添加属性
 }
@@ -169,26 +175,44 @@ export function resolveRequestId(headers: Headers): string {
   return crypto.randomUUID();
 }
 
+export type ResolveClientIpOptions = {
+  /** 是否信任转发头。默认 false。 */
+  trustProxy?: boolean;
+  /** 套接字远端地址（不来自请求头） */
+  remoteAddr?: string;
+};
+
 /**
- * 尽力解析「客户端 IP」：**仅基于常见代理头**，结果不可视为绝对可信；
- * 生产环境需在反向代理侧正确改写 **`x-forwarded-for`**。
- *
- * 优先级：`x-forwarded-for`（取第一段）→ **`cf-connecting-ip`** → **`true-client-ip`**。
- *
- * @param headers - 请求头
- * @returns 解析到的字符串，否则 `undefined`
+ * 解析客户端 IP。默认不信任转发头，只返回 `remoteAddr`。
+ * `trustProxy: true` 时优先：X-Forwarded-For 第一跳 → X-Real-IP →
+ * cf-connecting-ip → true-client-ip，再回退 remoteAddr。
  */
-export function resolveClientIp(headers: Headers): string | undefined {
-  const xff = headers.get("x-forwarded-for");
-  if (xff) {
-    const first = xff.split(",")[0]?.trim();
-    if (first) return first;
+export function resolveClientIp(
+  headers: Headers,
+  options: ResolveClientIpOptions = {},
+): string | undefined {
+  if (options.trustProxy) {
+    const xff = headers.get("x-forwarded-for");
+    if (xff) {
+      const first = xff.split(",")[0]?.trim();
+      if (first) return first;
+    }
+    const realIp = headers.get("x-real-ip")?.trim();
+    if (realIp) return realIp;
+    const cf = headers.get("cf-connecting-ip")?.trim();
+    if (cf) return cf;
+    const tc = headers.get("true-client-ip")?.trim();
+    if (tc) return tc;
   }
-  const cf = headers.get("cf-connecting-ip")?.trim();
-  if (cf) return cf;
-  const tc = headers.get("true-client-ip")?.trim();
-  if (tc) return tc;
+  if (options.remoteAddr) return options.remoteAddr;
   return undefined;
+}
+
+/** 拒绝响应头 / Location / Cookie 中的 CR/LF，防止头注入。 */
+export function assertSafeHeaderValue(value: string, name: string): void {
+  if (/[\r\n]/.test(value)) {
+    throw new TypeError(`${name} must not contain CR or LF`);
+  }
 }
 
 /**
@@ -281,6 +305,7 @@ export function createServerResponse(): ServerResponse {
   };
   return {
     redirect(url: string, status = 302): Response {
+      assertSafeHeaderValue(url, "Location");
       return track(
         new Response(null, {
           status,
@@ -406,7 +431,9 @@ export function buildApiRouteContext(
     pathname,
     search: searchFromHref(href),
     requestId: resolveRequestId(ctx.request.headers),
-    clientIp: resolveClientIp(ctx.request.headers),
+    clientIp: resolveClientIp(ctx.request.headers, {
+      remoteAddr: ctx.remoteAddr,
+    }),
     matchedRoute: route ? snapshotMatchedRoute(route) : undefined,
     res: createServerResponse(),
   };
