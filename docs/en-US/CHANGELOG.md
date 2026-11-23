@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-11-23
+
 ### Security
 
 - **Cookie serialization rejects CR/LF**: `serializeCookie` now calls

@@ -12,10 +12,11 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.3.4] - 2026-11-16
+### [1.3.5] - 2026-11-23
 
-- **Changed**: `res.json()` now serializes the first argument as-is and no
-  longer wraps it in `{ success, data }`.
+- **Security**: Cookie serialization and `res.redirect` reject CR/LF.
+  `resolveClientIp` no longer trusts forwarded headers unless `trustProxy` is
+  set. Dependencies were bumped with `deno update --min-dep-age 0`.
   [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
@@ -428,8 +429,9 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.3.4** (2026-11-16): **Changed** — `res.json()` serializes the first
-argument as-is, without a `{ success, data }` envelope.
+**v1.3.5** (2026-11-23): **Security** — cookies and redirects reject CR/LF;
+`resolveClientIp` trusts forwarded headers only when `trustProxy` is set.
+Dependencies were bumped with `deno update --min-dep-age 0`.
 [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---

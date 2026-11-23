@@ -9,6 +9,8 @@
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-11-23
+
 ### 安全
 
 - **Cookie 序列化拒绝 CR/LF**：`serializeCookie` 会对名称、值、`domain`、 `path`

@@ -457,8 +457,9 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.3.4**（2026-11-16）：**变更** — `res.json()` 原样序列化第一参，不再自动包成
-`{ success, data }`。 [完整变更日志](./CHANGELOG.md)
+**v1.3.5**（2026-11-23）：**安全** — Cookie 与跳转拒绝 CR/LF；`resolveClientIp`
+默认不信任转发头，仅在 `trustProxy` 打开时读取。依赖已用
+`deno update --min-dep-age 0` 升级。[完整变更日志](./CHANGELOG.md)
 
 ---
 
