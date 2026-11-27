@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **DevTools and HMR are no longer preloaded by `import { Server }`**: the
+  development file-watch / HMR graph is loaded only in `dev` mode, after
+  `listen()` returns. Startup begins either after the first request finishes or
+  after a short idle timer, so DevTools module evaluation does not block an
+  already-arrived `GET /`. `stop()` waits for a pending DevTools start and
+  cancels the idle timer. If startup fails, the server logs
+  `server.devToolsStartFailed`.
+- **File-change debounce is 20ms** (`FILE_CHANGE_DEBOUNCE_MS` in DevTools).
+- Bumped `@dreamer/runtime-adapter` ^1.2.3 → ^1.2.4 and `@dreamer/esbuild`
+  ^1.5.4 → ^1.5.5 in `deno.json` and `package.json`. Verified with
+  `deno update --min-dep-age 0`; all other dependencies were already current.
+
+### Removed
+
+- **`generateHMRClientScript` and `injectHMRClient` are no longer re-exported
+  from `@dreamer/server`**. Import them from `@dreamer/server/hmr` instead
+  (both the Deno export map and `package.json` `exports` now include `./hmr`).
+  This keeps a production `import { Server }` from preloading the HMR graph.
+
 ## [1.3.5] - 2026-11-23
 
 ### Security

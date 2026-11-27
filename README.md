@@ -317,6 +317,15 @@ const server = new Server({
 });
 ```
 
+### Custom HMR client helpers
+
+```typescript
+import { generateHMRClientScript, injectHMRClient } from "@dreamer/server/hmr";
+```
+
+These helpers are no longer exported from `@dreamer/server`, so a production
+`import { Server }` does not preload the HMR graph.
+
 ---
 
 ## 📝 Full Examples

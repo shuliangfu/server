@@ -19,7 +19,8 @@
   "server": {
     "portInUse": "Port {port} is in use, using port {actualPort}",
     "stopping": "Stopping server...",
-    "stopped": "Server stopped"
+    "stopped": "Server stopped",
+    "devToolsStartFailed": "Failed to start dev tools"
   },
   "http": {
     "routerError": "Route handler error:",

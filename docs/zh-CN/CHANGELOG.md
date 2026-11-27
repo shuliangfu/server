@@ -9,6 +9,24 @@
 
 ## [Unreleased]
 
+### 变更
+
+- **`import { Server }` 不再预装 DevTools / HMR**：文件监听与 HMR 图只在
+  `dev` 模式下、`listen()` 返回之后加载。会在首个请求结束或短暂空闲后开始启动，
+  避免开发工具模块求值挡住已到达的 `GET /`。`stop()` 会等待尚未完成的 DevTools
+  启动并取消空闲定时器。启动失败时记录 `server.devToolsStartFailed`。
+- **文件变更防抖改为 20ms**（DevTools 中的 `FILE_CHANGE_DEBOUNCE_MS`）。
+- 升级 `@dreamer/runtime-adapter` ^1.2.3 → ^1.2.4、`@dreamer/esbuild`
+  ^1.5.4 → ^1.5.5（`deno.json` 与 `package.json` 已同步）。已用
+  `deno update --min-dep-age 0` 核对，其余依赖已是当前版本。
+
+### 移除
+
+- **`generateHMRClientScript` 和 `injectHMRClient` 不再从 `@dreamer/server`
+  主入口再导出**。请改从 `@dreamer/server/hmr` 导入（Deno 导出与
+  `package.json` 的 `exports` 均已包含 `./hmr`）。这样生产环境
+  `import { Server }` 不会预装 HMR 图。
+
 ## [1.3.5] - 2026-11-23
 
 ### 安全

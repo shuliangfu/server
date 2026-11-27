@@ -336,6 +336,15 @@ const server = new Server({
 });
 ```
 
+### 自定义 HMR 客户端工具
+
+```typescript
+import { generateHMRClientScript, injectHMRClient } from "@dreamer/server/hmr";
+```
+
+这些方法不再从 `@dreamer/server` 主入口导出，因此生产环境
+`import { Server }` 不会预装 HMR 图。
+
 ---
 
 ## 📝 完整示例

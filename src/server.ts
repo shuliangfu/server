@@ -8,22 +8,34 @@ import type { Logger } from "@dreamer/logger";
 import { createLogger } from "@dreamer/logger";
 import type { ServeHandle } from "@dreamer/runtime-adapter";
 
-import { DevTools } from "./dev/dev-tools.ts";
 import type { HttpServerOptions, PathHandler } from "./http/http.ts";
 import { Http } from "./http/http.ts";
 import { $tr } from "./i18n.ts";
 import type { Locale } from "./i18n.ts";
 import { findAvailablePort } from "./port-utils.ts";
-import type { ServerMode, ServerOptions } from "./types.ts";
+import type { DevConfig, ServerMode, ServerOptions } from "./types.ts";
 
 /**
  * 统一的服务器类
  *
  * 支持开发和生产模式，自动配置相应的功能
  */
+type DevToolsHandle = {
+  start(actualPort?: number): void;
+  stop(): void | Promise<void>;
+};
+
 export class Server {
   private httpApp: Http;
-  private devTools?: DevTools;
+  private devTools?: DevToolsHandle;
+  private devToolsOptions?: {
+    httpApp: Http;
+    port: number;
+    host: string;
+  } & DevConfig;
+  private devToolsStart?: Promise<void>;
+  private devToolsTimer?: ReturnType<typeof setTimeout>;
+  private stopping = false;
   private serverHandle?: ServeHandle;
   private readonly mode: ServerMode;
   private readonly _port: number;
@@ -64,15 +76,15 @@ export class Server {
     this.httpApp = new Http(httpOptions);
     this.onListen = options.onListen;
 
-    // 开发模式：添加开发工具
+    // 开发工具图（HMR / 文件监听）推迟到 start()，生产 import { Server } 不再预装
     if (this.mode === "dev" && options.dev) {
-      this.devTools = new DevTools({
+      this.devToolsOptions = {
         httpApp: this.httpApp,
         ...options.dev,
         port: this._port,
         host: this._host,
         lang: options.dev.lang ?? options.lang,
-      });
+      };
     }
   }
 
@@ -112,10 +124,50 @@ export class Server {
       },
     });
 
-    // 开发模式：先设置实际端口并启动文件监听，再 listen，保证首包 HTML 里的 HMR 脚本用对端口
-    if (this.devTools) {
-      this.devTools.start(actualPort);
+    // 先听口并立即返回，HMR 图放到首个请求完成之后或短暂空闲再装，
+    // 避免开发工具模块求值挡住已到达的 GET /。
+    if (this.devToolsOptions) {
+      this.scheduleDevTools(actualPort);
     }
+  }
+
+  private scheduleDevTools(actualPort: number): void {
+    const begin = (): void => {
+      if (this.devToolsTimer != null) {
+        clearTimeout(this.devToolsTimer);
+        this.devToolsTimer = undefined;
+      }
+      void this.ensureDevTools(actualPort);
+    };
+    this.httpApp.use(async (_ctx, next) => {
+      try {
+        await next();
+      } finally {
+        begin();
+      }
+    });
+    this.devToolsTimer = setTimeout(begin, 50);
+  }
+
+  private ensureDevTools(actualPort: number): Promise<void> {
+    if (!this.devToolsStart) {
+      this.devToolsStart = this.loadDevTools(actualPort).catch((error) => {
+        this.logger.error(
+          $tr("server.devToolsStartFailed", undefined, this._lang),
+          error,
+        );
+      });
+    }
+    return this.devToolsStart;
+  }
+
+  private async loadDevTools(actualPort: number): Promise<void> {
+    if (this.devTools || this.stopping || !this.devToolsOptions) return;
+    const { DevTools } = await import("./dev/dev-tools.ts");
+    if (this.stopping || this.devTools) return;
+    const devTools = new DevTools(this.devToolsOptions);
+    this.devTools = devTools;
+    devTools.start(actualPort);
   }
 
   /**
@@ -124,10 +176,19 @@ export class Server {
    * @param timeout 等待请求完成的超时时间（毫秒，默认使用配置的超时时间）
    */
   async stop(timeout?: number): Promise<void> {
+    this.stopping = true;
+    if (this.devToolsTimer != null) {
+      clearTimeout(this.devToolsTimer);
+      this.devToolsTimer = undefined;
+    }
     this.logger.info($tr("server.stopping", undefined, this._lang));
 
     // 先进行优雅关闭（等待请求完成）
     await this.httpApp.gracefulShutdown(timeout ?? this.shutdownTimeout);
+
+    if (this.devToolsStart) {
+      await this.devToolsStart;
+    }
 
     // 停止开发工具
     if (this.devTools) {

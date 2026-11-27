@@ -97,5 +97,5 @@ export type {
 // 重新导出路由类型（方便使用）
 export type { RouteMatch, Router } from "@dreamer/router";
 
-// 导出 HMR 客户端工具（用于自定义 HMR 客户端）
-export { generateHMRClientScript, injectHMRClient } from "./dev/hmr-client.ts";
+// HMR 客户端工具不从主入口再导出，避免 import { Server } 预装开发图。
+// 自定义 HMR 客户端请从 "@dreamer/server/hmr" 导入。

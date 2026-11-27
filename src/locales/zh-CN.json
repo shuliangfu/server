@@ -19,7 +19,8 @@
   "server": {
     "portInUse": "端口 {port} 已被占用，使用端口 {actualPort}",
     "stopping": "正在停止服务器...",
-    "stopped": "服务器已停止"
+    "stopped": "服务器已停止",
+    "devToolsStartFailed": "启动开发工具失败"
   },
   "http": {
     "routerError": "路由处理错误:",
