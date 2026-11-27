@@ -7,9 +7,9 @@ English | [中文](../zh-CN/TEST_REPORT.md)
 | Item             | Info                                                |
 | ---------------- | --------------------------------------------------- |
 | Package          | `@dreamer/server`                                   |
-| Version          | **1.3.5** (aligned with `deno.json`/`package.json`) |
-| Test framework   | @dreamer/test@^1.2.3                                |
-| Report date      | **2026-11-11**                                      |
+| Version          | **1.4.0** (aligned with `deno.json`/`package.json`) |
+| Test framework   | @dreamer/test@^1.2.5                                |
+| Report date      | **2026-11-27**                                      |
 | Test environment | Deno 2.9+ / Bun 1.3+ / Node.js 22+                  |
 
 ## How to Run
@@ -35,11 +35,11 @@ npm run test:node
 
 | Runtime | Version | Passed    | Failed | Files | Duration |
 | ------- | ------- | --------- | ------ | ----- | -------- |
-| Deno    | 2.9+    | **182**   | **0**  | 14    | ~2s      |
-| Bun     | 1.3+    | **168**   | **0**  | 14    | ~1s      |
-| Node.js | 22+     | **13/13** | **0**  | 13    | ~15s     |
+| Deno    | 2.9+    | **209**   | **0**  | 15    | ~2s      |
+| Bun     | 1.3+    | **194**   | **0**  | 15    | ~1s      |
+| Node.js | 22+     | **15/15** | **0**  | 15    | ~4s      |
 
-> All 13 test files are pure unit tests — no browser tests, no external
+> All 15 test files are pure unit tests — no browser tests, no external
 > services, no exclusions needed. Deno/Bun counts differ due to runner counting
 > conventions; treat **0 failures** as the invariant.
 

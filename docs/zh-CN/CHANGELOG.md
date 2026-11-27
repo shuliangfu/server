@@ -9,6 +9,8 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-27
+
 ### 变更
 
 - **`import { Server }` 不再预装 DevTools / HMR**：文件监听与 HMR 图只在

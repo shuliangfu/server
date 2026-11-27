@@ -7,7 +7,7 @@
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../../LICENSE)
-[![Tests](https://img.shields.io/badge/tests-Deno%20182%20%7C%20Bun%20168%20%7C%20Node%2013--13-brightgreen)](./TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-Deno%20209%20%7C%20Bun%20194%20%7C%20Node%2015--15-brightgreen)](./TEST_REPORT.md)
 
 ---
 
@@ -466,9 +466,10 @@ await server.start();
 
 ### 变更日志（最新）
 
-**v1.3.5**（2026-11-23）：**安全** — Cookie 与跳转拒绝 CR/LF；`resolveClientIp`
-默认不信任转发头，仅在 `trustProxy` 打开时读取。依赖已用
-`deno update --min-dep-age 0` 升级。[完整变更日志](./CHANGELOG.md)
+**v1.4.0**（2026-11-27）：**变更** — DevTools/HMR 在 `listen()` 之后加载，不再由
+`import { Server }` 预装；文件变更防抖为 20ms；自定义 HMR 工具改从
+`@dreamer/server/hmr` 导入。已升级 `@dreamer/runtime-adapter` ^1.2.4、
+`@dreamer/esbuild` ^1.5.5。[完整变更日志](./CHANGELOG.md)
 
 ---
 

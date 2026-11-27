@@ -7,16 +7,17 @@ English | [中文 (Chinese)](./docs/zh-CN/README.md)
 
 [![JSR](https://jsr.io/badges/@dreamer/server)](https://jsr.io/@dreamer/server)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-Deno%20182%20%7C%20Bun%20168%20%7C%20Node%2013--13-brightgreen)](./docs/en-US/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-Deno%20209%20%7C%20Bun%20194%20%7C%20Node%2015--15-brightgreen)](./docs/en-US/TEST_REPORT.md)
 
 **Changelog**: [English](./docs/en-US/CHANGELOG.md) |
 [中文 (Chinese)](./docs/zh-CN/CHANGELOG.md)
 
-### [1.3.5] - 2026-11-23
+### [1.4.0] - 2026-11-27
 
-- **Security**: Cookie serialization and `res.redirect` reject CR/LF.
-  `resolveClientIp` no longer trusts forwarded headers unless `trustProxy` is
-  set. Dependencies were bumped with `deno update --min-dep-age 0`.
+- **Changed**: DevTools/HMR are no longer preloaded by `import { Server }`;
+  they start after listen. File-change debounce is 20ms. Custom HMR helpers
+  now live at `@dreamer/server/hmr`. `@dreamer/runtime-adapter` and
+  `@dreamer/esbuild` were bumped.
   [CHANGELOG](./docs/en-US/CHANGELOG.md).
 
 ---
@@ -438,9 +439,10 @@ await server.start();
 
 ### Changelog (latest)
 
-**v1.3.5** (2026-11-23): **Security** — cookies and redirects reject CR/LF;
-`resolveClientIp` trusts forwarded headers only when `trustProxy` is set.
-Dependencies were bumped with `deno update --min-dep-age 0`.
+**v1.4.0** (2026-11-27): **Changed** — DevTools/HMR load after listen, not on
+`import { Server }`; file-change debounce is 20ms; custom HMR helpers move to
+`@dreamer/server/hmr`. `@dreamer/runtime-adapter` ^1.2.4,
+`@dreamer/esbuild` ^1.5.5.
 [Full changelog](./docs/en-US/CHANGELOG.md)
 
 ---
